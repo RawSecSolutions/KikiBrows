@@ -1,0 +1,302 @@
+/* ---------------------------------------------------------------------- */
+/* BASE, FONDOS Y ANIMACIÓN                      */
+/* ---------------------------------------------------------------------- */
+
+body {
+    font-family: 'Spartan', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(to right, #D9B3D6, #F2E6F2, #E8D8E9, #EFCCFA); 
+    background-size: 400% 400%;
+    animation: gradient-animation 15s ease infinite;
+}
+
+main {
+    padding-bottom: 50px; 
+}
+
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.registro-container {
+    width: 90vw;
+    max-width: 500px;
+    margin: 5vh auto;
+    padding: 40px 30px;
+
+    background-color: rgba(255, 255, 255, 0.4) !important;
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+}
+/* ---------------------------------------------------------------------- */
+/* NAVIGACIÓN                              */
+/* ---------------------------------------------------------------------- */
+
+.top-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5%;
+    background-color: #FFFFFF; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.kikibrows-logo {
+    font-family: 'Spectral', serif;
+    /* RESPONSIVE: Mínimo 24px, Máximo 36px, variable según pantalla */
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    flex-grow: 1;
+    text-align: center;
+    color: #333333;
+}
+
+.top-left { width: 65px; }
+
+.top-icons {
+    display: flex;
+    align-items: center; 
+    gap: 20px; 
+    font-size: 1.2em;
+    color: #555555;
+    flex-shrink: 0;
+}
+
+.top-icons .dropdown .nav-link {
+    color: #555555; 
+    padding: 0; 
+}
+
+/* --- Navbar Principal (MODIFICADO PARA BOOTSTRAP) --- */
+.main-navbar {
+    background-color: transparent; 
+    box-shadow: none; 
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
+/* Nota: Eliminé 'display:flex' aquí para dejar que Bootstrap maneje la estructura */
+.main-navbar .nav-link {
+    font-family: 'Spectral', serif;
+    color: #333333 !important; /* !important para vencer a Bootstrap */
+    padding: 10px 20px; /* Un poco más de padding vertical para dedo en móvil */
+    
+    /* RESPONSIVE: Letra fluida entre 18px y 24px */
+    font-size: clamp(1.1rem, 1.0vw, 1.5rem); 
+    
+    letter-spacing: 1.5px;
+    border-bottom: 4px solid transparent; 
+    transition: border-bottom 0.3s;
+    text-transform: uppercase;
+}
+
+.main-navbar .nav-link:hover {
+    border-bottom: 4px solid #E8D8E9; 
+}
+
+/* ---------------------------------------------------------------------- */
+/* TIPOGRAFÍA (H1, H2 RESPONSIVOS)           */
+/* ---------------------------------------------------------------------- */
+
+h1 {
+    font-family: 'Spectral', serif;
+    font-weight: 400;
+    /* RESPONSIVE: Título fluido */
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: #333333;
+    border-bottom: 1px solid #EEEEEE;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h2 {
+    font-family: 'Spectral', serif;
+    /* RESPONSIVE: Subtítulo fluido */
+    font-size: clamp(1.1rem, 3vw, 2.0em);
+    color: #666666;
+    font-weight: normal;
+    letter-spacing: 1px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* ---------------------------------------------------------------------- */
+/* FORMULARIO (RESTO IGUAL)                  */
+/* ---------------------------------------------------------------------- */
+
+.user-registration-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+label {
+    font-family: 'Spectral', serif;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    font-weight: normal;
+    margin-bottom: 5px;
+    color: #555555;
+}
+
+.user-registration-form input.form-control {
+    font-family: 'Spartan', sans-serif;
+    padding: 12px;
+    
+    background-color: rgba(255, 255, 255, 0.3) !important; 
+    
+    border: 1px solid #CCCCCC;
+    border-radius: 4px;
+    color: #333333;
+    transition: all 0.3s ease;
+}
+
+/* Al hacer clic (focus), se ponen un poco más blancos */
+.user-registration-form input.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.8) !important; 
+    box-shadow: none; 
+    border-color: #999;
+    outline: none;
+}
+
+.email-group small {
+    color: #CC0000;
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+.form-controls {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #CCCCCC;
+    accent-color: #E8D8E9; 
+}
+
+.register-button {
+    font-family: 'Spartan', sans-serif;
+    background-color: #E8D8E9;
+    color: #333333;
+    border: none;
+    padding: 12px 40px;
+    margin-top: 20px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 700;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    text-transform: uppercase;
+}
+
+.register-button:hover {
+    background-color: #D6C2D7;
+}
+
+.obligatorio {
+    font-size: 0.85em;
+    margin-top: 20px;
+    color: #666666;
+}
+
+.asterisco {
+    color: #CC0000;
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+
+.navbar-toggler.custom-toggler {
+    border: none !important; 
+    padding: 0.25rem 0.75rem; 
+}
+
+.navbar-toggler.custom-toggler:focus {
+    box-shadow: none !important; 
+    outline: none !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* AJUSTES PARA LOGIN DE DOS COLUMNAS (SIMILAR A LA IMAGEN)  */
+/* ---------------------------------------------------------------------- */
+
+/* Redefinimos el contenedor principal para que use menos opacidad y padding en modo desktop */
+@media (min-width: 992px) { /* Solo aplica en pantallas grandes (desktop) */
+    
+    /* PASO 1: Igualar Alturas */
+    .login-page-content .row {
+        display: flex;
+        align-items: stretch; /* Esto hace que los hijos igualen su altura */
+    }
+
+    .login-page-content .registro-container {
+        /* Se usa para las dos columnas */
+        background-color: rgba(255, 255, 255, 0.95) !important; /* Más sólido */
+        backdrop-filter: blur(0px); /* Eliminar el blur para que se vea más limpio */
+        -webkit-backdrop-filter: blur(0px);
+        
+        /* Modificado: Aumentamos el padding-bottom para asegurar espacio */
+        padding: 60px 50px 80px 50px; 
+        
+        border-right: none;
+    }
+    
+    /* PASO 2: Alinear Contenido al Fondo en la columna de la derecha */
+    /* Usamos 'd-flex flex-column justify-content-between' directamente en el HTML de ambas columnas */
+    .columna-registro-derecha { 
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; 
+    }
+}
+
+
+/* Estilo para los botones de la izquierda y el de la derecha */
+.btn-pequeno {
+    padding: 8px 30px !important; /* Hacemos los botones más pequeños */
+    font-size: 1.0em !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* El botón de 'Crear una cuenta' debe verse más como un contorno o más claro */
+.btn-registro-derecha {
+    background-color: #FFFFFF !important; /* Fondo blanco */
+    color: #333333 !important; /* Color de texto más oscuro */
+    border: 1px solid #E8D8E9 !important; /* Borde sutil del color lila */
+}
+
+.btn-registro-derecha:hover {
+    background-color: #f7f7f7 !important;
+}
+
+/* Ajustes menores para alineación */
+.registro-container p {
+    line-height: 1.4;
+}
+
+.user-registration-form {
+    gap: 10px; /* Reducimos el espacio entre los grupos de input */
+}
