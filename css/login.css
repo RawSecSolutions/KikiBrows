@@ -97,13 +97,12 @@ body {
     margin-bottom: 20px;
 }
 
-/* CORRECCIÓN NUCLEAR: Forzar ancho completo y quitar centrado */
+/* --- PEGAR ESTO EN SU LUGAR --- */
 .main-navbar .navbar-nav {
-    width: 100% !important;      /* Ocupar todo el ancho disponible */
-    max-width: none !important;  /* Quitar límite de 900px */
-    margin: 0 !important;        /* Quitar centrado automático (margin: 0 auto) */
-    padding: 0 !important;       /* Quitar padding extra */
-    justify-content: flex-start !important; /* Alinear items a la izquierda */
+    max-width: 900px;      /* Define el ancho máximo para que pueda centrarse */
+    margin: 0 auto;        /* Centra el bloque horizontalmente */
+    padding: 0 2rem;       
+    justify-content: center; /* Asegura que los items se distribuyan al centro */
 }
 
 /* Forzar que el contenedor colapsable también se alinee a la izquierda */
