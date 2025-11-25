@@ -1,0 +1,144 @@
+/* css/layout.css */
+/* AQUÍ ESTÁ EL FONDO DINÁMICO, LAS FUENTES Y EL ESTILO DEL NAVBAR */
+
+/* 0. FUentes importadas */
+
+/* Spectral */
+@import url('https://fonts.googleapis.com/css2?family=Spectral:wght@400;700&family=Staatliches&family=Spartan:wght@400;700&display=swap');
+
+/* 1. CONFIGURACIÓN BASE Y FONDO */
+body {
+    font-family: 'Spartan', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(to right, #D9B3D6, #F2E6F2, #E8D8E9, #EFCCFA); 
+    background-size: 400% 400%;
+    animation: gradient-animation 15s ease infinite;
+}
+
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 2. HEADER SUPERIOR (Top Navbar) */
+.top-navbar {
+    padding: 0.5px 2%;
+    background-color: #FFFFFF; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.kikibrows-logo {
+    font-family: 'Spectral', serif;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    text-align: center;
+    color: #333333;
+    flex-grow: 1; 
+}
+
+.top-icons {
+    display: flex;
+    align-items: center; 
+    gap: 20px; 
+    font-size: 1.2em;
+    color: #555555;
+}
+
+.top-icons .dropdown .nav-link {
+    color: #555555; 
+    padding: 0; 
+}
+
+.navbar-toggler.custom-toggler {
+    border: none !important; 
+    padding: 0.25rem 0.75rem; 
+}
+.navbar-toggler.custom-toggler:focus {
+    box-shadow: none !important; 
+    outline: none !important;
+}
+
+/* 3. MENÚ PRINCIPAL (Main Navbar) */
+.main-navbar {
+    background-color: transparent; 
+    box-shadow: none; 
+    padding: 2px 0;
+    margin-bottom: 20px;
+}
+
+.main-navbar .navbar-nav {
+    max-width: 900px;
+    margin: 0 auto;        
+    justify-content: center; 
+    width: 100%;
+}
+
+.main-navbar .nav-link {
+    font-family: 'Spectral', serif;
+    color: #333333 !important;
+    padding: 10px 0;
+    font-size: clamp(0.8rem, 1.5vw, 1.1rem) !important;    
+    letter-spacing: 1.5px;
+    border-bottom: 4px solid transparent; 
+    transition: border-bottom 0.3s;
+    text-transform: uppercase;
+}
+
+.main-navbar .nav-link:hover {
+    border-bottom: 4px solid #E8D8E9; 
+}
+
+@media (min-width: 992px) {
+    .main-navbar .nav-item.separator {
+        position: relative;
+    }
+    .main-navbar .nav-item.separator::before {
+        content: '';
+        position: absolute;
+        left: -1.5rem; 
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 20px;
+        background-color: rgba(0, 0, 0, 0.1); 
+    }
+}
+
+.navbar-divider {
+    margin: 0;
+    margin-top: -25px;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 4. TIPOGRAFÍA GENERAL (H1, H2, Labels globales) */
+h1 {
+    font-family: 'Spectral', serif;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: #333333;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h2 {
+    font-family: 'Spectral', serif;
+    font-size: clamp(1.1rem, 3vw, 2.0em);
+    color: #666666;
+    font-weight: normal;
+    letter-spacing: 1px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    text-align: center;
+} 
+
+label {
+    font-family: 'Spectral', serif;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    color: #555555;
+    margin-bottom: 5px;
+}
