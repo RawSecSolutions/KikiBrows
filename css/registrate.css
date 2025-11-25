@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------- */
-/* BASE, FONDOS Y ANIMACIÓN                      */
+/* BASE, FONDOS Y ANIMACIÓN                                               */
 /* ---------------------------------------------------------------------- */
 
 body {
@@ -12,46 +12,43 @@ body {
     animation: gradient-animation 15s ease infinite;
 }
 
-main {
-    padding-bottom: 50px; 
-}
-
 @keyframes gradient-animation {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
+/* ---------------------------------------------------------------------- */
+/* CONTENEDOR DEL FORMULARIO                                              */
+/* ---------------------------------------------------------------------- */
+
 .registro-container {
     width: 90vw;
-    max-width: 500px;
-    margin: 5vh auto;
-    padding: 40px 30px;
-
+    max-width: 800px;
+    margin: 2vh auto;
+    padding: 35px 50px;
     background-color: rgba(255, 255, 255, 0.4) !important;
-
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
 }
+
 /* ---------------------------------------------------------------------- */
-/* NAVIGACIÓN                              */
+/* NAVEGACIÓN - HEADER SUPERIOR                                           */
 /* ---------------------------------------------------------------------- */
 
 .top-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 5%;
+    padding: 0.5px 5%;
     background-color: #FFFFFF; 
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .kikibrows-logo {
     font-family: 'Spectral', serif;
-    /* RESPONSIVE: Mínimo 24px, Máximo 36px, variable según pantalla */
     font-size: clamp(1.5rem, 4vw, 2.2rem);
     font-weight: 700;
     flex-grow: 1;
@@ -59,7 +56,9 @@ main {
     color: #333333;
 }
 
-.top-left { width: 65px; }
+.top-left { 
+    width: 65px; 
+}
 
 .top-icons {
     display: flex;
@@ -75,23 +74,41 @@ main {
     padding: 0; 
 }
 
-/* --- Navbar Principal (MODIFICADO PARA BOOTSTRAP) --- */
+/* Toggler para móvil */
+.navbar-toggler.custom-toggler {
+    border: none !important; 
+    padding: 0.25rem 0.75rem; 
+}
+
+.navbar-toggler.custom-toggler:focus {
+    box-shadow: none !important; 
+    outline: none !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* NAVEGACIÓN - NAVBAR PRINCIPAL (MENÚ)                                   */
+/* ---------------------------------------------------------------------- */
+
 .main-navbar {
     background-color: transparent; 
     box-shadow: none; 
-    padding: 10px 0;
+    padding: 2px 0;
     margin-bottom: 20px;
 }
 
-/* Nota: Eliminé 'display:flex' aquí para dejar que Bootstrap maneje la estructura */
+/* Control del ancho y centrado del navbar */
+.main-navbar .navbar-nav {
+    max-width: 900px;      /* ← AJUSTA: Ancho máximo del navbar */
+    margin: 0 auto;        /* Centra el navbar */
+    padding: 0 2rem;       /* ← AJUSTA: Márgenes internos laterales */
+}
+
+/* Estilo de cada enlace del menú */
 .main-navbar .nav-link {
     font-family: 'Spectral', serif;
-    color: #333333 !important; /* !important para vencer a Bootstrap */
-    padding: 10px 20px; /* Un poco más de padding vertical para dedo en móvil */
-    
-    /* RESPONSIVE: Letra fluida entre 18px y 24px */
+    color: #333333 !important;
+    padding: 10px 0;       /* Solo padding vertical */
     font-size: clamp(1.1rem, 1.0vw, 1.5rem); 
-    
     letter-spacing: 1.5px;
     border-bottom: 4px solid transparent; 
     transition: border-bottom 0.3s;
@@ -102,16 +119,39 @@ main {
     border-bottom: 4px solid #E8D8E9; 
 }
 
+/* Líneas separadoras verticales entre items */
+.main-navbar .nav-item.separator {
+    position: relative;
+}
+
+.main-navbar .nav-item.separator::before {
+    content: '';
+    position: absolute;
+    left: -1.5rem;         /* ← CAMBIÉ de -1.5rem a -2.5rem */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0.1); 
+}
+
+/* Línea divisoria bajo el navbar */
+.navbar-divider {
+    margin: 0;
+    margin-top: -25px;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    opacity: 1;
+}
+
 /* ---------------------------------------------------------------------- */
-/* TIPOGRAFÍA (H1, H2 RESPONSIVOS)           */
+/* TIPOGRAFÍA                                                             */
 /* ---------------------------------------------------------------------- */
 
 h1 {
     font-family: 'Spectral', serif;
     font-weight: 400;
-    /* RESPONSIVE: Título fluido */
     font-size: clamp(1.5rem, 4vw, 2.2rem);
-    color: #333333;
     border-bottom: 1px solid #EEEEEE;
     padding-bottom: 10px;
     margin-bottom: 30px;
@@ -120,7 +160,6 @@ h1 {
 
 h2 {
     font-family: 'Spectral', serif;
-    /* RESPONSIVE: Subtítulo fluido */
     font-size: clamp(1.1rem, 3vw, 2.0em);
     color: #666666;
     font-weight: normal;
@@ -128,16 +167,6 @@ h2 {
     margin-top: 25px;
     margin-bottom: 15px;
     text-align: center;
-}
-
-/* ---------------------------------------------------------------------- */
-/* FORMULARIO (RESTO IGUAL)                  */
-/* ---------------------------------------------------------------------- */
-
-.user-registration-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
 }
 
 label {
@@ -148,19 +177,26 @@ label {
     color: #555555;
 }
 
+/* ---------------------------------------------------------------------- */
+/* FORMULARIO                                                             */
+/* ---------------------------------------------------------------------- */
+
+.user-registration-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .user-registration-form input.form-control {
     font-family: 'Spartan', sans-serif;
     padding: 12px;
-    
     background-color: rgba(255, 255, 255, 0.3) !important; 
-    
     border: 1px solid #CCCCCC;
     border-radius: 4px;
     color: #333333;
     transition: all 0.3s ease;
 }
 
-/* Al hacer clic (focus), se ponen un poco más blancos */
 .user-registration-form input.form-control:focus {
     background-color: rgba(255, 255, 255, 0.8) !important; 
     box-shadow: none; 
@@ -173,6 +209,10 @@ label {
     font-size: 0.8em;
     margin-top: 5px;
 }
+
+/* ---------------------------------------------------------------------- */
+/* CONTROLES DEL FORMULARIO                                               */
+/* ---------------------------------------------------------------------- */
 
 .form-controls {
     margin-top: 30px;
@@ -224,79 +264,4 @@ label {
     color: #CC0000;
     font-size: 1.2em;
     margin-right: 5px;
-}
-
-
-.navbar-toggler.custom-toggler {
-    border: none !important; 
-    padding: 0.25rem 0.75rem; 
-}
-
-.navbar-toggler.custom-toggler:focus {
-    box-shadow: none !important; 
-    outline: none !important;
-}
-
-/* ---------------------------------------------------------------------- */
-/* AJUSTES PARA LOGIN DE DOS COLUMNAS (SIMILAR A LA IMAGEN)  */
-/* ---------------------------------------------------------------------- */
-
-/* Redefinimos el contenedor principal para que use menos opacidad y padding en modo desktop */
-@media (min-width: 992px) { /* Solo aplica en pantallas grandes (desktop) */
-    
-    /* PASO 1: Igualar Alturas */
-    .login-page-content .row {
-        display: flex;
-        align-items: stretch; /* Esto hace que los hijos igualen su altura */
-    }
-
-    .login-page-content .registro-container {
-        /* Se usa para las dos columnas */
-        background-color: rgba(255, 255, 255, 0.95) !important; /* Más sólido */
-        backdrop-filter: blur(0px); /* Eliminar el blur para que se vea más limpio */
-        -webkit-backdrop-filter: blur(0px);
-        
-        /* Modificado: Aumentamos el padding-bottom para asegurar espacio */
-        padding: 60px 50px 80px 50px; 
-        
-        border-right: none;
-    }
-    
-    /* PASO 2: Alinear Contenido al Fondo en la columna de la derecha */
-    /* Usamos 'd-flex flex-column justify-content-between' directamente en el HTML de ambas columnas */
-    .columna-registro-derecha { 
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between; 
-    }
-}
-
-
-/* Estilo para los botones de la izquierda y el de la derecha */
-.btn-pequeno {
-    padding: 8px 30px !important; /* Hacemos los botones más pequeños */
-    font-size: 1.0em !important;
-    font-weight: 400 !important;
-    text-transform: none !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* El botón de 'Crear una cuenta' debe verse más como un contorno o más claro */
-.btn-registro-derecha {
-    background-color: #FFFFFF !important; /* Fondo blanco */
-    color: #333333 !important; /* Color de texto más oscuro */
-    border: 1px solid #E8D8E9 !important; /* Borde sutil del color lila */
-}
-
-.btn-registro-derecha:hover {
-    background-color: #f7f7f7 !important;
-}
-
-/* Ajustes menores para alineación */
-.registro-container p {
-    line-height: 1.4;
-}
-
-.user-registration-form {
-    gap: 10px; /* Reducimos el espacio entre los grupos de input */
 }
