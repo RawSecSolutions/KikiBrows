@@ -23,25 +23,22 @@ body {
 /* ---------------------------------------------------------------------- */
 
 .registro-container {
-    width: 90vw;
-    max-width: 800px;
-    margin: 2vh auto;
-    padding: 35px 50px;
+    /* Mantenemos lo visual específico (glassmorphism) */
     background-color: rgba(255, 255, 255, 0.4) !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    /* Padding interno específico */
+    padding: 35px 50px;
 }
 
 /* ---------------------------------------------------------------------- */
-/* NAVEGACIÓN - HEADER SUPERIOR                                           */
+/* HEADER SUPERIOR (Top Navbar)                                           */
 /* ---------------------------------------------------------------------- */
+/* Eliminamos flex/justify aquí porque ya usas d-flex en el HTML */
 
 .top-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 0.5px 2%;
     background-color: #FFFFFF; 
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -51,23 +48,19 @@ body {
     font-family: 'Spectral', serif;
     font-size: clamp(1.5rem, 4vw, 2.2rem);
     font-weight: 700;
-    flex-grow: 1;
+    /* Ajuste visual */
     text-align: center;
     color: #333333;
-    padding-right: 10px;
+    flex-grow: 1; /* Necesario para empujar los iconos */
 }
 
-.top-left { 
-    width: 65px; 
-}
-
+/* Iconos y dropdowns */
 .top-icons {
     display: flex;
     align-items: center; 
     gap: 20px; 
     font-size: 1.2em;
     color: #555555;
-    flex-shrink: 0;
 }
 
 .top-icons .dropdown .nav-link {
@@ -75,19 +68,18 @@ body {
     padding: 0; 
 }
 
-/* Toggler para móvil */
+/* Toggler móvil limpio */
 .navbar-toggler.custom-toggler {
     border: none !important; 
     padding: 0.25rem 0.75rem; 
 }
-
 .navbar-toggler.custom-toggler:focus {
     box-shadow: none !important; 
     outline: none !important;
 }
 
 /* ---------------------------------------------------------------------- */
-/* NAVEGACIÓN - NAVBAR PRINCIPAL (MENÚ)                                   */
+/* MENÚ PRINCIPAL (Main Navbar)                                           */
 /* ---------------------------------------------------------------------- */
 
 .main-navbar {
@@ -97,39 +89,20 @@ body {
     margin-bottom: 20px;
 }
 
-/* --- PEGAR ESTO EN SU LUGAR --- */
+/* CENTRADO LIMPIO (Sin parches raros) */
 .main-navbar .navbar-nav {
-    max-width: 900px;      /* Define el ancho máximo para que pueda centrarse */
-    margin: 0 auto;        /* Centra el bloque horizontalmente */
-    padding: 0 2rem;       
-    justify-content: center; /* Asegura que los items se distribuyan al centro */
+    max-width: 900px;
+    margin: 0 auto;        /* Esto centra el bloque */
+    justify-content: center; 
+    width: 100%;
 }
 
-/* Forzar que el contenedor colapsable también se alinee a la izquierda */
-.main-navbar .navbar-collapse {
-    text-align: left !important;
-    justify-content: flex-start !important;
-}
-
-/* Parche de seguridad: Si usaste la clase .container en el HTML, esto la rompe 
-   para que ocupe el 100% y se pegue a la izquierda */
-.main-navbar .container, 
-.main-navbar .container-fluid {
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    padding-left: 15px !important; /* Pequeño respiro del borde */
-}
-
-/* Estilo de cada enlace del menú */
+/* Estilo de enlaces */
 .main-navbar .nav-link {
     font-family: 'Spectral', serif;
     color: #333333 !important;
     padding: 10px 0;
-    
-    /* FÓRMULA COMPACTA (La que te gustó) */
     font-size: clamp(0.8rem, 1.5vw, 1.1rem) !important;    
-    
     letter-spacing: 1.5px;
     border-bottom: 4px solid transparent; 
     transition: border-bottom 0.3s;
@@ -140,17 +113,15 @@ body {
     border-bottom: 4px solid #E8D8E9; 
 }
 
-/* Líneas separadoras verticales entre items */
-.main-navbar .nav-item.separator {
-    position: relative;
-}
-
-/* MEJORA: Solo mostramos la línea separadora en Pantallas Grandes (LG) */
+/* Separadores (Solo en escritorio) */
 @media (min-width: 992px) {
+    .main-navbar .nav-item.separator {
+        position: relative;
+    }
     .main-navbar .nav-item.separator::before {
         content: '';
         position: absolute;
-        left: -1.5rem; /* Ajusta esto si los items están muy pegados */
+        left: -1.5rem; /* Ajuste de distancia */
         top: 50%;
         transform: translateY(-50%);
         width: 2px;
@@ -159,17 +130,15 @@ body {
     }
 }
 
-/* Línea divisoria bajo el navbar */
 .navbar-divider {
     margin: 0;
     margin-top: -25px;
     border: 0;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
-    opacity: 1;
 }
 
 /* ---------------------------------------------------------------------- */
-/* TIPOGRAFÍA                                                             */
+/* TIPOGRAFÍA & INPUTS                                                    */
 /* ---------------------------------------------------------------------- */
 
 h1 {
@@ -182,7 +151,7 @@ h1 {
     text-align: center;
 }
 
-h2 {
+ h2 {
     font-family: 'Spectral', serif;
     font-size: clamp(1.1rem, 3vw, 2.0em);
     color: #666666;
@@ -191,32 +160,22 @@ h2 {
     margin-top: 25px;
     margin-bottom: 15px;
     text-align: center;
-}
+
+} 
 
 label {
     font-family: 'Spectral', serif;
     font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-    font-weight: normal;
-    margin-bottom: 5px;
     color: #555555;
+    margin-bottom: 5px;
 }
 
-/* ---------------------------------------------------------------------- */
-/* FORMULARIO                                                             */
-/* ---------------------------------------------------------------------- */
-
-.user-registration-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
+/* Estilos visuales de inputs (layout manejado por Bootstrap) */
 .user-registration-form input.form-control {
     font-family: 'Spartan', sans-serif;
     padding: 12px;
     background-color: rgba(255, 255, 255, 0.3) !important; 
     border: 1px solid #CCCCCC;
-    border-radius: 4px;
     color: #333333;
     transition: all 0.3s ease;
 }
@@ -225,27 +184,17 @@ label {
     background-color: rgba(255, 255, 255, 0.8) !important; 
     box-shadow: none; 
     border-color: #999;
-    outline: none;
 }
 
-.email-group small,
-.form-group small.text-danger {
-    color: #CC0000;
+.text-danger {
+    color: #CC0000 !important;
     font-size: 0.8em;
     margin-top: 5px;
-    display: block;
 }
 
 /* ---------------------------------------------------------------------- */
-/* CONTROLES DEL FORMULARIO                                               */
+/* BOTONES Y CHECKBOX                                                     */
 /* ---------------------------------------------------------------------- */
-
-.form-controls {
-    margin-top: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 
 .checkbox-group {
     display: flex;
@@ -255,10 +204,9 @@ label {
 
 .checkbox-group input[type="checkbox"] {
     margin-right: 10px;
-    width: 16px;
-    height: 16px;
-    border: 1px solid #CCCCCC;
     accent-color: #E8D8E9; 
+    width: 16px; 
+    height: 16px;
 }
 
 .register-button {
@@ -280,21 +228,7 @@ label {
     background-color: #D6C2D7;
 }
 
-/* Botón más pequeño para "Crear una cuenta" */
 .register-button-small {
     padding: 10px 30px;
     font-size: 0.95em;
-    font-weight: 600;
-}
-
-.obligatorio {
-    font-size: 0.85em;
-    margin-top: 20px;
-    color: #666666;
-}
-
-.asterisco {
-    color: #CC0000;
-    font-size: 1.2em;
-    margin-right: 5px;
 }
