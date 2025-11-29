@@ -1,0 +1,54 @@
+/* style.css - AJUSTES FINALES PARA INPUT Y BOTÓN */
+
+/* 1. Ajuste del Input (Línea inferior sutil) */
+.recovery-form input[type="email"],
+.recovery-form input[type="password"] {
+    width: 300px; /* Reducir el ancho del input para que no ocupe el 100% de la tarjeta */
+    max-width: 100%;
+    padding: 5px 0; /* Menos padding vertical */
+    padding-left: 5px;
+    
+    border: none; /* Eliminar el borde completo */
+    border-bottom: 1px solid #DDDDDD; /* Dejar solo una línea sutil abajo */
+    border-radius: 5px; 
+    
+    font-size: 1em;
+    font-family: 'Spartan', sans-serif; 
+    box-sizing: border-box;
+    /* Remover el contorno azul al hacer foco */
+    outline: none; 
+}
+.recovery-form input[type="email"]:focus,
+.recovery-form input[type="password"]:focus {
+    border-bottom: 1px solid #FF66A3; /* Resaltar la línea al enfocar */
+}
+
+/* 2. Ajuste del Botón (Pequeño, centrado con el input) */
+.btn-primary {
+    display: inline-block; /* Cambiar a inline-block */
+    width: auto; /* Dejar que el ancho lo dé el padding */
+    margin-left: 0; 
+    margin-top: 10px; /* Separación del input */
+    
+    padding: 5px 15px; /* Ajustar el padding del botón (más pequeño) */
+    background-color: #F7D5E8; 
+    color: #444444; 
+    border: 1px solid #FF66A3; /* Agregar un borde sutil del color del texto */
+    border-radius: 5px; 
+    
+    font-size: 0.9em; /* Hacer la fuente ligeramente más pequeña */
+    font-weight: 400; 
+    text-transform: none; 
+}
+.btn-primary:hover {
+    background-color: #EFCCFA;
+}
+
+/* 3. Ajuste de la Etiqueta de Campos Obligatorios */
+.required-fields {
+    font-family: 'Spectral', serif;
+    font-size: 0.8em; /* Un poco más pequeño */
+    color: #FF66A3;
+    margin-top: 15px;
+    text-align: left;
+}
