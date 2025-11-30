@@ -1,0 +1,77 @@
+/* css/account.css */
+
+/* Estilos para el contenedor de cada sección (preview o edit) */
+.account-section {
+    padding: 20px 0;
+}
+
+/* Estilo para las "tarjetas" de información o edición */
+.account-card {
+    background-color: #FFFFFF;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    min-height: 200px; /* Asegura un mínimo de altura visual */
+}
+
+/* Títulos de las tarjetas */
+.account-card h2 {
+    font-family: 'Spectral', serif;
+    font-size: clamp(1rem, 2.5vw, 1.8em);
+    color: #444444;
+    font-weight: 700;
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Estilo para el contenido de texto dentro de las tarjetas */
+.info-content p {
+    font-size: 0.95rem;
+    color: #666666;
+    margin-bottom: 5px;
+}
+
+/* Acciones de pie de tarjeta (Editar/Eliminar/etc.) */
+.card-footer-actions {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.card-footer-actions a {
+    color: #D9B3D6; /* Color primario del fondo */
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.card-footer-actions a:hover {
+    color: #EFCCFA;
+}
+
+/* Estilos de botones de edición/guardar */
+.custom-btn-guardar {
+    background-color: #D9B3D6;
+    border-color: #D9B3D6;
+    color: #FFFFFF;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.custom-btn-guardar:hover {
+    background-color: #EFCCFA;
+    border-color: #EFCCFA;
+}
+
+.cancel-btn {
+    color: #6c757d !important; 
+    text-decoration: none;
+}
+
+.cancel-btn:hover {
+    color: #333333 !important;
+}
