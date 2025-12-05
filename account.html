@@ -16,120 +16,139 @@
     <main class="container py-5">
         <h1 class="text-center mb-4">Mi Cuenta</h1>
 
-        <div id="account-view-container">
-            
-            <section id="preview-account" class="account-section">
-                <div class="row g-4">
-                    
-                    <div class="col-lg-6">
-                        <div class="account-card p-4">
-                            <h2>Información de la cuenta</h2>
-                            <div class="info-content">
-                                <p><strong>Nombre:</strong> Daniela Candi</p>
-                                <p><strong>Correo:</strong> correo@correo.com</p>
-                                <p><strong>Región:</strong> Metropolitana, Providencia.</p>
-                            </div>
-                            <div class="card-footer-actions">
-                                <a href="js/accountEdit.js" class="edit-btn" data-target="edit-account">Editar</a> | <a href="#">Cambiar Contraseña</a>
-                            </div>
+        <div id="dashboard-view">
+            <div class="row g-4"> <div class="col-lg-6">
+                    <div class="account-card p-4 h-100"> <h2>Información de la cuenta</h2>
+                        <div class="info-content">
+                            <p><strong>Nombre:</strong> Daniela Candi</p>
+                            <p><strong>Correo:</strong> correo@correo.com</p>
                         </div>
-
-                        <div class="account-card p-4 mt-4">
-                            <h2>Métodos de pago</h2>
-                            <div class="info-content">
-                                <p>Información de facturación</p>
-                                <p class="text-muted fst-italic">Ningún método de pago guardado.</p>
-                            </div>
-                            <div class="card-footer-actions">
-                                <a href="js/accountEdit.js" class="edit-btn" data-target="edit-account">Editar</a> | <a href="#">Eliminar</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6">
-                        <div class="account-card p-4">
-                            <h2>Historial de compras</h2>
-                            <div class="info-content">
-                                <p><strong>Transacciones realizadas</strong></p>
-                                <p class="mb-1">Curso Microblading 1 | $89.990 CLP</p>
-                                <a href="#">Ver todos</a>
-                            </div>
-                        </div>
-
-                        <div class="account-card p-4 mt-4">
-                            <h2>Direcciones</h2>
-                            <div class="info-content">
-                                <p>Información de ubicación y dirección de facturación</p>
-                                <p class="text-muted fst-italic">Ninguna dirección guardada.</p>
-                            </div>
-                            <div class="card-footer-actions">
-                                <a href="js/accountEdit.js" class="edit-btn" data-target="edit-account">Editar</a> | <a href="#">Eliminar</a>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-
-            <section id="edit-account" class="account-section" style="display: none;">
-                <div class="row g-4">
-
-                    <div class="col-lg-6">
-                        <div class="account-card p-4">
-                            <h2>Editar información de la cuenta</h2>
-                            <form>
-                                <div class="mb-3">
-                                    <label for="nombre" class="form-label">Nombre(s)*</label>
-                                    <input type="text" class="form-control" id="nombre" value="Daniela">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="apellido" class="form-label">Apellido*</label>
-                                    <input type="text" class="form-control" id="apellido" value="Candi">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="fechaNacimiento" class="form-label">Fecha de nacimiento*</label>
-                                    <input type="date" class="form-control" id="fechaNacimiento" value="1995-10-25">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="region" class="form-label">Región</label>
-                                    <input type="text" class="form-control" id="region" value="Región Metropolitana">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="comuna" class="form-label">Comuna</label>
-                                    <input type="text" class="form-control" id="comuna" value="Providencia">
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary custom-btn-guardar">Guardar cambios</button>
-                                <a href="#" class="cancel-btn ms-2" data-target="preview-account">Cancelar</a>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6">
-                        <div class="account-card p-4">
-                            <h2>Cambiar correo electrónico</h2>
-                            <form>
-                                <div class="mb-3">
-                                    <label for="nuevoCorreo" class="form-label">Nueva dirección de correo electrónico*</label>
-                                    <input type="email" class="form-control" id="nuevoCorreo" placeholder="correonuevo@correo.com">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="confirmarCorreo" class="form-label">Confirma la nueva dirección de correo electrónico*</label>
-                                    <input type="email" class="form-control" id="confirmarCorreo" placeholder="correonuevo@correo.com">
-                                </div>
-
-                                <button type="submit" class="btn btn-primary custom-btn-guardar">Guardar cambios</button>
-                            </form>
+                        <div class="card-footer-actions mt-auto"> <a href="#" class="edit-btn" onclick="openSimpleEdit(event)">Editar</a> | <a href="#">Cambiar Contraseña</a>
                         </div>
                     </div>
                 </div>
-            </section>
 
+                <div class="col-lg-6">
+                    <div class="account-card p-4 h-100">
+                        <h2>Historial de compras</h2>
+                        <div class="info-content">
+                            <p><strong>Transacciones realizadas</strong></p>
+                            <p class="mb-1">Curso Microblading 1 | $89.990 CLP</p>
+                            <a href="#">Ver todos</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="account-card p-4 h-100">
+                        <h2>Métodos de pago</h2>
+                        <div class="info-content">
+                            <p>Información de facturación</p>
+                            <p class="text-muted fst-italic">Ningún método de pago guardado.</p>
+                        </div>
+                        <div class="card-footer-actions mt-auto">
+                            <a href="#">Editar</a> | <a href="#">Eliminar</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="account-card p-4 h-100">
+                        <h2>Direcciones</h2>
+                        <div class="info-content">
+                            <p>Información de ubicación y dirección de facturación</p>
+                            <p class="text-muted fst-italic">Ninguna dirección guardada.</p>
+                        </div>
+                        <div class="card-footer-actions mt-auto">
+                            <a href="#">Editar</a> | <a href="#">Eliminar</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="simple-edit-view" class="d-none">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="account-card p-4">
+                        <h2>Editar información de la cuenta</h2>
+                        <form>
+                            <div class="mb-3">
+                                <label for="nombreSimple" class="form-label">Nombre(s)*</label>
+                                <input type="text" class="form-control" id="nombreSimple" value="Daniela">
+                            </div>
+                            <div class="mb-3">
+                                <label for="apellidoSimple" class="form-label">Apellido*</label>
+                                <input type="text" class="form-control" id="apellidoSimple" value="Candi">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Correo electrónico</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" value="correo@correo.com" disabled readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="splitToEmailEdit()">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Haz clic en el lápiz para cambiar el correo.</small>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary custom-btn-guardar">Guardar cambios</button>
+                                <a href="#" class="ms-2 text-secondary text-decoration-none" onclick="cancelEdit(event)">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="split-edit-view" class="d-none">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="account-card p-4 h-100">
+                        <h2>Editar información de la cuenta</h2>
+                        <form>
+                            <div class="mb-3">
+                                <label for="nombreSplit" class="form-label">Nombre(s)*</label>
+                                <input type="text" class="form-control" id="nombreSplit" value="Daniela">
+                            </div>
+                            <div class="mb-3">
+                                <label for="apellidoSplit" class="form-label">Apellido*</label>
+                                <input type="text" class="form-control" id="apellidoSplit" value="Candi">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary custom-btn-guardar">Guardar cambios</button>
+                            <a href="#" class="ms-2 text-secondary text-decoration-none" onclick="cancelEdit(event)">Cancelar</a>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="account-card p-4 h-100">
+                        <h2>Cambiar correo electrónico</h2>
+                        <form>
+                            <div class="mb-3">
+                                <label for="nuevoCorreo" class="form-label">Nueva dirección*</label>
+                                <input type="email" class="form-control" id="nuevoCorreo" placeholder="correonuevo@correo.com">
+                            </div>
+                            <div class="mb-4">
+                                <label for="confirmarCorreo" class="form-label">Confirma la nueva dirección*</label>
+                                <input type="email" class="form-control" id="confirmarCorreo" placeholder="correonuevo@correo.com">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary custom-btn-guardar">Guardar cambios</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div> 
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/componentes.js"></script>
+    
     <script src="js/accountEdit.js"></script> 
 </body>
 </html>

@@ -1,31 +1,45 @@
-// js/accountEdit.js
+/**
+ * js/accountEdit.js
+ * Control de vistas para la sección Mi Cuenta
+ */
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Selecciona todos los enlaces que tienen la clase 'edit-btn' o 'cancel-btn'
-    const viewSwitchers = document.querySelectorAll('.edit-btn, .cancel-btn');
+// 1. Abrir edición simple (Del Dashboard -> 1 Tarjeta)
+function openSimpleEdit(event) {
+    if(event) event.preventDefault();
+    
+    const dashboard = document.getElementById('dashboard-view');
+    const simpleEdit = document.getElementById('simple-edit-view');
+    const splitEdit = document.getElementById('split-edit-view');
 
-    viewSwitchers.forEach(link => {
-        link.addEventListener('click', (event) => {
-            event.preventDefault(); // Evita la navegación por defecto del enlace
+    if(dashboard && simpleEdit) {
+        dashboard.classList.add('d-none');
+        simpleEdit.classList.remove('d-none');
+        if(splitEdit) splitEdit.classList.add('d-none');
+    } else {
+        console.error("No se encontraron los elementos del DOM");
+    }
+}
 
-            // Obtiene el ID de la sección a la que se debe cambiar
-            const targetId = link.getAttribute('data-target'); 
-            
-            // Si no hay un target, sale de la función
-            if (!targetId) return;
+// 2. Dividir en 2 tarjetas (Al tocar el lápiz del correo)
+function splitToEmailEdit() {
+    const simpleEdit = document.getElementById('simple-edit-view');
+    const splitEdit = document.getElementById('split-edit-view');
 
-            // Oculta todas las secciones de la cuenta y remueve la clase activa
-            document.querySelectorAll('.account-section').forEach(section => {
-                section.style.display = 'none';
-                section.classList.remove('active-view');
-            });
+    if(simpleEdit && splitEdit) {
+        simpleEdit.classList.add('d-none');
+        splitEdit.classList.remove('d-none');
+    }
+}
 
-            // Muestra la sección deseada y le añade la clase activa
-            const targetSection = document.getElementById(targetId);
-            if (targetSection) {
-                targetSection.style.display = 'block';
-                targetSection.classList.add('active-view');
-            }
-        });
-    });
-});
+// 3. Cancelar y volver al inicio
+function cancelEdit(event) {
+    if(event) event.preventDefault();
+
+    const dashboard = document.getElementById('dashboard-view');
+    const simpleEdit = document.getElementById('simple-edit-view');
+    const splitEdit = document.getElementById('split-edit-view');
+
+    if(simpleEdit) simpleEdit.classList.add('d-none');
+    if(splitEdit) splitEdit.classList.add('d-none');
+    if(dashboard) dashboard.classList.remove('d-none');
+}
