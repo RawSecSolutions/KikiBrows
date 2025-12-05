@@ -1,0 +1,181 @@
+/* css/dashboard.css */
+/* 1. ESTRUCTURA GENERAL DEL DASHBOARD */
+:root {
+    --primary-color: #D9B3D6; /* Color morado/rosa principal */
+    --secondary-color: #EFCCFA; /* Color claro para fondos de tarjetas */
+    --text-dark: #333333;
+    --text-grey: #666666;
+    --positive-trend: #38c172; /* Verde para tendencias positivas */
+    --negative-trend: #dc3545; /* Rojo para tendencias negativas */
+    --sidebar-width: 280px;
+    --navbar-height: 55px; /* Altura estimada del top-navbar para alineación */
+}
+
+#main-container {
+    padding-top: 20px; 
+    min-height: calc(100vh - var(--navbar-height));
+}
+
+/* Contenedor principal del contenido: Centrado y ancho máximo */
+#dashboard-content {
+    flex-grow: 1; 
+    padding: 2rem !important; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra el contenido horizontalmente */
+    width: 100%;
+}
+
+/* Aplicamos un ancho máximo al contenido interno para que no se estire demasiado */
+#dashboard-content > * {
+    max-width: 1400px; /* Define el ancho máximo deseado */
+    width: 100%;
+}
+
+.dashboard-title,
+.dashboard-subtitle {
+    text-align: left;
+    margin-bottom: 5px;
+    color: var(--text-dark);
+}
+
+.dashboard-subtitle {
+    font-size: 1rem;
+    color: var(--text-grey);
+    margin-bottom: 25px;
+}
+
+/* Aseguramos que el navbar esté por encima del sidebar cuando este abre */
+.top-navbar {
+    position: relative; 
+    z-index: 1001; 
+}
+
+
+/* 2. SIDEBAR (Barra Lateral) - Lógica FIXED y Toggle */
+#sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    padding: 20px 0;
+    background-color: #FFFFFF;
+    
+    /* CAMBIOS CLAVE: FIXED y Transición LEFT para la aparición/desaparición */
+    position: fixed; 
+    top: var(--navbar-height); /* ALINEACIÓN CLAVE: Empieza por debajo del navbar */
+    left: calc(var(--sidebar-width) * -1); /* FUERA de la vista por defecto */
+    transition: left 0.3s ease; 
+    z-index: 1000; 
+    
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 0 15px 15px 0; /* Border Radius solo a la derecha */
+    margin-top: 0; 
+
+    /* Altura ajustada: 100vh menos la altura del navbar */
+    height: calc(100vh - var(--navbar-height));
+}
+
+/* CLASE PARA MOSTRAR EL SIDEBAR */
+#sidebar.open {
+    left: 0; /* Aparece en la vista */
+    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* SECCIÓN DE PERFIL */
+.profile-section {
+    display: flex;
+    align-items: center;
+    padding: 0 20px 20px 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.profile-pic {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: var(--primary-color);
+}
+.user-name {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+.profile-info small {
+    color: var(--text-grey);
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+/* NAVEGACIÓN DE LA BARRA LATERAL */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+}
+.sidebar-nav .nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    color: var(--text-grey);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 1.05rem;
+}
+.sidebar-nav .nav-item:hover,
+.sidebar-nav .nav-item.active {
+    background-color: var(--secondary-color);
+    color: var(--text-dark);
+}
+.sidebar-nav .nav-item.active {
+    font-weight: 700;
+    border-right: 4px solid var(--primary-color);
+}
+.sidebar-nav .nav-item i {
+    width: 30px;
+    margin-right: 15px;
+    font-size: 1.2rem;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+
+/* 3. TARJETAS DE ESTADÍSTICAS (Sin cambios) */
+.stat-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+/* ... (Resto de estilos de tarjetas) ... */
+
+
+/* 4. PANELES GRANDES (Sin cambios) */
+.main-panel {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+/* ... (Resto de estilos de paneles) ... */
+
+
+/* 5. MEDIA QUERIES para Responsividad (Movil: sidebar va de borde a borde) */
+@media (max-width: 991.98px) {
+    #sidebar {
+        top: 0; /* En móvil, va pegado arriba */
+        height: 100vh; /* Ocupa toda la pantalla */
+        border-radius: 0 15px 15px 0; 
+    }
+}
