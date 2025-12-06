@@ -1,0 +1,191 @@
+/* css/estiloTabla.css */
+
+/* 1. CARD PRINCIPAL Y TÍTULO DE SECCIÓN */
+.main-card-ui {
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(239, 204, 250, 0.5); /* Sombra suave y borde rosa pálido */
+    padding: 3rem;
+    overflow-x: hidden; /* Oculta el scroll horizontal */
+    max-height: 80vh; /* Límite de altura para el contenedor de la tabla */
+    overflow-y: hidden; /* Se maneja con el scroll simulado */
+}
+
+.section-header h1 {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    font-family: 'Spartan', sans-serif;
+    font-weight: 700;
+    color: #4a4a4a;
+    margin-bottom: 0 !important; 
+    padding-bottom: 0 !important;
+    text-align: left;
+}
+
+.section-icon {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #efccfa; 
+}
+
+/* 2. BARRA DE HERRAMIENTAS (Búsqueda y Ordenamiento) */
+.search-box input.form-control {
+    border: 1px solid #e0e0e0;
+    border-right: none;
+    border-radius: 25px 0 0 25px;
+    box-shadow: none;
+    padding: 0.5rem 1rem;
+}
+
+.search-box .search-icon {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-left: none;
+    color: #555555;
+    border-radius: 0 25px 25px 0;
+    transition: background-color 0.2s;
+}
+
+.search-box .search-icon:hover {
+    background-color: #f8f8f8;
+}
+
+.order-selector .order-btn {
+    background-color: #f2e6f2; /* Color de fondo suave (rosa pálido) */
+    color: #333333;
+    border: none;
+    border-radius: 5px;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    min-width: 80px;
+}
+
+/* 3. ESTRUCTURA Y ESTILO DE LA TABLA (HEADER Y FILAS) */
+.user-table-container {
+    padding-right: 15px; /* Espacio para la barra de scroll simulada */
+    max-height: 60vh; /* Altura para el scroll del contenido */
+    overflow-y: auto;
+    scrollbar-width: none; /* Oculta el scroll estándar en Firefox */
+}
+
+.user-table-container::-webkit-scrollbar {
+    display: none; /* Oculta el scroll estándar en Chrome/Safari */
+}
+
+
+.table-header {
+    font-weight: 700;
+    color: #666666;
+    font-size: 0.95rem;
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.95); /* Fondo para la cabecera fija */
+    z-index: 10;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table-index {
+    color: #aaaaaa;
+    font-size: 0.8rem;
+}
+
+/* 4. FILAS DE SKELETON (Para replicar el diseño de wireframe) */
+.skeleton-row {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px 15px !important;
+    position: relative;
+    /* Sombra suave al pasar el ratón para simular interactividad */
+    transition: box-shadow 0.2s ease, transform 0.2s ease; 
+}
+
+.skeleton-row:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+    cursor: pointer;
+}
+
+/* Base de la 'Barra' gris para los datos */
+.data-skeleton {
+    height: 14px;
+    background: linear-gradient(90deg, #e9e9e9 25%, #f4f4f4 50%, #e9e9e9 75%);
+    background-size: 200% 100%;
+    animation: loading-skeleton 1.5s infinite;
+    border-radius: 3px;
+}
+
+/* Ajustes de longitud para simular datos variables */
+.skeleton-row:nth-child(even) .data-skeleton:nth-child(2) { width: 90%; }
+.skeleton-row:nth-child(odd) .data-skeleton:nth-child(2) { width: 75%; }
+
+.skeleton-row:nth-child(even) .data-skeleton:nth-child(3) { width: 85%; }
+.skeleton-row:nth-child(odd) .data-skeleton:nth-child(3) { width: 95%; }
+
+.skeleton-row:nth-child(even) .data-skeleton:nth-child(4) { width: 65%; }
+.skeleton-row:nth-child(odd) .data-skeleton:nth-child(4) { width: 70%; }
+
+/* Animación de Carga (Brillo) */
+@keyframes loading-skeleton {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+/* Icono de Lápiz (Edición) */
+.edit-icon-skeleton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.edit-icon-skeleton::after {
+    content: "\f040"; /* Código del ícono de lápiz de Font Awesome */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: #e8d8e9; /* Rosa pálido */
+    font-size: 1.1em;
+}
+
+/* 5. BARRA DE SCROLL SIMULADA (La barra vertical del diseño) */
+.custom-scroll-bar {
+    position: absolute;
+    right: 20px; 
+    top: 150px; /* Ajuste para que empiece después de las herramientas */
+    height: calc(100% - 170px); /* Ajusta la altura */
+    width: 6px;
+    background-color: #f2e6f2; /* Color de la pista */
+    border-radius: 3px;
+    z-index: 15;
+}
+
+.custom-scroll-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30%; /* Altura del "pulgar" o controlador */
+    background-color: #efccfa; /* Color del controlador (rosa más fuerte) */
+    border-radius: 3px;
+    /* Para simular el scroll, podrías mover este :before con JS */
+}
+
+/* 6. BOTÓN FLOTANTE "Crear Usuario" */
+.create-user-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #efccfa; /* Rosa fuerte */
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(239, 204, 250, 0.6);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.create-user-btn:hover {
+    background-color: #e8d8e9; /* Rosa un poco más oscuro */
+    color: #333333;
+    box-shadow: 0 6px 20px rgba(239, 204, 250, 0.8);
+    transform: translateY(-2px);
+}
