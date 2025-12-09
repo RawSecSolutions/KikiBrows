@@ -3,32 +3,30 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // 1. Manejo de la acción de edición (Card Alert UX)
-    // El UX indica: "CLICK EN EL NOMBRE DA ACCESO DETALLES DEL USUARIO EN NUEVO CARD ALERT..."
+    // Se ha eliminado la lógica de JS y la simulación (alert)
+    // Ahora se usa data-bs-toggle en el HTML de usersGest.html para abrir el modal.
+    /*
     const userRows = document.querySelectorAll('.skeleton-row');
-
     userRows.forEach(row => {
-        // En un entorno real, solo el nombre de usuario sería clickeable,
-        // pero para el mockup, hacemos toda la fila reaccionar.
         row.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Reemplaza esto con tu lógica real de mostrar el "Card Alert" de edición.
-            console.log('Fila clickeada. Simulando apertura de Card Alert de Detalles/Edición.');
-            
-            // Simulación visual simple (podrías usar un modal de Bootstrap aquí)
+            console.log('Fila clickeada. Se abre el Card Alert de edición/detalles.');
             alert('Detalles del Usuario: Se abriría el Card Alert de edición/detalles como se describe en el UX.');
         });
     });
+    */
 
     // 2. Manejo del botón "Crear Usuario"
+    // Se ha eliminado la lógica de JS y la simulación (alert)
+    // Ahora se usa data-bs-toggle en el HTML de usersGest.html para abrir el modal.
+    /*
     const createUserBtn = document.querySelector('.create-user-btn');
     createUserBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        // El UX indica: "Acceso a nueva card desde el botón blanco lista para ser rellenada"
-        console.log('Botón Crear Usuario clickeado. Simulando apertura de Card Alert de creación.');
+        console.log('Botón Crear Usuario clickeado. Se abre el Card Alert de creación.');
         alert('Crear Nuevo Usuario: Se abriría el Card Alert de creación como se describe en el UX.');
     });
+    */
 
     // 3. Inicialización de componentes de Bootstrap (ej: Dropdowns)
     const dropdownElementList = document.querySelectorAll('.dropdown-toggle');
