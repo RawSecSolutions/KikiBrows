@@ -1,0 +1,265 @@
+/* css/calendarAdmin.css */
+
+/* 1. Estilos del Contenedor Principal */
+.calendar-admin-card {
+    min-height: 80vh;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.calendar-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.calendar-title-group i {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.calendar-title-group .dashboard-title {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+/* Botón de Agregar Slot */
+.add-slot-btn {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s;
+}
+
+.add-slot-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* 2. Estilos de Pestañas */
+.calendar-tabs {
+    border-bottom: none;
+    margin-bottom: 20px;
+}
+
+.calendar-tabs .nav-link {
+    border: none;
+    border-radius: 50px;
+    padding: 8px 20px;
+    margin-right: 10px;
+    font-weight: 600;
+    color: var(--text-grey);
+    background-color: #f7f7f7;
+    transition: all 0.2s;
+}
+
+.calendar-tabs .nav-link.active {
+    background-color: var(--primary-color);
+    color: #FFFFFF;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 3. Estilos de la Tabla */
+.calendar-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.calendar-table th {
+    color: var(--text-grey);
+    font-weight: 600;
+    padding: 10px 15px;
+    border-bottom: 2px solid #f0f0f0;
+    text-align: left;
+}
+
+.calendar-table td {
+    background-color: #FFFFFF;
+    padding: 15px;
+    border-top: 1px solid #f0f0f0; 
+    border-bottom: 1px solid #f0f0f0;
+    color: var(--text-dark);
+}
+
+.calendar-table tbody tr {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s;
+}
+
+.calendar-table tbody tr:hover {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-table tbody tr td:first-child {
+    border-left: 5px solid var(--primary-color);
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.calendar-table tbody tr td:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* 4. Estilos de los Estados (Pastillas/Badges) */
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.status-badge.available {
+    background-color: #e6ffed; 
+    color: #38c172; 
+}
+
+.status-badge.full {
+    background-color: #fff4e6; 
+    color: #ff9900; 
+}
+
+.status-badge.cancelled {
+    background-color: #ffe6e6; 
+    color: #dc3545; 
+}
+
+.status-badge.completed {
+    background-color: #e6f7ff; 
+    color: #17a2b8; 
+}
+
+/* 5. Estilos de Acciones */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.action-buttons .btn-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+    border-radius: 50%;
+    padding: 0;
+}
+
+.action-buttons .btn-edit {
+    color: #FFFFFF;
+    background-color: var(--primary-color);
+}
+.action-buttons .btn-delete {
+    color: #FFFFFF;
+    background-color: #dc3545;
+}
+
+/* 6. Pie de página de la tabla */
+.table-info-footer {
+    text-align: right;
+    margin-top: 15px;
+    padding-top: 10px;
+    font-size: 0.85rem;
+    color: var(--text-grey);
+    border-top: 1px solid #f0f0f0;
+}
+
+/* 7. Estilos para el Modal de Eliminación (ESCENARIO 4) */
+.delete-confirm-modal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+.delete-confirm-modal .modal-body {
+    text-align: center;
+    padding: 30px 20px 0 20px;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+}
+.delete-confirm-modal .modal-footer {
+    border-top: none;
+    padding: 20px 20px 30px 20px;
+    justify-content: center;
+    gap: 15px;
+}
+.delete-confirm-modal .btn-cancel {
+    background-color: #f0f0f0;
+    color: var(--text-dark);
+    border: none;
+    font-weight: 600;
+}
+.delete-confirm-modal .btn-confirm-delete {
+    background-color: #dc3545;
+    border: none;
+    font-weight: 600;
+}
+
+
+/* 8. Estilos para el Modal de Creación/Edición (ESCENARIO 1 - Recuadro Oscuro) */
+.create-slot-modal {
+    background-color: #333333; 
+    color: #FFFFFF;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+}
+
+.create-slot-modal .modal-header {
+    border-bottom: 1px solid #444444;
+}
+
+.create-slot-modal .modal-title {
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+.create-slot-modal .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.create-slot-modal label {
+    color: #cccccc; 
+}
+
+.create-slot-modal .form-control {
+    background-color: #444444; 
+    border: 1px solid #555555;
+    color: #FFFFFF;
+}
+
+.create-slot-modal .form-control:focus {
+    background-color: #555555;
+    box-shadow: 0 0 0 0.25rem rgba(217, 179, 214, 0.5); 
+}
+
+.create-slot-modal .modal-footer {
+    border-top: 1px solid #444444;
+}
+
+.create-slot-modal .btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    font-weight: 600;
+}
+
+.create-slot-modal .btn-secondary {
+    background-color: #555555;
+    border: none;
+    color: #FFFFFF;
+    font-weight: 600;
+}
