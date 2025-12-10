@@ -1,0 +1,172 @@
+/* css/revisionesAdmin.css */
+
+/* ---------------------------------------------------- */
+/* 1. SECCIÓN DE REVISIONES (Icono y Tabs) */
+/* ---------------------------------------------------- */
+
+:root {
+    --badge-pendiente: #ffc107;   /* Amarillo (Advertencia) */
+    --badge-aprobada: #38c172;    /* Verde (Positivo) */
+    --badge-rechazada: #dc3545;   /* Rojo (Negativo) */
+}
+
+.revisiones-panel {
+    padding-top: 90px; 
+    min-height: 80vh;
+}
+
+.view-icon-header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: var(--secondary-color); 
+    color: var(--primary-color); 
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding: 0 20px;
+}
+
+.tab-button {
+    font-family: 'Spartan', sans-serif;
+    font-size: 1rem;
+    padding: 8px 20px;
+    border: none;
+    background: none;
+    color: var(--text-grey);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.tab-button.active {
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--primary-color);
+    background-color: var(--secondary-color); 
+    border-radius: 8px 8px 0 0;
+}
+
+/* ---------------------------------------------------- */
+/* 2. TABLA DE REVISIONES (Header y Filas) */
+/* ---------------------------------------------------- */
+
+.revision-table-container {
+    padding: 0 10px;
+    overflow-x: auto; 
+}
+
+/* Header de la Tabla */
+.table-header {
+    font-weight: 700;
+    color: var(--text-grey);
+    font-size: 0.95rem;
+    padding: 10px 0;
+    margin-bottom: 10px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.table-header > div {
+    padding: 0 10px;
+}
+.col-id {
+    max-width: 40px; 
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Filas de la Tabla (Enlaces clickeables) */
+.table-row {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-dark);
+    padding: 12px 0;
+    border-radius: 8px;
+    margin-bottom: 8px !important;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.table-row:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.table-row > div {
+    padding: 0 10px;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badges de Estado (Escenario 8) */
+.badge-status {
+    padding: 5px 10px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+.badge-status.pendiente {
+    background-color: var(--badge-pendiente);
+    color: var(--text-dark);
+}
+.badge-status.aprobada {
+    background-color: var(--badge-aprobada);
+    color: #ffffff;
+}
+.badge-status.rechazada {
+    background-color: var(--badge-rechazada);
+    color: #ffffff;
+}
+
+
+/* ---------------------------------------------------- */
+/* 3. MODAL DE REVISIÓN */
+/* ---------------------------------------------------- */
+
+.video-placeholder {
+    height: 400px; /* Tamaño del reproductor */
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-grey);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+.video-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 10px;
+    color: var(--text-grey);
+}
+
+/* Asegura que los campos de formulario sigan el estilo */
+#feedbackArea,
+#calificacionDropdown {
+    border-radius: 8px;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo del botón de Calificar */
+.btn-calificar {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    transition: background-color 0.2s;
+    font-weight: 700;
+}
+.btn-calificar:hover {
+    background-color: #c499c0;
+    border-color: #c499c0;
+}
