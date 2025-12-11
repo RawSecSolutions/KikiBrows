@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // El UX indica: "Click en editar redirige a gestión de cursos Épica y gestión de módulos correspondiente."
             simularAccion(
                 '3 (Edición de Estructura)', 
-                'Redirección al módulo de Edición de Estructura/Contenido (Épica 4).'
+                'Redirección al módulo de Edición del curso correspondiente(Épica 3).'
             );
         });
     });
