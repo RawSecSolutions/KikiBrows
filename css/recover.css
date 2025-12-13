@@ -1,53 +1,56 @@
+/* css/recover.css - TONOS BEIGE */
 
-/* 1. Ajuste del Input (Línea inferior sutil) */
 .recovery-form input[type="email"],
 .recovery-form input[type="password"] {
-    width: 300px; /* Reducir el ancho del input para que no ocupe el 100% de la tarjeta */
+    width: 300px;
     max-width: 100%;
-    padding: 5px 0; /* Menos padding vertical */
+    padding: 5px 0;
     padding-left: 5px;
-    
-    border: none; /* Eliminar el borde completo */
-    border-bottom: 1px solid #DDDDDD; /* Dejar solo una línea sutil abajo */
+    border: none;
+    border-bottom: 1px solid #DDDDDD;
     border-radius: 5px; 
-    
     font-size: 1em;
-    font-family: 'Spartan', sans-serif; 
     box-sizing: border-box;
-    /* Remover el contorno azul al hacer foco */
     outline: none; 
 }
+
 .recovery-form input[type="email"]:focus,
 .recovery-form input[type="password"]:focus {
-    border-bottom: 1px solid #FF66A3; /* Resaltar la línea al enfocar */
+    border-bottom: 1px solid #8B9D6F;
 }
 
-/* 2. Ajuste del Botón (Pequeño, centrado con el input) */
 .btn-primary {
-    display: inline-block; /* Cambiar a inline-block */
-    width: auto; /* Dejar que el ancho lo dé el padding */
+    display: inline-block;
+    width: auto;
     margin-left: 0; 
-    margin-top: 10px; /* Separación del input */
-    
-    padding: 5px 15px; /* Ajustar el padding del botón (más pequeño) */
-    background-color: #F7D5E8; 
+    margin-top: 10px;
+    padding: 5px 15px;
+    background-color: #D9CDB8;
     color: #444444; 
-    border: 1px solid #FF66A3; /* Agregar un borde sutil del color del texto */
+    border: 1px solid #8B9D6F;
     border-radius: 5px; 
-    
-    font-size: 0.9em; /* Hacer la fuente ligeramente más pequeña */
+    font-size: 0.9em;
     font-weight: 400; 
     text-transform: none; 
 }
+
 .btn-primary:hover {
-    background-color: #EFCCFA;
+    background-color: #8B9D6F;
+    color: #FFFFFF;
 }
 
-/* 3. Ajuste de la Etiqueta de Campos Obligatorios */
 .required-fields {
-    font-family: 'Spectral', serif;
-    font-size: 0.8em; /* Un poco más pequeño */
-    color: #FF66A3;
+    font-size: 0.8em;
+    color: #8B9D6F;
     margin-top: 15px;
     text-align: left;
+}
+
+.registro-container {
+    background-color: rgba(217, 205, 184, 0.85) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    padding: 35px 50px;
 }

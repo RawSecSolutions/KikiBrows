@@ -1,18 +1,21 @@
-/* css/layout.css */
-/* AQUÍ ESTÁ EL FONDO DINÁMICO, LAS FUENTES Y EL ESTILO DEL NAVBAR */
+/* css/layoutAdmin.css - VERSIÓN FINAL HÍBRIDA */
 
-/* 0. FUentes importadas */
+:root {
+    --primary-color: #8B9D6F;
+    --secondary-color: #B5C49A;
+    --accent-color: #6B7C54;
+    --light-bg: #E8E4D8;
+    --card-bg: #D9CDB8;
+    --text-dark: #333333;
+    --text-grey: #666666;
+    --white: #FFFFFF;
+}
 
-/* Spectral */
-@import url('https://fonts.googleapis.com/css2?family=Spectral:wght@400;700&family=Staatliches&family=Spartan:wght@400;700&display=swap');
-
-/* 1. CONFIGURACIÓN BASE Y FONDO */
 body {
-    font-family: 'Spartan', sans-serif;
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(to right, #5DA369, #F0F2E9, #488C48, #15610A); 
+    background: linear-gradient(to right, #8B9D6F, #B5C49A, #9DAF82, #8B9D6F); 
     background-size: 400% 400%;
     animation: gradient-animation 15s ease infinite;
 }
@@ -23,19 +26,17 @@ body {
     100% { background-position: 0% 50%; }
 }
 
-/* 2. HEADER SUPERIOR (Top Navbar) */
 .top-navbar {
     padding: 0.5px 2%;
-    background-color: #FFFFFF; 
+    background-color: var(--white); 
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .kikibrows-logo {
-    font-family: 'Spectral', serif;
     font-size: clamp(1.5rem, 4vw, 2.2rem);
     font-weight: 700;
     text-align: center;
-    color: #333333;
+    color: var(--text-dark);
     flex-grow: 1; 
 }
 
@@ -44,15 +45,14 @@ body {
     align-items: center; 
     gap: 20px; 
     font-size: 1.2em;
-    color: #555555;
+    color: var(--text-grey);
 }
 
 .top-icons .dropdown .nav-link {
-    color: #555555; 
+    color: var(--text-grey); 
     padding: 0; 
 }
 
-/* Ajustes del Toggle Button (Solo el estilo base) */
 .navbar-toggler.custom-toggler {
     border: none !important; 
     padding: 0; 
@@ -62,22 +62,18 @@ body {
     outline: none !important;
 }
 
-
-/* 3. TIPOGRAFÍA GENERAL (H1, H2, Labels globales) */
 h1 {
-    font-family: 'Spectral', serif;
     font-weight: 400;
     font-size: clamp(1.5rem, 4vw, 2.2rem);
-    color: #333333;
+    color: var(--text-dark);
     padding-bottom: 10px;
     margin-bottom: 30px;
     text-align: center;
 }
 
 h2 {
-    font-family: 'Spectral', serif;
     font-size: clamp(1.1rem, 3vw, 2.0em);
-    color: #666666;
+    color: var(--text-grey);
     font-weight: normal;
     letter-spacing: 1px;
     margin-top: 25px;
@@ -86,8 +82,7 @@ h2 {
 } 
 
 label {
-    font-family: 'Spectral', serif;
     font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-    color: #555555;
+    color: var(--text-grey);
     margin-bottom: 5px;
 }

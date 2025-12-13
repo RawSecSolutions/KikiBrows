@@ -1,12 +1,8 @@
-/* css/transaccionesAdmin.css */
-
-/* 1. Panel de Transacciones */
+/* css/transaccionesAdmin.css - TABLA CAFÉ */
 .transaction-panel {
-    /* Aseguramos que el panel ocupe el máximo espacio disponible */
     padding: 30px; 
 }
 
-/* Estilo del Dropdown de Meses */
 .transaction-header .dropdown-toggle {
     color: var(--text-dark);
     border-color: rgba(0, 0, 0, 0.1);
@@ -19,17 +15,16 @@
     background-color: #eee;
 }
 
-/* 2. Tabla de Transacciones (Escenario 1 y 3) */
 .transaction-table {
     border-radius: 8px;
-    overflow: hidden; /* Importante para el borde en cabecera */
+    overflow: hidden;
     margin-bottom: 0;
 }
 
 .transaction-table thead th {
-    background-color: var(--secondary-color); /* Fondo claro para cabecera */
+    background-color: #D9CDB8;
     color: var(--text-dark);
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     font-size: 0.85rem;
     padding: 1rem 0.75rem;
@@ -42,7 +37,7 @@
 }
 
 .transaction-table tbody tr:hover {
-    background-color: #f9f2fc; /* Hover más pronunciado */
+    background-color: #F5F0E8;
 }
 
 .transaction-table tbody td {
@@ -52,10 +47,9 @@
     color: var(--text-grey);
 }
 
-/* Estilo del botón "ver" */
 .btn-transaction-detail {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: #9DAF82;
+    border-color: #9DAF82;
     color: #FFFFFF;
     font-size: 0.8rem;
     padding: 0.2rem 0.6rem;
@@ -64,12 +58,11 @@
 }
 
 .btn-transaction-detail:hover {
-    background-color: #c98ed3;
-    border-color: #c98ed3;
+    background-color: #8B9D6F;
+    border-color: #8B9D6F;
     color: #FFFFFF;
 }
 
-/* 3. Modal de Detalle (Escenario 2) */
 .detail-modal-content {
     border-radius: 12px;
     padding: 10px 20px 30px 20px;
@@ -77,12 +70,10 @@
 }
 
 .detail-modal-content .modal-title {
-    font-family: 'Spectral', serif;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-dark);
 }
 
-/* Botón de cierre personalizado 'X' */
 .detail-modal-content .custom-close-btn {
     background-color: transparent;
     border: none;
@@ -97,15 +88,13 @@
     opacity: 1;
 }
 
-/* Estilos de los detalles dentro del modal (basado en el diseño) */
 #modal-details {
     line-height: 1.6;
 }
 
 .detail-course {
-    font-family: 'Spectral', serif;
     font-size: 1.15rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-dark);
     margin-bottom: 5px;
 }
@@ -117,12 +106,12 @@
 }
 
 .detail-total .value {
-    font-weight: 700;
-    color: var(--negative-trend); /* Destacando el monto */
+    font-weight: 600;
+    color: #B85C5C;
 }
 
 .detail-info-title {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-dark);
     margin-bottom: 5px;
 }
@@ -142,9 +131,8 @@
     color: var(--text-dark);
 }
 
-/* Estilos de Paginación */
 .pagination .page-link {
-    color: var(--primary-color);
+    color: #8B9D6F;
     border: 1px solid #ccc;
     margin: 0 5px;
     border-radius: 5px;
@@ -155,14 +143,13 @@
     border-color: #eee;
 }
 
-/* Estilo para los botones "Anterior" y "Siguiente" */
 .pagination .page-item:not(.disabled) .page-link {
-    background-color: var(--secondary-color);
-    font-weight: 700;
+    background-color: #E8E4D8;
+    font-weight: 600;
 }
 
 .pagination .page-item:not(.disabled) .page-link:hover {
-    background-color: var(--primary-color);
+    background-color: #8B9D6F;
     color: #FFFFFF;
-    border-color: var(--primary-color);
+    border-color: #8B9D6F;
 }

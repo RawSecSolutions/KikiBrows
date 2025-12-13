@@ -1,69 +1,48 @@
-/* css/estiloTabla.css */
-
-/* 1. CARD PRINCIPAL Y TÍTULO DE SECCIÓN */
+/* css/estiloTabla.css - PALETA VERDE KIKIBROWS */
 .main-card-ui {
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(239, 204, 250, 0.5); /* Sombra suave y borde rosa pálido */
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(181, 196, 154, 0.5);
     padding: 3rem;
-    overflow-x: hidden; /* Oculta el scroll horizontal */
-    max-height: 80vh; /* Límite de altura para el contenedor de la tabla */
-    overflow-y: hidden; /* Se maneja con el scroll simulado */
+    overflow-x: hidden;
+    max-height: 80vh;
+    overflow-y: hidden;
 }
 
-/* ... (Resto de la Sección 1 se mantiene) ... */
-
-/* 2. BARRA DE HERRAMIENTAS (Búsqueda y Ordenamiento) */
-/* ... (Se mantiene) ... */
-
-/* 3. ESTRUCTURA Y ESTILO DE LA TABLA (HEADER Y FILAS) */
-/* ... (Se mantiene) ... */
-
-/* 4. FILAS DE SKELETON */
-/* ... (Se mantiene) ... */
-
-/* 5. BARRA DE SCROLL SIMULADA */
-/* ... (Se mantiene) ... */
-
-/* 6. BOTÓN FLOTANTE "Crear Usuario" */
 .create-user-btn {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background-color: #efccfa; /* Rosa fuerte */
+    background-color: #8B9D6F;
     color: #ffffff;
     border: none;
     border-radius: 50px;
     padding: 10px 20px;
     font-size: 1rem;
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(239, 204, 250, 0.6);
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(139, 157, 111, 0.6);
     transition: all 0.3s ease;
     z-index: 100;
 }
 
 .create-user-btn:hover {
-    background-color: #e8d8e9; /* Rosa un poco más oscuro */
-    color: #333333;
-    box-shadow: 0 6px 20px rgba(239, 204, 250, 0.8);
+    background-color: #6B7C54;
+    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(107, 124, 84, 0.8);
     transform: translateY(-2px);
 }
 
-/* 7. ESTILOS DEL CARD ALERT (POPUP MODAL) */
-
-/* Fondo del modal más transparente y suave */
 .modal-backdrop.fade.show {
     opacity: 0.2;
 }
 
 .card-alert-ui {
     border-radius: 15px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px #f2e6f2; /* Sombra y borde claro */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 0 0 1px #D4E1C5;
     border: none;
 }
 
 .card-alert-title {
-    font-family: 'Spartan', sans-serif;
-    font-weight: 700;
+    font-weight: 600;
     color: #4a4a4a;
     font-size: 1.8rem;
     padding: 0;
@@ -71,7 +50,6 @@
     text-align: left;
 }
 
-/* Estilo para los inputs y selects dentro del Card Alert */
 .card-alert-input {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
@@ -82,26 +60,24 @@
 }
 
 .card-alert-input:focus {
-    border-color: #efccfa; /* Rosa fuerte al enfocar */
-    box-shadow: 0 0 0 0.25rem rgba(239, 204, 250, 0.25);
+    border-color: #8B9D6F;
+    box-shadow: 0 0 0 0.25rem rgba(139, 157, 111, 0.25);
 }
 
-/* Botón de Guardar (Estilo principal) */
 .card-alert-btn-save {
-    background-color: #efccfa; /* Rosa fuerte */
+    background-color: #8B9D6F;
     border: none;
     color: #ffffff;
-    font-weight: 700;
+    font-weight: 600;
     border-radius: 8px;
     padding: 0.5rem 1.5rem;
     transition: background-color 0.2s;
 }
 .card-alert-btn-save:hover {
-    background-color: #e8d8e9;
-    color: #333333;
+    background-color: #6B7C54;
+    color: #ffffff;
 }
 
-/* Botón de Cancelar (Estilo secundario) */
 .card-alert-btn-cancel {
     background-color: #f8f8f8;
     border: 1px solid #e0e0e0;
@@ -114,7 +90,6 @@
     background-color: #e0e0e0;
 }
 
-/* Ajuste del botón de cerrar */
 .modal .btn-close {
     font-size: 0.8rem;
 }

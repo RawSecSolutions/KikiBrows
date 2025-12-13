@@ -1,13 +1,8 @@
-/* css/revisionesAdmin.css */
-
-/* ---------------------------------------------------- */
-/* 1. SECCIÓN DE REVISIONES (Icono y Tabs) */
-/* ---------------------------------------------------- */
-
+/* css/revisionesAdmin.css - PALETA VERDE KIKIBROWS */
 :root {
-    --badge-pendiente: #ffc107;   /* Amarillo (Advertencia) */
-    --badge-aprobada: #38c172;    /* Verde (Positivo) */
-    --badge-rechazada: #dc3545;   /* Rojo (Negativo) */
+    --badge-pendiente: #D4A04C;
+    --badge-aprobada: #6B9B5C;
+    --badge-rechazada: #B85C5C;
 }
 
 .revisiones-panel {
@@ -19,8 +14,8 @@
     position: absolute;
     top: 20px;
     left: 20px;
-    background-color: var(--secondary-color); 
-    color: var(--primary-color); 
+    background-color: #D4E1C5;
+    color: #8B9D6F;
     width: 45px;
     height: 45px;
     border-radius: 10px;
@@ -38,7 +33,6 @@
 }
 
 .tab-button {
-    font-family: 'Spartan', sans-serif;
     font-size: 1rem;
     padding: 8px 20px;
     border: none;
@@ -47,44 +41,40 @@
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
     cursor: pointer;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .tab-button.active {
     color: var(--text-dark);
-    border-bottom: 2px solid var(--primary-color);
-    background-color: var(--secondary-color); 
+    border-bottom: 2px solid #8B9D6F;
+    background-color: #D4E1C5;
     border-radius: 8px 8px 0 0;
 }
-
-/* ---------------------------------------------------- */
-/* 2. TABLA DE REVISIONES (Header y Filas) */
-/* ---------------------------------------------------- */
 
 .revision-table-container {
     padding: 0 10px;
     overflow-x: auto; 
 }
 
-/* Header de la Tabla */
 .table-header {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-grey);
     font-size: 0.95rem;
     padding: 10px 0;
     margin-bottom: 10px !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
+
 .table-header > div {
     padding: 0 10px;
 }
+
 .col-id {
     max-width: 40px; 
     min-width: 40px;
     text-align: center;
 }
 
-/* Filas de la Tabla (Enlaces clickeables) */
 .table-row {
     display: flex;
     align-items: center;
@@ -108,7 +98,6 @@
     text-overflow: ellipsis;
 }
 
-/* Badges de Estado (Escenario 8) */
 .badge-status {
     padding: 5px 10px;
     border-radius: 50px;
@@ -116,26 +105,24 @@
     font-size: 0.75rem;
     display: inline-block;
 }
+
 .badge-status.pendiente {
     background-color: var(--badge-pendiente);
-    color: var(--text-dark);
+    color: #FFFFFF;
 }
+
 .badge-status.aprobada {
     background-color: var(--badge-aprobada);
-    color: #ffffff;
+    color: #FFFFFF;
 }
+
 .badge-status.rechazada {
     background-color: var(--badge-rechazada);
-    color: #ffffff;
+    color: #FFFFFF;
 }
 
-
-/* ---------------------------------------------------- */
-/* 3. MODAL DE REVISIÓN */
-/* ---------------------------------------------------- */
-
 .video-placeholder {
-    height: 400px; /* Tamaño del reproductor */
+    height: 400px;
     background-color: #f0f0f0;
     border-radius: 10px;
     display: flex;
@@ -146,27 +133,27 @@
     font-size: 1.5rem;
     margin-bottom: 20px;
 }
+
 .video-placeholder i {
     font-size: 4rem;
     margin-bottom: 10px;
     color: var(--text-grey);
 }
 
-/* Asegura que los campos de formulario sigan el estilo */
 #feedbackArea,
 #calificacionDropdown {
     border-radius: 8px;
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo del botón de Calificar */
 .btn-calificar {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: #8B9D6F;
+    border-color: #8B9D6F;
     transition: background-color 0.2s;
-    font-weight: 700;
+    font-weight: 600;
 }
+
 .btn-calificar:hover {
-    background-color: #c499c0;
-    border-color: #c499c0;
+    background-color: #6B7C54;
+    border-color: #6B7C54;
 }
