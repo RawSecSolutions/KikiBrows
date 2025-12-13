@@ -12,7 +12,7 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(to right, #D9B3D6, #F2E6F2, #E8D8E9, #EFCCFA); 
+    background: linear-gradient(to right, #5DA369, #F0F2E9, #488C48, #15610A); 
     background-size: 400% 400%;
     animation: gradient-animation 15s ease infinite;
 }
