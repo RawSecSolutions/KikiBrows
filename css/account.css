@@ -1,57 +1,83 @@
-/* css/account.css - PALETA VERDE KIKIBROWS */
+/* css/account.css - ESTILO UNIFICADO (CARDS + INPUTS) */
+
 .account-section {
     padding: 20px 0;
 }
 
+/* --- ESTILOS DE LA TARJETA (Igual al Login) --- */
 .account-card {
-    background-color: #FFFFFF;
-    border: 1px solid #e0e0e0;
+    background-color: rgba(217, 205, 184, 0.99) !important; /* Beige Transparente */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    
+    border: none; 
     min-height: 200px;
+    padding: 25px; 
+    transition: transform 0.3s ease;
 }
 
+.account-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Tipografía de la tarjeta */
 .account-card h2 {
-    font-size: clamp(1rem, 2.5vw, 1.8em);
-    color: #444444;
-    font-weight: 700;
+    font-size: clamp(1rem, 2.5vw, 1.6em);
+    color: #333333; 
+    font-weight: 600;
     text-align: left;
     margin-top: 0;
     margin-bottom: 20px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1); 
 }
 
 .info-content p {
     font-size: 0.95rem;
-    color: #666666;
+    color: #444444; 
     margin-bottom: 5px;
 }
 
+.info-content strong {
+    color: #6B7C54; 
+}
+
+/* Footer de acciones */
 .card-footer-actions {
     margin-top: 20px;
     padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
     font-size: 0.9rem;
+    display: flex;
+    gap: 15px;
 }
 
 .card-footer-actions a {
-    color: #8B9D6F;
+    color: #8B9D6F; 
     text-decoration: none;
+    font-weight: 600;
     transition: color 0.2s;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
 }
 
 .card-footer-actions a:hover {
-    color: #6B7C54;
+    color: #333333; 
 }
 
+/* Botones */
 .custom-btn-guardar {
     background-color: #8B9D6F;
     border-color: #8B9D6F;
     color: #FFFFFF;
     font-weight: 600;
     letter-spacing: 0.5px;
-    transition: background-color 0.3s, border-color 0.3s;
+    padding: 8px 20px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 
 .custom-btn-guardar:hover {
@@ -60,10 +86,36 @@
 }
 
 .cancel-btn {
-    color: #6c757d !important; 
+    color: #666666 !important; 
     text-decoration: none;
 }
 
 .cancel-btn:hover {
     color: #333333 !important;
+}
+
+/* --- NUEVO: ESTILOS DE INPUTS (Igual al Login) --- */
+
+/* 1. Estado Normal: Semi-transparente ("Cafesito") */
+.account-card .form-control {
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.6) !important; /* Deja ver el color de la card */
+    border: 1px solid #CCCCCC; /* Borde gris suave */
+    color: #333333;
+    transition: all 0.3s ease;
+}
+
+/* 2. Estado Focus (Al hacer click): Se vuelve blanco */
+.account-card .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.9) !important; /* Casi blanco puro */
+    box-shadow: none; 
+    border-color: #8B9D6F; /* Borde verde al escribir */
+    color: #000;
+}
+
+/* Corrección para inputs deshabilitados (como el correo a veces) */
+.account-card .form-control:disabled, 
+.account-card .form-control[readonly] {
+    background-color: rgba(255, 255, 255, 0.3) !important; /* Más transparente si no se puede editar */
+    opacity: 1;
 }
