@@ -1,12 +1,12 @@
 // js/componentes.js
 
 const navbarHTML = `
-    <div class="top-navbar container-fluid d-flex justify-content-between align-items-center">
+    <div class="top-navbar container-fluid d-flex justify-content-between align-items-center position-relative py-2">
         <div class="top-left d-none d-lg-block"></div>
         <button class="navbar-toggler custom-toggler d-lg-none border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
             <i class="fas fa-bars text-dark fs-2"></i>
         </button>
-        <div class="kikibrows-logo">KIKIBROWS</div>
+        <div class="kikibrows-logo position-absolute start-50 translate-middle-x">KIKIBROWS</div>
         <div class="top-icons">
             <div class="dropdown">
                 <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -18,11 +18,10 @@ const navbarHTML = `
                     <li><a class="dropdown-item" href="#">Cerrar Sesión</a></li>
                 </ul>
             </div>
-            <i class="fas fa-shopping-cart"></i>
         </div>
     </div>
 
-    <nav class="navbar navbar-expand-lg main-navbar">
+    <nav class="navbar navbar-expand-lg main-navbar py-1">
         <div class="container-fluid">
             <div class="collapse navbar-collapse" id="navbarContenido">
                 <ul class="navbar-nav mb-2 mb-lg-0 gap-1 gap-lg-5">

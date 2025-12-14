@@ -2,10 +2,7 @@
    css/fonts.css - CONFIGURACIÓN CENTRALIZADA DE FUENTES KIKIBROWS
    ============================================================================ */
 
-/* 1. IMPORTACIÓN DE SPECTRAL (Google Fonts) */
-@import url('https://fonts.googleapis.com/css2?family=Spectral:wght@400;700&display=swap');
-
-/* 2. TEACHERS - SOLO REGULAR Y SEMIBOLD */
+/* 1. TEACHERS - DEFINICIÓN DE FUENTES LOCALES */
 @font-face {
     font-family: 'Teachers';
     src: url('../fonts/Teachers/Teachers-Regular.woff2') format('woff2'),
@@ -24,16 +21,8 @@
     font-display: swap;
 }
 
-/* 3. APLICACIÓN GLOBAL */
+/* 2. APLICACIÓN GLOBAL */
+/* Esto asegura que H1, H2, el logo y el menú usen Teachers automáticamente */
 body {
     font-family: 'Teachers', sans-serif;
-}
-
-/* 4. SPECTRAL SOLO PARA TÍTULOS Y LOGO */
-h1,
-h2,
-label,
-.kikibrows-logo,
-.main-navbar .nav-link {
-    font-family: 'Spectral', serif;
 }
