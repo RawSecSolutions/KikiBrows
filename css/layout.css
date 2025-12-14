@@ -76,7 +76,8 @@ body {
 }
 
 .main-navbar .navbar-nav {
-    max-width: 900px;
+    /* CAMBIO: Reducimos el ancho máximo para que coincida con la tarjeta de login */
+    max-width: 700px; 
     margin: 0 auto;        
     justify-content: center; 
     width: 100%;
@@ -101,15 +102,17 @@ body {
     .main-navbar .nav-item.separator {
         position: relative;
     }
+    
     .main-navbar .nav-item.separator::before {
         content: '';
         position: absolute;
-        left: -1.5rem; 
+        /* CAMBIO: Ajustado a -0.75rem (mitad de gap-4) para centrar la línea */
+        left: -0.75rem; 
         top: 50%;
         transform: translateY(-50%);
-        width: 2px;
-        height: 20px;
-        background-color: rgba(0, 0, 0, 0.1); 
+        width: 1px; /* Lo hice un poco más fino para elegancia, puedes volver a 2px si prefieres */
+        height: 18px;
+        background-color: rgba(0, 0, 0, 0.2); 
     }
 }
 
