@@ -17,45 +17,55 @@
         <h1 class="text-center mb-4">Mi Cuenta</h1>
 
         <div id="dashboard-view">
-            <div class="row g-4"> <div class="col-lg-6">
-                    <div class="account-card p-4 h-100"> <h2>Información de la cuenta</h2>
-                        <div class="info-content">
+            <div class="row g-4"> 
+                
+                <div class="col-lg-6">
+                    <div class="account-card p-4 h-100 d-flex flex-column"> 
+                        <h2>Información de la cuenta</h2>
+                        <div class="info-content flex-grow-1">
                             <p><strong>Nombre:</strong> Daniela Candi</p>
                             <p><strong>Correo:</strong> correo@correo.com</p>
                         </div>
-                        <div class="card-footer-actions mt-auto"> <a href="#" class="edit-btn" onclick="openSimpleEdit(event)">Editar</a> | <a href="#">Cambiar Contraseña</a>
+                        <div class="card-footer-actions mt-auto"> 
+                            <a href="#" class="edit-btn" onclick="openSimpleEdit(event)">Editar</a> | <a href="#">Cambiar Contraseña</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="account-card p-4 h-100">
+                    <div class="account-card p-4 h-100 d-flex flex-column">
                         <h2>Historial de compras</h2>
-                        <div class="info-content">
+                        <div class="info-content flex-grow-1">
                             <p><strong>Transacciones realizadas</strong></p>
                             <p class="mb-1">Curso Microblading 1 | $89.990 CLP</p>
                             <a href="#">Ver todos</a>
                         </div>
-                    </div>
+                        </div>
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="account-card p-4 h-100">
-                        <h2>Métodos de pago</h2>
-                        <div class="info-content">
-                            <p>Información de facturación</p>
-                            <p class="text-muted fst-italic">Ningún método de pago guardado.</p>
+                    <div class="account-card p-4 h-100 d-flex flex-column">
+                        <h2>Mis Certificados</h2>
+                        
+                        <div class="info-content flex-grow-1">
+                            <p class="mb-2">Accede a los diplomas de tus cursos completados.</p>
+                            
+                            <div class="d-flex align-items-center text-muted mt-3">
+                                <i class="fa-solid fa-graduation-cap me-2 fs-5"></i>
+                                <span class="fst-italic">Aún no tienes certificados disponibles.</span>
+                            </div>
                         </div>
+
                         <div class="card-footer-actions mt-auto">
-                            <a href="#">Editar</a> | <a href="#">Eliminar</a>
+                            <a href="#">Ver historial</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="account-card p-4 h-100">
+                    <div class="account-card p-4 h-100 d-flex flex-column">
                         <h2>Direcciones</h2>
-                        <div class="info-content">
+                        <div class="info-content flex-grow-1">
                             <p>Información de ubicación y dirección de facturación</p>
                             <p class="text-muted fst-italic">Ninguna dirección guardada.</p>
                         </div>
