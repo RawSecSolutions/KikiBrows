@@ -1,0 +1,56 @@
+/* css/FormularioCreaCurso.css - Estilos específicos del formulario */
+
+/* Utiliza las variables definidas en layout.css y dashboardAdmin.css */
+
+.FormularioCard {
+    background-color: var(--card-bg); 
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.seccion-titulo {
+    font-size: 1.5rem;
+    font-weight: 600; 
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.btn-kikibrows {
+    background-color: var(--primary-color); 
+    border-color: var(--primary-color);
+    color: var(--white);
+    font-weight: 600;
+    padding: 10px 20px;
+    transition: background-color 0.3s;
+}
+
+.btn-kikibrows:hover {
+    background-color: var(--accent-color); 
+    border-color: var(--accent-color);
+    color: var(--white);
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid var(--secondary-color);
+}
+
+.modulo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.modulo-item .btn-remove {
+    color: var(--text-grey);
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    line-height: 1;
+}
