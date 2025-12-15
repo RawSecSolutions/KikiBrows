@@ -1,0 +1,274 @@
+/* css/gestorCursos.css */
+
+/* Variables de color de Kikibrows (tomadas de layoutAdmin.css y dashboardAdmin.css) */
+:root {
+    --primary-color: #8B9D6F; /* Verde Principal */
+    --secondary-color: #B5C49A; /* Verde Secundario */
+    --accent-color: #6B7C54; /* Verde Oscuro/Acento */
+    --light-bg: #E8E4D8; /* Fondo Claro */
+    --card-bg: #FFFFFF; /* Fondo de tarjeta (usado en dashboardAdmin.css) */
+    --text-dark: #333333;
+    --text-grey: #666666;
+    --border-color: rgba(139, 157, 111, 0.4); /* Variante transparente de primary-color */
+    --pink-light: #F8F5F1; /* Simulación de color muy claro para fondo de tarjetas si no es blanco */
+}
+
+/* Estilo para las tarjetas de contenido (usamos la clase de dashboardAdmin.css) */
+.content-card {
+    background: var(--card-bg); /* Fondo de la tarjeta: Blanco */
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    /* El degradado sutil de la imagen de diseño lo daremos en el fondo general */
+    background: linear-gradient(135deg, var(--card-bg) 90%, var(--pink-light) 100%);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-subtitle-admin {
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    color: var(--primary-color); 
+    font-weight: 600;
+    margin-bottom: 25px;
+    letter-spacing: normal;
+}
+
+/* Estilos para Inputs y Textareas */
+.input-kikibrows {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    color: var(--text-dark);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-kikibrows:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(139, 157, 111, 0.25); /* Sombra suave con primary-color */
+}
+
+/* Botón Confirmar */
+.btn-confirmar {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    font-size: 0.95rem;
+}
+
+.btn-confirmar:hover {
+    background-color: var(--accent-color);
+}
+
+/* Botón Cancelar */
+.btn-cancelar {
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--text-grey);
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: background-color 0.2s, border-color 0.2s;
+    font-size: 0.95rem;
+}
+
+.btn-cancelar:hover {
+    background-color: var(--card-bg);
+    border-color: var(--text-dark);
+}
+
+/* Estilo para la visualización del input de archivo (Multimedia) */
+.file-input-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--light-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.file-input-display:hover {
+    background-color: var(--secondary-color);
+}
+
+.file-name {
+    color: var(--text-dark);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-grow: 1;
+}
+
+.edit-icon {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    margin-left: 10px;
+}
+
+/* Estilos para Módulos */
+
+/* Botón "Añadir módulo" */
+.btn-add-module {
+    background-color: var(--secondary-color);
+    color: var(--text-dark);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.btn-add-module:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+/* Ítems de la lista de módulos */
+.module-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--light-bg); /* Fondo gris claro como el diseño */
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.module-item:hover {
+    background-color: var(--secondary-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.module-actions i {
+    cursor: pointer;
+    margin-left: 15px;
+    transition: color 0.2s;
+}
+
+.edit-icon {
+    color: var(--primary-color); /* Color de Edición (verde) */
+}
+
+.edit-icon:hover {
+    color: var(--accent-color);
+}
+
+.delete-icon {
+    color: #B85C5C; /* Color de Eliminar (rojo suave) */
+}
+
+.delete-icon:hover {
+    color: #9C4545;
+}
+
+.reorder-icon {
+    color: var(--text-grey);
+    cursor: grab; /* Indica que es arrastrable (Escenario 4) */
+}
+
+/* Modal/Formulario de Módulo (Controla Escenarios 1 y 2) */
+.module-form-modal {
+    display: none; /* Inicialmente oculto */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 450px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    z-index: 1010; 
+    border: 3px solid var(--primary-color); /* Resalta el modal */
+}
+
+.module-form-modal.visible {
+    display: block;
+}
+
+#module-form-title {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 767.98px) {
+    .content-card {
+        padding: 20px;
+    }
+    .module-item {
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+    }
+    .module-actions i {
+        margin-left: 10px;
+    }
+}
+
+/* Estilos para la "Página 2 / 3" del diseño UX (simulando paginación) */
+.pagination-controls {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    background: rgba(255, 255, 255, 0.9);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.pagination-controls .page-info {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+}
+
+.pagination-controls button {
+    background: var(--light-bg);
+    border: 1px solid var(--text-grey);
+    color: var(--text-dark);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.pagination-controls button:hover {
+    background: var(--secondary-color);
+    border-color: var(--primary-color);
+}
+
+.pagination-controls .zoom-btn {
+    font-size: 1.2rem;
+}
+
+.pagination-controls .zoom-btn.active {
+    background: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+}
