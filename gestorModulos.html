@@ -35,58 +35,58 @@
                 Gestor de Cursos
             </a>
             <a href="#" class="nav-item">
+                <i class="fas fa-box"></i>
+                Productos
+            </a>
+            <a href="#" class="nav-item">
                 <i class="fas fa-users"></i>
-                Clientes
+                Usuarios
             </a>
             <a href="#" class="nav-item">
-                <i class="fas fa-chart-line"></i>
-                Reportes
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar Sesión
+                <i class="fas fa-cog"></i>
+                Configuración
             </a>
         </div>
     </nav>
-    <div id="main-container" class="d-flex">
-        <div id="dashboard-content">
+
+    <div id="main-container">
+        <div id="dashboard-content" class="container-fluid">
             
-            <div class="dashboard-header d-flex align-items-center mb-4 w-100">
-                <i class="fas fa-chalkboard-teacher fs-3 me-3" style="color: var(--text-dark);"></i>
-                <h1 class="dashboard-title m-0">Gestor de Cursos</h1>
+            <div class="d-flex justify-content-between align-items-center mb-4 w-100">
+                <div>
+                    <h1 class="dashboard-title">Gestor de Cursos</h1>
+                    <p class="dashboard-subtitle">Crea y organiza el contenido de tus cursos profesionales.</p>
+                </div>
+                <button class="btn-confirmar">Publicar Curso <i class="fas fa-rocket ms-2"></i></button>
             </div>
 
-            <form id="course-management-form" class="w-100">
-                
-                <div class="card-container row g-4 mb-4">
-                    
+            <form id="course-manager-form">
+                <div class="row g-4">
                     <div class="col-lg-6">
                         <div class="content-card">
-                            <h2 class="card-subtitle-admin text-start">Información del curso</h2>
+                            <h2 class="card-subtitle-admin text-start">Información General</h2>
                             <div class="mb-3">
-                                <label for="courseName" class="form-label">Nombre</label>
-                                <input type="text" class="form-control input-kikibrows" id="courseName">
+                                <label class="form-label">Título del Curso</label>
+                                <input type="text" class="form-control input-kikibrows" placeholder="Ej: Especialización en Microblading">
                             </div>
                             <div class="mb-3">
-                                <label for="courseDescription" class="form-label">Descripción</label>
-                                <textarea class="form-control input-kikibrows" id="courseDescription" rows="3"></textarea>
+                                <label class="form-label">Descripción</label>
+                                <textarea class="form-control input-kikibrows" rows="4" placeholder="Describe brevemente de qué trata el curso..."></textarea>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="coursePrice" class="form-label">Precio</label>
-                                    <input type="number" class="form-control input-kikibrows" id="coursePrice">
+                                    <label class="form-label">Precio (USD)</label>
+                                    <input type="number" class="form-control input-kikibrows" placeholder="0.00">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="courseDuration" class="form-label">Duración</label>
-                                    <select class="form-select input-kikibrows" id="courseDuration">
-                                        <option selected disabled>Seleccionar</option>
-                                        <option value="1h">1 hora</option>
-                                        <option value="2h">2 horas</option>
+                                    <label class="form-label">Categoría</label>
+                                    <select class="form-select input-kikibrows">
+                                        <option selected disabled>Seleccionar...</option>
+                                        <option>Cejas</option>
+                                        <option>Pestañas</option>
+                                        <option>Labios</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button type="button" class="btn-confirmar">Confirmar <i class="fas fa-check"></i></button>
                             </div>
                         </div>
                     </div>
@@ -94,48 +94,70 @@
                     <div class="col-lg-6">
                         <div class="content-card">
                             <h2 class="card-subtitle-admin text-start">Multimedia</h2>
-                            <div class="mb-3">
-                                <input type="file" id="coverImage" class="d-none">
-                                <div class="file-input-display" data-file-id="nombre_de_archivo_imagen.png">
-                                    <span class="file-name">nombre_de_archivo_imagen.png</span>
+                            
+                            <div class="mb-4">
+                                <label class="form-label d-block">Imagen de Portada</label>
+                                <input type="file" id="coverImage" class="d-none" accept="image/*">
+                                <div class="file-input-display" onclick="document.getElementById('coverImage').click()">
+                                    <span class="file-name" id="cover-name-display">Seleccionar imagen...</span>
                                     <i class="fas fa-pen-square edit-icon"></i>
                                 </div>
-                                <small class="text-muted d-block mt-1">Sube la imagen de portada</small>
                             </div>
-                            <div class="d-flex justify-content-end">
-                                <button type="button" class="btn-confirmar">Confirmar <i class="fas fa-check"></i></button>
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Video Demostrativo (opcional)</label>
+                                <input type="file" id="courseVideo" class="d-none" accept="video/mp4,video/webm">
+                                
+                                <button type="button" class="btn-add-video mb-2" id="btn-add-video">
+                                    Añadir video
+                                </button>
+
+                                <div id="video-display-container" class="d-none">
+                                    <div class="video-input-display">
+                                        <span class="file-name text-white" id="video-name-display">nombre_video.mp4</span>
+                                        <div class="video-actions">
+                                            <i class="fas fa-pen-square edit-icon text-white me-2" id="change-video-btn" title="Cambiar video"></i>
+                                            <i class="fas fa-trash-alt delete-icon text-white" id="delete-video-trigger" title="Eliminar video"></i>
+                                        </div>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 6px; background-color: #e9ecef;">
+                                        <div id="video-progress" class="progress-bar" role="progressbar" style="width: 0%; background-color: #8B9D6F;"></div>
+                                    </div>
+                                    <small class="text-success d-none" id="video-success-msg">
+                                        <i class="fas fa-check-circle"></i> Video subido exitosamente
+                                    </small>
+                                </div>
+
+                                <small id="video-format-hint" class="text-muted d-block mt-1">
+                                    Formatos: MP4, WEBM | Máx: 100MB
+                                </small>
+                                <small id="video-error-msg" class="text-danger d-none"></small>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn-confirmar">Guardar Multimedia <i class="fas fa-save ms-2"></i></button>
                             </div>
                         </div>
                     </div>
 
-                </div>
-
-                <div class="card-container row">
                     <div class="col-12">
                         <div class="content-card">
-                            <h2 class="card-subtitle-admin text-start">Crear y editar módulos</h2>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h2 class="card-subtitle-admin text-start m-0">Estructura del Curso</h2>
+                                <button type="button" class="btn-add-module" id="add-module-btn">
+                                    <i class="fas fa-plus-circle me-2"></i> Nuevo Módulo
+                                </button>
+                            </div>
                             
-                            <button type="button" class="btn-add-module" id="add-module-btn">
-                                <i class="fas fa-plus me-2"></i> Añadir módulo
-                            </button>
-
-                            <div class="module-list mt-3" id="module-list">
-                                
+                            <div id="module-list" class="module-container">
                                 <div class="module-item" data-module-id="1">
-                                    <span class="module-title">Nombre del módulo</span>
-                                    <div class="module-actions">
-                                        <i class="fas fa-pen-square edit-icon" data-action="edit"></i>
-                                        <i class="fas fa-trash-alt delete-icon" data-action="delete"></i>
-                                        <i class="fas fa-grip-vertical reorder-icon"></i>
+                                    <div class="module-info">
+                                        <i class="fas fa-grip-lines drag-handle me-3"></i>
+                                        <span class="module-title">Módulo 1: Introducción a la Técnica</span>
                                     </div>
-                                </div>
-
-                                <div class="module-item" data-module-id="2">
-                                    <span class="module-title">Nombre del módulo</span>
                                     <div class="module-actions">
-                                        <i class="fas fa-pen-square edit-icon" data-action="edit"></i>
-                                        <i class="fas fa-trash-alt delete-icon" data-action="delete"></i>
-                                        <i class="fas fa-grip-vertical reorder-icon"></i>
+                                        <i class="fas fa-edit me-3" data-action="edit"></i>
+                                        <i class="fas fa-trash-alt" data-action="delete"></i>
                                     </div>
                                 </div>
                             </div>
@@ -153,12 +175,22 @@
                                 </div>
                             </div>
 
+                            <div id="delete-video-modal" class="module-form-modal">
+                                <div class="module-form-content text-center" style="max-width: 400px;">
+                                    <i class="fas fa-exclamation-circle text-danger mb-3" style="font-size: 3rem;"></i>
+                                    <h3 class="mb-3">¿Eliminar video?</h3>
+                                    <p class="text-muted mb-4">Esta acción eliminará el video demostrativo permanentemente.</p>
+                                    <div class="d-flex justify-content-between gap-3">
+                                        <button type="button" class="btn-cancelar w-50" id="cancel-delete-video">Cancelar</button>
+                                        <button type="button" class="btn-confirmar bg-danger border-0 w-50" id="confirm-delete-video">Eliminar</button>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
-
             </form>
-            
         </div>
     </div>
 
@@ -166,6 +198,5 @@
     <script src="js/componenteAdmin.js"></script>
     <script src="js/dashboardAdmin.js"></script>
     <script src="js/gestorModulos.js"></script>
-
 </body>
 </html>
