@@ -1,0 +1,502 @@
+/* css/previsualizaCurso.css - Extiende layout.css */
+
+/* ============================================
+   OVERRIDE BODY PARA PREVIEW
+   ============================================ */
+.preview-body {
+    padding-top: 50px; /* Espacio para banner */
+}
+
+/* ============================================
+   BANNER DE PREVISUALIZACIÓN
+   ============================================ */
+.preview-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(90deg, #FF9800, #FFA726);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.preview-banner-content {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+}
+
+.btn-salir-preview {
+    position: absolute;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-salir-preview:hover {
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+.preview-main {
+    padding-bottom: 60px;
+}
+
+.preview-main > .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* ============================================
+   HERO DEL CURSO
+   ============================================ */
+.curso-hero-section {
+    padding: 30px 0 20px;
+}
+
+.hero-wrapper {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+}
+
+.hero-portada {
+    width: 180px;
+    height: 180px;
+    background: rgba(217, 205, 184, 0.85);
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero-portada img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-portada i {
+    font-size: 3rem;
+    color: rgba(102, 102, 102, 0.4);
+}
+
+.hero-info {
+    flex: 1;
+}
+
+.curso-titulo {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+    text-align: left;
+    padding-bottom: 0;
+}
+
+.curso-descripcion {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: var(--text-grey);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ============================================
+   META INFO
+   ============================================ */
+.curso-meta-section {
+    padding: 0 0 20px;
+}
+
+.meta-card {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: rgba(217, 205, 184, 0.85);
+    border-radius: 10px;
+    padding: 15px 20px;
+}
+
+.meta-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.meta-item:last-child {
+    border-right: none;
+}
+
+.meta-label {
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    color: var(--text-grey);
+}
+
+.meta-value {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.badge-estado {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.badge-estado.publicado { background: var(--primary-color); color: #fff; }
+.badge-estado.borrador { background: #9E9E9E; color: #fff; }
+.badge-estado.archivado { background: #E57373; color: #fff; }
+
+/* ============================================
+   MÓDULOS
+   ============================================ */
+.curso-modulos-section {
+    padding: 10px 0;
+}
+
+.modulos-container {
+    width: 100%;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-grey);
+}
+
+/* Módulo Card */
+.modulo-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.modulo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.modulo-header:hover {
+    background: rgba(217, 205, 184, 0.3);
+}
+
+.modulo-titulo {
+    font-size: clamp(0.95rem, 2vw, 1.05rem);
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.modulo-arrow {
+    color: var(--text-grey);
+    transition: transform 0.3s;
+}
+
+.modulo-header.expanded .modulo-arrow {
+    transform: rotate(180deg);
+}
+
+/* Módulo Body */
+.modulo-body {
+    display: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 15px 24px 20px;
+}
+
+.modulo-body.show {
+    display: block;
+}
+
+.modulo-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: var(--text-grey);
+    margin-bottom: 15px;
+}
+
+/* Lista de Clases */
+.clases-list {
+    margin-bottom: 20px;
+}
+
+.clase-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.clase-row:hover {
+    background: rgba(217, 205, 184, 0.4);
+}
+
+.clase-row.active {
+    background: rgba(217, 205, 184, 0.6);
+}
+
+.clase-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.clase-check i {
+    display: none;
+    color: var(--primary-color);
+    font-size: 0.7rem;
+}
+
+.clase-row.completed .clase-check {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+}
+
+.clase-row.completed .clase-check i {
+    display: block;
+    color: #fff;
+}
+
+.clase-nombre {
+    flex: 1;
+    font-size: clamp(0.9rem, 2vw, 0.95rem);
+    color: var(--text-dark);
+}
+
+.clase-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-grey);
+    font-size: 0.85rem;
+}
+
+/* Iconos de tipo */
+.clase-meta i.fa-play-circle { color: #2196F3; }
+.clase-meta i.fa-file-alt { color: #00BCD4; }
+.clase-meta i.fa-file-pdf { color: #F44336; }
+.clase-meta i.fa-question-circle { color: #FF9800; }
+.clase-meta i.fa-upload { color: #4CAF50; }
+
+/* ============================================
+   VISOR DE CONTENIDO
+   ============================================ */
+.contenido-viewer {
+    margin-top: 20px;
+    background: rgba(217, 205, 184, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.video-player {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #888, #666);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.video-player i {
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.preview-notice {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.contenido-texto,
+.contenido-quiz,
+.contenido-entrega {
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+}
+
+.contenido-texto h3,
+.contenido-quiz h3,
+.contenido-entrega h3 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+    text-align: left;
+}
+
+.contenido-texto p {
+    color: var(--text-grey);
+    line-height: 1.7;
+}
+
+.contenido-quiz {
+    text-align: center;
+}
+
+.contenido-quiz i.fa-question-circle {
+    font-size: 3rem;
+    color: #FF9800;
+    margin-bottom: 15px;
+}
+
+.entrega-video-area {
+    background: rgba(217, 205, 184, 0.5);
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.entrega-upload-area {
+    border: 2px dashed rgba(139, 157, 111, 0.5);
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+    color: var(--text-grey);
+}
+
+.btn-disabled {
+    background: rgba(217, 205, 184, 0.85);
+    color: var(--text-grey);
+    padding: 10px 25px;
+    border-radius: 20px;
+    border: none;
+    margin-top: 15px;
+    cursor: not-allowed;
+}
+
+/* Sin módulos */
+.no-modulos {
+    text-align: center;
+    padding: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+}
+
+.no-modulos i {
+    font-size: 3rem;
+    color: rgba(217, 205, 184, 0.8);
+    margin-bottom: 15px;
+}
+
+.no-modulos h3 {
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 992px) {
+    .hero-wrapper {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .hero-portada {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .curso-titulo {
+        text-align: center;
+    }
+    
+    .meta-card {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .meta-item {
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .meta-item:nth-child(3),
+    .meta-item:nth-child(4) {
+        border-bottom: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .preview-banner {
+        height: 45px;
+    }
+    
+    .preview-banner-content {
+        font-size: 0.8rem;
+    }
+    
+    .btn-salir-preview {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        right: 10px;
+    }
+    
+    .preview-body {
+        padding-top: 45px;
+    }
+    
+    .meta-card {
+        grid-template-columns: 1fr;
+    }
+    
+    .meta-item {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .meta-item:last-child {
+        border-bottom: none;
+    }
+    
+    .modulo-header {
+        padding: 15px 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .preview-banner-content span {
+        font-size: 0.7rem;
+    }
+}

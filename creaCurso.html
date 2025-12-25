@@ -3,155 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIKIBROWS - Creación de Cursos (Admin)</title>
+    <title>KIKIBROWS - Creación de Curso</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <link rel="stylesheet" href="css/fonts.css"> 
     <link rel="stylesheet" href="css/layoutAdmin.css">
     <link rel="stylesheet" href="css/dashboardAdmin.css"> 
-    <link rel="stylesheet" href="css/FormularioCreaCurso.css"> 
+    <link rel="stylesheet" href="css/creaCurso.css"> 
 </head>
 <body>
     
     <header id="navbar-global"></header>
 
-    <nav id="sidebar">
-        <div class="profile-section">
-            <div class="profile-pic">
-                <i class="fas fa-user-circle"></i>
-            </div>
-            <div class="profile-info">
-                <div class="user-name">Administrador</div>
-                <small>Ver Perfil</small>
-            </div>
-        </div>
+    <main class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                
+                <!-- Header -->
+                <div class="d-flex align-items-center mb-4">
+                    <a href="gestionCursos.html" class="btn btn-link text-secondary p-0 me-3">
+                        <i class="fas fa-arrow-left fa-lg"></i>
+                    </a>
+                    <div>
+                        <h1 class="page-title mb-0">Gestor de Cursos</h1>
+                    </div>
+                </div>
 
-        <div class="sidebar-nav">
-            <a href="#" class="nav-item">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" class="nav-item active">
-                <i class="fas fa-book"></i>
-                <span>Cursos</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-users"></i>
-                <span>Usuarios</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-chart-line"></i>
-                <span>Reportes</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-cog"></i>
-                <span>Configuración</span>
-            </a>
-        </div>
-    </nav>
-
-    <main id="main-container" class="pb-5">
-        <div class="container-fluid">
-            <h1 class="dashboard-title text-center">Creación de Nuevo Curso</h1>
-            <p class="dashboard-subtitle text-center">Administración de contenido de la plataforma KIKIBROWS</p>
-
-            <div class="FormularioCard">
                 <form id="courseCreationForm">
-                    <div class="mb-4">
-                        <div class="seccion-titulo">1. Información del curso</div>
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <label for="courseName" class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="courseName" placeholder="Escribe el nombre del curso aquí" required>
-                            </div>
-                            <div class="col-md-12">
-                                <label for="courseDescription" class="form-label">Descripción</label>
-                                <textarea class="form-control" id="courseDescription" rows="3" placeholder="Escribe la descripción del curso aquí" required></textarea>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="coursePrice" class="form-label">Precio</label>
-                                <input type="number" class="form-control" id="coursePrice" placeholder="Precio" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="courseOCLP" class="form-label">OCLP</label>
-                                <input type="text" class="form-control" id="courseOCLP" placeholder="OCLP" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="courseDuration" class="form-label">Duración</label>
-                                <select class="form-select" id="courseDuration" required>
-                                    <option value="">Horas</option>
-                                    <option value="1h">1 Hora</option>
-                                    <option value="2h">2 Horas</option>
-                                    <option value="3h">3 Horas</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="seccion-titulo">2. Multimedia</div>
-                        <div class="alert alert-warning d-none" id="imageAlert" role="alert">
-                            ❌ Mustra alert la imagen debe ser menor a 2Mb y formato PNG/JPG/WEBP y permite solo subir una imagen.
-                        </div>
-                        <label for="courseImage" class="form-label">Imagen Principal</label>
-                        <input class="form-control" type="file" id="courseImage" accept=".png, .jpg, .jpeg, .webp">
-                        <small class="form-text text-muted">Tamaño máximo: 2MB. Formatos: PNG, JPG, WEBP.</small>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="seccion-titulo">3. Creación y edición de módulos</div>
-                        <div id="modulosContainer">
-                            <div class="modulo-item" data-modulo-id="1">
-                                <input type="text" class="form-control" placeholder="Nombre del módulo" value="Nombre del modulo 1" required>
-                                <button type="button" class="btn-remove" title="Eliminar módulo">🗑️</button>
-                            </div>
-                            <div class="modulo-item" data-modulo-id="2">
-                                <input type="text" class="form-control" placeholder="Nombre del módulo" value="KIKIBROWS" required>
-                                <button type="button" class="btn-remove" title="Eliminar módulo">🗑️</button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-outline-secondary mt-2" id="addModuloBtn">
-                            ➕ Añadir modulo
-                        </button>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <div class="seccion-titulo">4. Configuración del Carrusel</div>
-                        <div class="row g-3">
-                            <div class="col-md-6 d-flex align-items-center">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="showInCarouselSwitch" checked>
-                                    <label class="form-check-label" for="showInCarouselSwitch">Mostrar en Carrusel</label>
+                    <div class="row g-4">
+                        
+                        <!-- Columna Izquierda: Info del Curso -->
+                        <div class="col-lg-6">
+                            <div class="card-section h-100">
+                                <h2 class="section-title">Información del curso</h2>
+                                
+                                <div class="mb-3">
+                                    <label for="courseName" class="form-label">Nombre</label>
+                                    <input type="text" class="form-control input-kikibrows" id="courseName" 
+                                           placeholder="Escribe el título del curso aquí" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="courseDescription" class="form-label">Descripción</label>
+                                    <textarea class="form-control input-kikibrows" id="courseDescription" rows="4" 
+                                              placeholder="Escribe la descripción del curso aquí" required></textarea>
+                                </div>
+                                
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <label for="coursePrice" class="form-label">Precio</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control input-kikibrows" id="coursePrice" 
+                                                   placeholder="0" required>
+                                            <span class="input-group-text">CLP</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">Duración total</label>
+                                        <div class="duration-display" id="courseDurationDisplay">
+                                            <i class="fas fa-clock me-2"></i>
+                                            <span id="courseDurationText">0 min</span>
+                                        </div>
+                                        <small class="text-muted">Calculada automáticamente</small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="carouselPosition" class="form-label">Posición en Carrusel</label>
-                                <input type="number" class="form-control" id="carouselPosition" placeholder="Posición (1, 2, 3...)" value="1">
-                                <small class="form-text text-muted">Nota: Cambiar la posición reordenará automáticamente otros cursos.</small>
+                        </div>
+
+                        <!-- Columna Derecha: Multimedia del Curso -->
+                        <div class="col-lg-6">
+                            <div class="card-section h-100">
+                                <h2 class="section-title">Multimedia</h2>
+                                
+                                <!-- Imagen de Portada -->
+                                <div class="mb-4">
+                                    <label class="form-label">Añadir portada <span class="text-danger">*</span></label>
+                                    <input type="file" class="d-none" id="courseImage" accept=".png,.jpg,.jpeg,.webp">
+                                    
+                                    <!-- Estado: Sin imagen -->
+                                    <button type="button" class="btn-add-media" id="btnAddImage">
+                                        <i class="fas fa-image me-2"></i>Añadir portada
+                                    </button>
+                                    
+                                    <!-- Estado: Imagen subida -->
+                                    <div class="media-uploaded-display d-none" id="imageUploadedDisplay">
+                                        <div class="media-info">
+                                            <i class="fas fa-image media-icon"></i>
+                                            <span class="media-name" id="imageFileName">nombre_de_archivo_imagen.png</span>
+                                        </div>
+                                        <div class="media-actions">
+                                            <button type="button" class="btn-media-action" id="changeImage" title="Cambiar">
+                                                <i class="fas fa-pen"></i>
+                                            </button>
+                                            <button type="button" class="btn-media-action btn-media-delete" id="deleteImage" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <small class="text-muted d-block mt-1">PNG, JPG, WEBP • Máx 2MB</small>
+                                    
+                                    <!-- Alert de error imagen -->
+                                    <div class="alert alert-danger mt-2 py-2 d-none" id="imageAlert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <span id="imageAlertText">Error</span>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </div>
-                    </div>
 
-                    <div class="text-center mt-5">
-                        <button type="submit" class="btn-kikibrows btn-lg">
-                            ✅ Confirmar
-                        </button>
-                        <div class="alert alert-danger mt-3 d-none" id="incompleteFieldsAlert" role="alert">
-                            🚨 alert Deben rellenar todos los campos
+                        <!-- Sección: Crear y editar módulos -->
+                        <div class="col-12">
+                            <div class="card-section">
+                                <h2 class="section-title">Crear y editar módulos</h2>
+                                
+                                <!-- Botón Añadir módulo -->
+                                <button type="button" class="btn-add-module mb-3" id="addModuloBtn">
+                                    <i class="fas fa-plus me-2"></i>Añadir módulo
+                                </button>
+                                
+                                <!-- Lista de módulos (drag and drop) -->
+                                <div id="modulosContainer" class="sortable-container">
+                                    <!-- Módulo 1 -->
+                                    <div class="modulo-item" data-modulo-id="1" draggable="true">
+                                        <div class="drag-handle" title="Arrastra para reordenar">
+                                            <i class="fas fa-grip-vertical"></i>
+                                        </div>
+                                        <span class="modulo-name">Nombre del módulo</span>
+                                        <a href="gestorModulos.html?id=1" class="btn-modulo-edit" title="Editar contenido del módulo">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Módulo 2 -->
+                                    <div class="modulo-item" data-modulo-id="2" draggable="true">
+                                        <div class="drag-handle" title="Arrastra para reordenar">
+                                            <i class="fas fa-grip-vertical"></i>
+                                        </div>
+                                        <span class="modulo-name">Nombre del módulo</span>
+                                        <a href="gestorModulos.html?id=2" class="btn-modulo-edit" title="Editar contenido del módulo">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Módulo 3 -->
+                                    <div class="modulo-item" data-modulo-id="3" draggable="true">
+                                        <div class="drag-handle" title="Arrastra para reordenar">
+                                            <i class="fas fa-grip-vertical"></i>
+                                        </div>
+                                        <span class="modulo-name">Nombre del módulo</span>
+                                        <a href="gestorModulos.html?id=3" class="btn-modulo-edit" title="Editar contenido del módulo">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
+                        <!-- Sección: Configuración del Carrusel -->
+                        <div class="col-12">
+                            <div class="card-section">
+                                <h2 class="section-title">Configuración del Carrusel</h2>
+                                
+                                <div class="row align-items-center g-3">
+                                    <div class="col-auto">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="showInCarousel">
+                                            <label class="form-check-label" for="showInCarousel">
+                                                Mostrar en Carrusel
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <label for="carouselPosition" class="form-label small mb-0 me-2">Posición en Carrusel</label>
+                                        <input type="number" class="form-control input-kikibrows d-inline-block" 
+                                               id="carouselPosition" placeholder="1" min="1" style="width: 80px;" disabled>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-muted small mt-2 mb-0">
+                                    Nota: Cambiar la posición reordenará automáticamente otros cursos.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Botón Confirmar -->
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end gap-3">
+                                <a href="gestionCursos.html" class="btn btn-outline-secondary px-4">Cancelar</a>
+                                <button type="submit" class="btn-confirmar">
+                                    <i class="fas fa-check me-2"></i>Confirmar
+                                </button>
+                            </div>
+                            
+                            <!-- Alerts -->
+                            <div class="alert alert-danger mt-3 d-none" id="incompleteFieldsAlert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Debes rellenar todos los campos obligatorios
+                            </div>
+                            
+                            <div class="alert alert-success mt-3 d-none" id="successAlert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Curso creado exitosamente
+                            </div>
+                        </div>
+                        
+                    </div>
                 </form>
+
             </div>
         </div>
     </main>
 
+    <!-- Modal: Nombre del módulo -->
+    <div class="modal fade" id="moduleNameModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-kikibrows">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title">Nombre del módulo:</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control input-kikibrows" id="moduleNameInput" 
+                           placeholder="Escribe el nombre">
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-confirmar-sm" id="saveModuleName">Crear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar eliminar imagen -->
+    <div class="modal fade" id="deleteImageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-kikibrows">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                    <h5>¿Eliminar imagen de portada?</h5>
+                    <p class="text-muted small mb-0">Deberás subir una nueva imagen.</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteImage">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/dashboardAdmin.js"></script> 
     <script src="js/componenteAdmin.js"></script> 
-    <script src="js/scripts.js"></script> 
+    <script src="js/creaCurso.js"></script>
 </body>
 </html>

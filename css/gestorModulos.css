@@ -1,137 +1,300 @@
-/* --- ESTILOS EXISTENTES MANTENIDOS --- */
+/* css/gestorModulos.css - Estilos para Edición de Módulo */
+
 :root {
     --primary-color: #8B9D6F;
     --secondary-color: #B5C49A;
     --accent-color: #6B7C54;
-    --light-bg: #E8E4D8;
     --card-bg: #FFFFFF;
     --text-dark: #333333;
     --text-grey: #666666;
-    --border-color: rgba(139, 157, 111, 0.4);
+    --border-color: #e0e0e0;
+    --input-bg: #f8f8f8;
 }
 
-.content-card {
-    background: var(--card-bg);
+/* Layout */
+.page-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Cards */
+.card-section {
+    background: rgba(217, 205, 184, 0.85);
     border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    height: 100%;
-    background: linear-gradient(135deg, #ffffff 0%, #f9fdf5 100%);
-    border: 1px solid rgba(139, 157, 111, 0.1);
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.card-subtitle-admin {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--accent-color);
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-dark);
     margin-bottom: 20px;
+    padding-bottom: 10px;
     border-bottom: 2px solid var(--secondary-color);
-    padding-bottom: 8px;
-    display: inline-block;
 }
 
+/* Inputs */
 .input-kikibrows {
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 10px 15px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    background-color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
 }
 
 .input-kikibrows:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(139, 157, 111, 0.25);
+    box-shadow: 0 0 0 3px rgba(139, 157, 111, 0.15);
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
-.file-input-display {
-    border: 2px dashed var(--border-color);
-    border-radius: 10px;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
+.input-lg {
+    font-size: 1.1rem;
+    padding: 14px 16px;
+    font-weight: 500;
+}
+
+.input-group-text {
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--border-color);
+    border-left: none;
+    color: var(--text-grey);
+}
+
+/* Duration display (calculado automático) */
+.duration-display {
+    display: inline-flex;
     align-items: center;
-    cursor: pointer;
-    background-color: #fafafa;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    font-weight: 500;
 }
 
-.edit-icon { color: var(--primary-color); font-size: 1.4rem; cursor: pointer; }
-.delete-icon { color: #d9534f; font-size: 1.2rem; cursor: pointer; }
+.duration-display i {
+    color: var(--primary-color);
+}
 
-/* --- NUEVOS ESTILOS PARA VIDEO (SEGÚN UX) --- */
+/* Lista de Clases */
+.clase-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    cursor: default;
+}
 
-.btn-add-video {
-    background-color: #1A1A1A; /* Negro/Gris muy oscuro del diseño */
-    color: white;
+.clase-item:hover {
+    border-color: var(--secondary-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.clase-item.dragging {
+    opacity: 0.5;
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clase-item.drag-over {
+    border: 2px dashed var(--primary-color);
+    background: rgba(139, 157, 111, 0.1);
+}
+
+.drag-handle {
+    color: #ccc;
+    cursor: grab;
+    padding: 5px;
+    margin-right: 10px;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+}
+
+.drag-handle:hover {
+    color: var(--text-grey);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.clase-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.clase-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.clase-name {
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.clase-duration {
+    color: var(--text-grey);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    margin-left: auto;
+    padding-right: 10px;
+}
+
+.clase-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-clase-edit {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-clase-edit:hover {
+    background: var(--accent-color);
+}
+
+/* Botón Crear clase */
+.btn-crear-clase {
+    display: inline-flex;
+    align-items: center;
+    background: #1a1a1a;
+    color: #fff;
     border: none;
     padding: 10px 24px;
-    border-radius: 50px;
-    font-weight: 500;
+    border-radius: 25px;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.btn-add-video:hover {
-    background-color: #333;
-    transform: translateY(-1px);
+.btn-crear-clase:hover {
+    background: #333;
 }
 
-.video-input-display {
+/* Grid de tipos de clase */
+.clase-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.clase-type-btn {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    background-color: #1A1A1A; /* Contenedor pill oscuro */
-    border-radius: 50px;
-    padding: 10px 20px;
-}
-
-.video-actions {
-    display: flex;
-    align-items: center;
-}
-
-.module-form-modal {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: none;
     justify-content: center;
-    align-items: center;
-    z-index: 1050;
-}
-
-.module-form-modal.visible { display: flex; }
-
-.module-form-content {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-}
-
-.btn-confirmar {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 8px;
-    font-weight: 600;
-}
-
-.btn-cancelar {
-    background-color: #f8f9fa;
-    color: var(--text-grey);
-    border: 1px solid #ddd;
-    padding: 10px 25px;
-    border-radius: 8px;
-}
-
-/* Módulos listado */
-.module-item {
-    background: #f8fdf5;
-    border: 1px solid var(--border-color);
+    padding: 20px 15px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 2px solid var(--border-color);
     border-radius: 10px;
-    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clase-type-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.clase-type-btn i {
+    font-size: 2rem;
     margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    color: var(--primary-color);
+}
+
+.clase-type-btn span {
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    text-align: center;
+}
+
+/* Botones */
+.btn-confirmar {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-confirmar:hover {
+    background: var(--accent-color);
+}
+
+.btn-confirmar-sm {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-confirmar-sm:hover {
+    background: var(--accent-color);
+}
+
+/* Modal */
+.modal-kikibrows {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-kikibrows .modal-title {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Alerts */
+.alert {
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .card-section {
+        padding: 20px;
+    }
 }

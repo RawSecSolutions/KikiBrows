@@ -1,8 +1,6 @@
 /* css/registrate.css - CARD BEIGE/CAFÉ */
 
 .registro-container {
-    width: 90vw;
-    max-width: 800px;
     margin: 2vh auto;
     background-color: rgba(217, 205, 184, 0.85) !important;
     backdrop-filter: blur(10px);
