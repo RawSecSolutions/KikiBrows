@@ -1,21 +1,14 @@
-/* css/revisionesAdmin.css - PALETA VERDE KIKIBROWS */
-:root {
-    --badge-pendiente: #D4A04C;
-    --badge-aprobada: #6B9B5C;
-    --badge-rechazada: #B85C5C;
-}
+/* css/revisionesAdmin.css - REVISIONES (Paleta Account) */
 
 .revisiones-panel {
-    padding-top: 90px; 
+    /* El padding se controla desde la clase .main-panel en dashboardAdmin.css, 
+       aquí solo ajustes específicos si son necesarios */
     min-height: 80vh;
 }
 
 .view-icon-header {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background-color: #D4E1C5;
-    color: #8B9D6F;
+    background-color: #D4E1C5; /* Verde pastel */
+    color: var(--primary-color);
     width: 45px;
     height: 45px;
     border-radius: 10px;
@@ -25,6 +18,7 @@
     font-size: 1.4rem;
 }
 
+/* Botones tipo Pestaña */
 .tab-buttons {
     display: flex;
     gap: 10px;
@@ -46,33 +40,24 @@
 
 .tab-button.active {
     color: var(--text-dark);
-    border-bottom: 2px solid #8B9D6F;
-    background-color: #D4E1C5;
-    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid var(--primary-color);
+    /* background-color: #D4E1C5; Eliminado fondo para estilo más limpio tipo account */
 }
 
+/* Tabla de revisiones */
 .revision-table-container {
     padding: 0 10px;
-    overflow-x: auto; 
 }
 
 .table-header {
-    font-weight: 600;
-    color: var(--text-grey);
+    font-weight: 700;
+    color: var(--text-dark);
     font-size: 0.95rem;
     padding: 10px 0;
     margin-bottom: 10px !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.table-header > div {
-    padding: 0 10px;
-}
-
-.col-id {
-    max-width: 40px; 
-    min-width: 40px;
-    text-align: center;
+    background-color: #D4E1C5; /* Header verde pastel */
+    border-radius: 6px;
+    padding: 10px;
 }
 
 .table-row {
@@ -80,24 +65,21 @@
     align-items: center;
     text-decoration: none;
     color: var(--text-dark);
-    padding: 12px 0;
+    padding: 12px 10px;
     border-radius: 8px;
     margin-bottom: 8px !important;
-    transition: background-color 0.2s ease;
+    background-color: rgba(255, 255, 255, 0.6); /* Fondo semitransparente */
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .table-row:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
 }
 
-.table-row > div {
-    padding: 0 10px;
-    white-space: nowrap; 
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
+/* Badges */
 .badge-status {
     padding: 5px 10px;
     border-radius: 50px;
@@ -107,53 +89,42 @@
 }
 
 .badge-status.pendiente {
-    background-color: var(--badge-pendiente);
-    color: #FFFFFF;
+    background-color: #FFEeba;
+    color: #856404;
 }
 
 .badge-status.aprobada {
-    background-color: var(--badge-aprobada);
-    color: #FFFFFF;
+    background-color: #D4EDDA;
+    color: #155724;
 }
 
 .badge-status.rechazada {
-    background-color: var(--badge-rechazada);
-    color: #FFFFFF;
+    background-color: #F8D7DA;
+    color: #721C24;
 }
 
-.video-placeholder {
-    height: 400px;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-grey);
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-}
-
-.video-placeholder i {
-    font-size: 4rem;
-    margin-bottom: 10px;
-    color: var(--text-grey);
-}
-
+/* Formulario en Modal */
 #feedbackArea,
 #calificacionDropdown {
     border-radius: 8px;
-    border-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid #CCC;
+    color: #333;
+}
+
+#feedbackArea:focus,
+#calificacionDropdown:focus {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-color: var(--primary-color);
 }
 
 .btn-calificar {
-    background-color: #8B9D6F;
-    border-color: #8B9D6F;
-    transition: background-color 0.2s;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #FFF;
     font-weight: 600;
 }
 
 .btn-calificar:hover {
-    background-color: #6B7C54;
-    border-color: #6B7C54;
+    background-color: var(--accent-color);
 }

@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="css/layoutAdmin.css">
     <link rel="stylesheet" href="css/dashboardAdmin.css"> 
     <link rel="stylesheet" href="css/gestorModulos.css"> 
+
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 </head>
 <body>
     
@@ -274,6 +278,25 @@
                 <div class="modal-footer border-0 justify-content-center pt-0">
                     <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteClase">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="videoPreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-kikibrows bg-black">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white" id="videoPreviewTitle">Vista Previa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="ratio ratio-16x9">
+                        <video id="videoPlayer" controls class="w-100 h-100 rounded">
+                            <source src="" type="video/mp4">
+                            Tu navegador no soporta video HTML5.
+                        </video>
+                    </div>
                 </div>
             </div>
         </div>

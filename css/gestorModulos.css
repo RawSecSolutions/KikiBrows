@@ -298,3 +298,87 @@
         padding: 20px;
     }
 }
+
+
+/* Barra de Progreso de Subida */
+.upload-progress-container {
+    display: none; /* Oculto por defecto */
+    margin-top: 15px;
+    background: rgba(255,255,255,0.5);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+    color: var(--text-dark);
+}
+
+.progress {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: var(--primary-color);
+    transition: width 0.4s ease;
+}
+
+/* Botón de Play en la lista */
+.btn-clase-play {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #fff;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-right: 5px;
+}
+
+.btn-clase-play:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+/* Modal Video Fondo Negro */
+.bg-black {
+    background-color: #000 !important;
+}
+
+/* AGREGAR AL FINAL DE css/gestorModulos.css */
+
+/* Ajustes para el Editor Quill */
+.ql-toolbar.ql-snow {
+    border-color: var(--border-color) !important;
+    background-color: #f8f8f8;
+    border-radius: 8px 8px 0 0;
+}
+
+.ql-container.ql-snow {
+    border-color: var(--border-color) !important;
+    background-color: #fff;
+    border-radius: 0 0 8px 8px;
+    font-family: 'Teachers', sans-serif !important; /* Usar tu fuente */
+    font-size: 1rem;
+}
+
+.ql-editor {
+    min-height: 200px; /* Altura mínima cómoda */
+}
+
+/* Ajuste para que no choque con el modal */
+.modal-body {
+    overflow-y: auto; /* Asegurar scroll si el editor crece */
+}

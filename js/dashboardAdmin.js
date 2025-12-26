@@ -1,41 +1,56 @@
-// js/dashboardAdmin.js - Lógica de Toggle Bar (Menú Burger)
+// js/dashboardAdmin.js - Lógica del Sidebar y Backdrop
 
 document.addEventListener('DOMContentLoaded', () => {
 
     const sidebar = document.getElementById('sidebar');
-    // ID del botón de toggle en el Top Navbar
-    const sidebarToggler = document.getElementById('sidebar-toggle-btn'); 
-
-    // Función de Toggle para el Sidebar
+    // El botón se crea dinámicamente, así que usamos delegación o lo buscamos después
+    // El backdrop también se crea en componenteAdmin.js
+    
+    // Función para alternar el menú
     function toggleSidebar() {
+        const backdrop = document.getElementById('mobile-backdrop');
+        
         if (sidebar) {
             sidebar.classList.toggle('open');
+            
+            // Manejar el backdrop si estamos en móvil
+            if (backdrop) {
+                if (sidebar.classList.contains('open')) {
+                    backdrop.classList.add('show');
+                } else {
+                    backdrop.classList.remove('show');
+                }
+            }
         }
     }
 
-    // Listener para el botón de toggle (burger)
-    if (sidebarToggler) {
-        sidebarToggler.addEventListener('click', (e) => {
-            e.stopPropagation(); // Evita que el evento se propague al document click
-            toggleSidebar();
-        });
-    }
-    
-    // Cerrar el sidebar si se hace clic fuera de él (Solo en móvil)
+    // Listener global para el botón hamburguesa (ya que se inyecta dinámicamente)
     document.addEventListener('click', (e) => {
-        // Usamos 992px como breakpoint (coincide con Bootstrap lg)
-        if (window.innerWidth < 992 && sidebar && sidebar.classList.contains('open') && 
-            !sidebar.contains(e.target) && !sidebarToggler.contains(e.target)) {
-            
-            // Cerrar el sidebar
-            sidebar.classList.remove('open');
+        const toggleBtn = e.target.closest('#sidebar-toggle-btn');
+        
+        if (toggleBtn) {
+            e.stopPropagation();
+            toggleSidebar();
         }
     });
 
-    // Cierre del sidebar si se cambia el tamaño de la ventana de móvil a escritorio
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 992 && sidebar && sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
+    // Cerrar sidebar al hacer clic en el backdrop (fuera del menú)
+    document.addEventListener('click', (e) => {
+        const backdrop = document.getElementById('mobile-backdrop');
+        
+        // Si el clic fue en el backdrop
+        if (e.target === backdrop) {
+            if (sidebar) sidebar.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('show');
+        }
+    });
+
+    // Resetear clases si la pantalla cambia de tamaño (de móvil a escritorio)
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 992) {
+            const backdrop = document.getElementById('mobile-backdrop');
+            if (sidebar) sidebar.classList.remove('open'); // Opcional: remover open o dejarlo
+            if (backdrop) backdrop.classList.remove('show');
         }
     });
 

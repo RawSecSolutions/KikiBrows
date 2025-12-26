@@ -1,255 +1,71 @@
-/* css/calendarAdmin.css - PALETA VERDE KIKIBROWS */
+/* css/calendarAdmin.css */
+
 .calendar-admin-card {
     min-height: 80vh;
 }
 
-.calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-}
-
-.calendar-title-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.calendar-title-group i {
-    font-size: 1.8rem;
-    color: #8B9D6F;
-}
-
-.calendar-title-group .dashboard-title {
-    margin: 0;
-    padding: 0;
-    text-align: left;
-}
-
-.add-slot-btn {
-    background-color: #8B9D6F !important;
-    border-color: #8B9D6F !important;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: background-color 0.2s;
-}
-
-.add-slot-btn:hover {
-    background-color: #6B7C54 !important;
-    border-color: #6B7C54 !important;
-}
-
-.calendar-tabs {
-    border-bottom: none;
-    margin-bottom: 20px;
-}
-
-.calendar-tabs .nav-link {
-    border: none;
-    border-radius: 50px;
-    padding: 8px 20px;
-    margin-right: 10px;
-    font-weight: 600;
-    color: var(--text-grey);
-    background-color: #f7f7f7;
-    transition: all 0.2s;
-}
-
-.calendar-tabs .nav-link.active {
-    background-color: #8B9D6F;
-    color: #FFFFFF;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.calendar-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 10px;
-}
-
+/* Tabla */
 .calendar-table th {
-    color: var(--text-grey);
-    font-weight: 600;
-    padding: 10px 15px;
-    border-bottom: 2px solid #f0f0f0;
-    text-align: left;
+    background-color: #D4E1C5;
+    color: #333;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 15px;
+    border: none;
 }
+.calendar-table th:first-child { border-radius: 8px 0 0 8px; }
+.calendar-table th:last-child { border-radius: 0 8px 8px 0; }
 
 .calendar-table td {
-    background-color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.6);
+    vertical-align: middle;
     padding: 15px;
-    border-top: 1px solid #f0f0f0; 
-    border-bottom: 1px solid #f0f0f0;
-    color: var(--text-dark);
 }
 
-.calendar-table tbody tr {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.2s;
-}
-
-.calendar-table tbody tr:hover {
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-}
-
-.calendar-table tbody tr td:first-child {
-    border-left: 5px solid #8B9D6F;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-}
-
-.calendar-table tbody tr td:last-child {
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-align: center;
-}
-
-.status-badge.available {
-    background-color: #e6f5ed; 
-    color: #6B9B5C;
-}
-
-.status-badge.full {
-    background-color: #fff4e6; 
-    color: #D4A04C;
-}
-
-.status-badge.cancelled {
-    background-color: #ffe6e6; 
-    color: #B85C5C;
-}
-
-.status-badge.completed {
-    background-color: #e6f3f7; 
-    color: #5C8B9B;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 5px;
-}
-
-.action-buttons .btn-icon {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.9rem;
-    border-radius: 50%;
+/* Botones de acción redondos */
+.btn-icon {
+    width: 32px;
+    height: 32px;
     padding: 0;
-}
-
-.action-buttons .btn-edit {
-    color: #FFFFFF;
-    background-color: #8B9D6F;
-}
-.action-buttons .btn-delete {
-    color: #FFFFFF;
-    background-color: #B85C5C;
-}
-
-.table-info-footer {
-    text-align: right;
-    margin-top: 15px;
-    padding-top: 10px;
-    font-size: 0.85rem;
-    color: var(--text-grey);
-    border-top: 1px solid #f0f0f0;
-}
-
-.delete-confirm-modal .modal-content {
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-.delete-confirm-modal .modal-body {
-    text-align: center;
-    padding: 30px 20px 0 20px;
-    font-size: 1.1rem;
-    color: var(--text-dark);
-}
-.delete-confirm-modal .modal-footer {
-    border-top: none;
-    padding: 20px 20px 30px 20px;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    gap: 15px;
+    border-radius: 50%;
+    transition: transform 0.2s;
 }
-.delete-confirm-modal .btn-cancel {
-    background-color: #f0f0f0;
-    color: var(--text-dark);
-    border: none;
-    font-weight: 600;
-}
-.delete-confirm-modal .btn-confirm-delete {
-    background-color: #B85C5C;
-    border: none;
-    font-weight: 600;
+.btn-icon:hover {
+    transform: scale(1.1);
 }
 
-.create-slot-modal {
-    background-color: #333333; 
-    color: #FFFFFF;
+/* Modales Personalizados (Beige) */
+.modal-content.account-card {
+    background-color: rgba(217, 205, 184, 0.98) !important;
     border-radius: 12px;
-    border: none;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-.create-slot-modal .modal-header {
-    border-bottom: 1px solid #444444;
+.modal-header {
+    border-color: rgba(0,0,0,0.1) !important;
 }
 
-.create-slot-modal .modal-title {
-    color: #FFFFFF;
-    font-weight: 600;
+.modal-title {
+    color: #333;
 }
 
-.create-slot-modal .btn-close {
-    filter: invert(1);
-    opacity: 0.8;
+/* Inputs en Modal */
+.modal-body .form-control {
+    border: 1px solid #ccc;
+    color: #333;
+}
+.modal-body .form-control:focus {
+    background-color: #fff !important;
+    border-color: #8B9D6F;
+    box-shadow: 0 0 0 0.25rem rgba(139, 157, 111, 0.25);
 }
 
-.create-slot-modal label {
-    color: #cccccc; 
-}
-
-.create-slot-modal .form-control {
-    background-color: #444444; 
-    border: 1px solid #555555;
-    color: #FFFFFF;
-}
-
-.create-slot-modal .form-control:focus {
-    background-color: #555555;
-    box-shadow: 0 0 0 0.25rem rgba(139, 157, 111, 0.5); 
-}
-
-.create-slot-modal .modal-footer {
-    border-top: 1px solid #444444;
-}
-
-.create-slot-modal .btn-primary {
-    background-color: #8B9D6F !important;
-    border-color: #8B9D6F !important;
-    font-weight: 600;
-}
-
-.create-slot-modal .btn-secondary {
-    background-color: #555555;
-    border: none;
-    color: #FFFFFF;
-    font-weight: 600;
+/* Tabla dentro del Modal */
+#detail-students-list td {
+    font-size: 0.9rem;
+    background-color: #fff;
 }
