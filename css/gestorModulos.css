@@ -382,3 +382,38 @@
 .modal-body {
     overflow-y: auto; /* Asegurar scroll si el editor crece */
 }
+
+/* AGREGAR AL FINAL DE css/gestorModulos.css */
+
+/* Estilos para el Constructor de Quiz (H4.4) */
+.quiz-question-card {
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.quiz-question-card:hover {
+    border-color: var(--primary-color);
+}
+
+.options-container {
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.option-item input[type="radio"] {
+    cursor: pointer;
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.option-item input[type="radio"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.empty-quiz-msg {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}

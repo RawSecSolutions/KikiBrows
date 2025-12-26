@@ -1,11 +1,13 @@
-// js/gestorModulos.js - Lógica para Edición de Módulo (Completo H4.1 + H4.3)
+// js/gestorModulos.js - Lógica para Edición de Módulo (Completo H4.1 - H4.5)
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Variable global para la instancia del editor
+    // Variable global para la instancia del editor de texto
     let quillEditor = null;
 
-    // === DRAG AND DROP ===
+    // ==========================================
+    // 1. SISTEMA DRAG AND DROP (Reordenamiento)
+    // ==========================================
     function initDragAndDrop(container, itemSelector) {
         let draggedItem = null;
         
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             draggedItem = item;
             item.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
-            // Importante: transferir datos básicos para compatibilidad
+            // Transferir ID para compatibilidad
             e.dataTransfer.setData('text/plain', item.dataset.claseId);
         });
         
@@ -28,16 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             draggedItem = null;
             
-            // Log nuevo orden (Simulación de guardado de orden)
+            // Log del nuevo orden (Simulación de persistencia de orden)
             const newOrder = Array.from(container.querySelectorAll(itemSelector)).map((item, index) => ({
                 id: item.getAttribute('data-clase-id'),
                 position: index + 1
             }));
-            console.log('Nuevo orden de clases:', newOrder);
+            console.log('Nuevo orden guardado:', newOrder);
         });
         
         container.addEventListener('dragover', (e) => {
-            e.preventDefault();
+            e.preventDefault(); // Necesario para permitir el drop
             e.dataTransfer.dropEffect = 'move';
             
             const afterElement = getDragAfterElement(container, e.clientY, itemSelector);
@@ -45,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!dragging) return;
             
+            // Limpiar clases visuales previas
             container.querySelectorAll(itemSelector).forEach(item => item.classList.remove('drag-over'));
             
             if (afterElement) {
@@ -66,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Cálculo de la posición del drop
     function getDragAfterElement(container, y, itemSelector) {
         const draggableElements = [...container.querySelectorAll(`${itemSelector}:not(.dragging)`)];
         
@@ -81,7 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
     
-    // === ELEMENTOS DOM ===
+    // ==========================================
+    // 2. SELECCIÓN DE ELEMENTOS DOM
+    // ==========================================
     const moduleEditForm = document.getElementById('moduleEditForm');
     const moduleNameInput = document.getElementById('moduleName');
     const clasesContainer = document.getElementById('clasesContainer');
@@ -89,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveModuleInfo = document.getElementById('saveModuleInfo');
     const saveSuccessAlert = document.getElementById('saveSuccessAlert');
     
-    // Modales Bootstrap
+    // Inicialización de Modales Bootstrap
     const claseTypeModalEl = document.getElementById('claseTypeModal');
     const claseTypeModal = claseTypeModalEl ? new bootstrap.Modal(claseTypeModalEl) : null;
     
@@ -100,17 +106,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteClaseModal = deleteClaseModalEl ? new bootstrap.Modal(deleteClaseModalEl) : null;
     
     // Variables de Estado
-    let claseCounter = 4; // Empezamos en 4 porque hay 4 ejemplos estáticos
-    let editingClaseId = null;
-    let deletingClaseId = null;
+    let claseCounter = 4; // ID autoincremental simulado (inicia en 4 por los ejemplos estáticos)
+    let editingClaseId = null; // ID de la clase que se está editando actualmente
+    let deletingClaseId = null; // ID de la clase a eliminar
     
-    // Inicializar
+    // Inicialización al cargar la página
     if (clasesContainer) {
         initDragAndDrop(clasesContainer, '.clase-item');
         updateModuleDuration();
     }
     
-    // === DURACIÓN DEL MÓDULO ===
+    // ==========================================
+    // 3. FUNCIONES AUXILIARES GENERALES
+    // ==========================================
+    
+    // Calcular duración total del módulo sumando las clases
     function updateModuleDuration() {
         const clases = document.querySelectorAll('.clase-item');
         let totalMinutes = 0;
@@ -135,7 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // === TIPOS DE CLASE ===
+    // Cargar datos simulados del módulo desde URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const moduleId = urlParams.get('id');
+    if (moduleId && moduleNameInput) {
+        moduleNameInput.value = `Módulo ${moduleId}: Introducción a la Técnica`;
+    }
+    
+    // Definición de Tipos de Clase (Iconos y Colores)
     const claseTypes = {
         video: { icon: 'fa-play-circle', color: 'text-primary', label: 'Video' },
         texto: { icon: 'fa-file-alt', color: 'text-secondary', label: 'Texto' },
@@ -144,27 +161,30 @@ document.addEventListener('DOMContentLoaded', () => {
         entrega: { icon: 'fa-upload', color: 'text-warning', label: 'Entrega' }
     };
     
-    // === GESTIÓN DE MODALES ===
+    // ==========================================
+    // 4. GESTIÓN DE MODALES Y APERTURA
+    // ==========================================
     
+    // Botón "Agregar Clase" -> Abre selector de tipo
     if (addClaseBtn && claseTypeModal) {
         addClaseBtn.addEventListener('click', () => {
             claseTypeModal.show();
         });
     }
     
-    // Click en tipo de clase (Nuevo)
+    // Click en una opción del selector de tipo
     document.querySelectorAll('.clase-type-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const tipo = this.getAttribute('data-tipo');
             claseTypeModal.hide();
             
-            // Nueva clase
+            // Configurar para CREAR nueva clase
             editingClaseId = null;
             openEditClaseModal(tipo);
         });
     });
     
-    // Función Principal: Abrir Modal de Edición
+    // Función Principal: Abrir Modal de Edición (Crear o Editar)
     function openEditClaseModal(tipo, claseData = null) {
         const modalTitle = document.getElementById('editClaseModalTitle');
         const editClaseName = document.getElementById('editClaseName');
@@ -173,31 +193,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const claseContentArea = document.getElementById('claseContentArea');
         const deleteClaseBtn = document.getElementById('deleteClaseBtn');
         
-        // Reset Inputs
+        // Resetear Inputs Básicos
         editClaseName.value = claseData ? claseData.name : '';
         editClaseDesc.value = claseData ? claseData.desc : '';
         editClaseDuration.value = claseData ? claseData.duration : '5';
         editClaseName.classList.remove('is-invalid');
 
-        // Configurar Título y Botones
+        // Configurar UI del Modal
         const typeInfo = claseTypes[tipo];
         modalTitle.innerHTML = `<i class="fas ${typeInfo.icon} ${typeInfo.color} me-2"></i>${claseData ? 'Editar' : 'Nueva'} Clase - ${typeInfo.label}`;
         deleteClaseBtn.style.display = editingClaseId ? 'inline-flex' : 'none';
             
-        // Inyectar HTML específico
+        // Inyectar el HTML específico según el tipo
         claseContentArea.innerHTML = getContentAreaHTML(tipo);
-        editClaseModal._tipo = tipo; // Guardar tipo en instancia del modal
+        editClaseModal._tipo = tipo; // Guardar referencia del tipo actual
         
-        // === H4.3 INICIALIZAR QUILL (Si es Texto) ===
-        // Limpiar instancia previa
-        if (quillEditor) {
-            quillEditor = null;
-        }
+        // === LÓGICA ESPECÍFICA POR TIPO ===
 
+        // H4.3: Editor Quill (Texto)
+        if (quillEditor) quillEditor = null; // Limpiar instancia previa
         if (tipo === 'texto') {
-            // Timeout para asegurar que el DOM del modal está listo
             setTimeout(() => {
-                // Verificar si existe el contenedor antes de crear
                 const container = document.getElementById('editor-container');
                 if (container) {
                     quillEditor = new Quill('#editor-container', {
@@ -212,23 +228,65 @@ document.addEventListener('DOMContentLoaded', () => {
                             ]
                         }
                     });
-
-                    // Si estamos editando, cargar el contenido guardado
+                    // Cargar contenido si existe
                     if (claseData && claseData.content) {
                         quillEditor.root.innerHTML = claseData.content;
                     }
                 }
-            }, 100);
+            }, 100); // Pequeño delay para asegurar renderizado del DOM
+        }
+
+        // H4.4: Constructor de Quiz
+        if (tipo === 'quiz') {
+            initQuizBuilder(); // Inicializar listeners del quiz
+            if (claseData && claseData.content) {
+                try {
+                    const quizData = JSON.parse(claseData.content);
+                    const passScore = document.getElementById('quizPassingScore');
+                    const instructions = document.getElementById('quizInstructions');
+                    
+                    if(passScore) passScore.value = quizData.passingScore || 70;
+                    if(instructions) instructions.value = quizData.instructions || '';
+                    
+                    if (quizData.questions && quizData.questions.length > 0) {
+                        const emptyMsg = document.querySelector('.empty-quiz-msg');
+                        if(emptyMsg) emptyMsg.style.display = 'none';
+                        // Reconstruir preguntas guardadas
+                        quizData.questions.forEach(q => addQuestionToDOM(q));
+                        updateQuizTotalPoints();
+                    }
+                } catch(e) {
+                    console.error("Error cargando quiz:", e);
+                }
+            }
+        }
+
+        // H4.5: Configuración de Entrega Práctica
+        if (tipo === 'entrega') {
+            if (claseData && claseData.content) {
+                try {
+                    const entregaData = JSON.parse(claseData.content);
+                    const instructions = document.getElementById('entregaInstructions');
+                    const points = document.getElementById('entregaPoints');
+                    const passing = document.getElementById('entregaPassing');
+
+                    if(instructions) instructions.value = entregaData.instructions || '';
+                    if(points) points.value = entregaData.points || 10;
+                    if(passing) passing.value = entregaData.passingScore || 70;
+                } catch(e) {
+                    console.error("Error cargando entrega:", e);
+                }
+            }
         }
         
         editClaseModal.show();
     }
     
-    // HTML dinámico según tipo
+    // Generador de HTML dinámico para el cuerpo del modal
     function getContentAreaHTML(tipo) {
         switch(tipo) {
             case 'video':
-                // H4.1: Input de video + Barra de progreso oculta
+                // H4.1: Video simple
                 return `
                     <div class="mb-3">
                         <label class="form-label">Video de la clase</label>
@@ -236,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <small class="text-muted">MP4, WEBM • Máx 500MB</small>
                         <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
                     </div>
-                    
                     <div class="upload-progress-container" id="uploadProgress" style="display: none;">
                         <div class="progress-label d-flex justify-content-between mb-1">
                             <span class="small">Subiendo video...</span>
@@ -248,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             case 'texto':
-                // H4.3: Contenedor para Quill
+                // H4.3: Editor enriquecido
                 return `
                     <div class="mb-3">
                         <label class="form-label">Contenido de la lección</label>
@@ -265,24 +322,78 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             case 'quiz':
+                // H4.4: Constructor de Quiz
                 return `
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Porcentaje de Aprobación</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control input-kikibrows" id="quizPassingScore" value="70" min="1" max="100">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Puntos Totales</label>
+                            <input type="text" class="form-control input-kikibrows bg-light" id="quizTotalPoints" value="0" readonly>
+                        </div>
+                    </div>
                     <div class="mb-3">
-                        <label class="form-label">Configuración del Quiz</label>
-                        <p class="text-muted small">La configuración detallada del quiz se realizará en una pantalla dedicada.</p>
-                        <button type="button" class="btn btn-outline-primary btn-sm" disabled>
-                            <i class="fas fa-cog me-1"></i>Configurar preguntas (próximamente)
+                        <label class="form-label">Instrucciones del Quiz</label>
+                        <textarea class="form-control input-kikibrows" id="quizInstructions" rows="2" placeholder="Instrucciones para la alumna..."></textarea>
+                    </div>
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label mb-0 fw-bold">Preguntas</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddQuestion">
+                            <i class="fas fa-plus me-1"></i>Agregar Pregunta
                         </button>
                     </div>
-                `;
-            case 'entrega':
-                return `
-                    <div class="mb-3">
-                        <label class="form-label">Instrucciones para la entrega</label>
-                        <textarea class="form-control input-kikibrows" rows="4" placeholder="Describe qué debe entregar la alumna..."></textarea>
+                    <div id="quizQuestionsContainer" class="quiz-questions-list">
+                        <div class="text-center text-muted py-3 empty-quiz-msg">No hay preguntas añadidas.</div>
                     </div>
+                `;
+            case 'entrega': 
+                // H4.5: Entrega Práctica (Con Video Demo)
+                return `
+                    <div class="alert alert-info small border-0 bg-light">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Esta clase incluirá un video demostrativo tuyo y una casilla para que la alumna suba su video práctico.
+                    </div>
+                    
                     <div class="mb-3">
-                        <label class="form-label">Puntos asignados</label>
-                        <input type="number" class="form-control input-kikibrows" style="width: 100px;" value="10" min="1">
+                        <label class="form-label fw-bold">1. Video Demostrativo (Instructora)</label>
+                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm">
+                        <small class="text-muted">Sube el ejemplo que las alumnas deben imitar.</small>
+                        <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
+                    </div>
+                    
+                    <div class="upload-progress-container mb-4" id="uploadProgress" style="display: none;">
+                        <div class="progress-label d-flex justify-content-between mb-1">
+                            <span class="small">Subiendo demostración...</span>
+                            <span class="small" id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">2. Configuración de la Tarea</label>
+                        <label class="form-label small text-muted">Instrucciones para la alumna</label>
+                        <textarea class="form-control input-kikibrows" id="entregaInstructions" rows="3" placeholder="Ej: Graba un video de 2 min realizando el perfilado..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-muted">Puntos totales</label>
+                            <input type="number" class="form-control input-kikibrows" id="entregaPoints" value="10" min="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-muted">Aprobación (%)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control input-kikibrows" id="entregaPassing" value="70" min="1" max="100">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
                     </div>
                 `;
             default:
@@ -290,35 +401,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // === EDITAR CLASE EXISTENTE (Click en Lápiz) ===
+    // ==========================================
+    // 5. EVENTOS: EDITAR Y GUARDAR
+    // ==========================================
     
+    // Delegación de eventos para el botón "Editar" en la lista
     if (clasesContainer) {
         clasesContainer.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.btn-clase-edit');
             if (editBtn) {
                 const claseItem = editBtn.closest('.clase-item');
+                
+                // Extraer datos actuales del DOM
                 editingClaseId = claseItem.getAttribute('data-clase-id');
                 const tipo = claseItem.getAttribute('data-tipo');
                 const name = claseItem.querySelector('.clase-name').textContent.trim();
-                
-                // Recuperar contenido enriquecido si existe (H4.3)
                 const savedContent = claseItem.getAttribute('data-content') || '';
                 
-                // Extraer solo el nombre limpio (quitando prefijos si los hubiera)
+                // Limpiar prefijo "Clase X: " del nombre si existe
                 const cleanName = name.includes(': ') ? name.split(': ')[1] : name;
 
                 openEditClaseModal(tipo, {
                     name: cleanName,
-                    desc: '',
+                    desc: '', // Descripción simplificada en este MVP
                     duration: claseItem.querySelector('.clase-duration')?.textContent.replace(' min.', '') || '5',
-                    content: savedContent // Pasar contenido HTML a la función de apertura
+                    content: savedContent 
                 });
             }
         });
     }
     
-    // === GUARDAR CLASE (Botón Modal) ===
-    
+    // Botón GUARDAR en el Modal
     const saveClaseBtn = document.getElementById('saveClaseBtn');
     if (saveClaseBtn) {
         saveClaseBtn.addEventListener('click', () => {
@@ -334,26 +447,66 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             editClaseName.classList.remove('is-invalid');
 
-            // === H4.1 LÓGICA DE SUBIDA VIDEO ===
-            if (tipo === 'video' && !editingClaseId) { // Solo simular subida si es nueva
+            // --- 5.1 PREPARAR CONTENIDO ESPECIAL (JSON) ---
+            let contentData = null;
+
+            if (tipo === 'texto' && quillEditor) {
+                contentData = quillEditor.root.innerHTML;
+            } 
+            else if (tipo === 'quiz') {
+                // Recopilar estructura del Quiz
+                const questions = [];
+                document.querySelectorAll('.quiz-question-card').forEach(card => {
+                    const qTitle = card.querySelector('.question-title-input').value;
+                    const qPoints = card.querySelector('.question-points-input').value;
+                    const options = [];
+                    card.querySelectorAll('.option-item').forEach(opt => {
+                        options.push({
+                            text: opt.querySelector('.option-text-input').value,
+                            isCorrect: opt.querySelector('.option-correct-input').checked
+                        });
+                    });
+                    questions.push({ title: qTitle, points: parseInt(qPoints) || 0, options: options });
+                });
+
+                const quizData = {
+                    passingScore: document.getElementById('quizPassingScore').value,
+                    instructions: document.getElementById('quizInstructions').value,
+                    questions: questions
+                };
+                contentData = JSON.stringify(quizData);
+            }
+            else if (tipo === 'entrega') {
+                // Recopilar configuración de Entrega
+                const entregaData = {
+                    instructions: document.getElementById('entregaInstructions').value,
+                    points: document.getElementById('entregaPoints').value,
+                    passingScore: document.getElementById('entregaPassing').value,
+                    hasVideo: true // Flag indicando que se subió (o se subirá) video demo
+                };
+                contentData = JSON.stringify(entregaData);
+            }
+
+            // --- 5.2 VALIDACIÓN Y SUBIDA DE VIDEO (H4.1 + H4.5) ---
+            // Aplica si es 'video' o 'entrega' Y si es una creación nueva (para simplificar MVP)
+            const needsUpload = (tipo === 'video' || tipo === 'entrega') && !editingClaseId; 
+            
+            if (needsUpload) { 
                 const fileInput = document.getElementById('videoFileInput');
                 const errorMsg = document.getElementById('videoValidationError');
                 const file = fileInput.files[0];
 
+                // Validaciones de Archivo
                 if (!file) {
-                    errorMsg.textContent = "Debes seleccionar un archivo.";
+                    errorMsg.textContent = "Debes seleccionar un archivo de video.";
                     errorMsg.classList.remove('d-none');
                     return;
                 }
-
-                // Validación Tamaño
-                if (file.size > 500 * 1024 * 1024) {
-                    errorMsg.textContent = "El archivo supera los 500MB.";
+                if (file.size > 500 * 1024 * 1024) { // 500MB
+                    errorMsg.textContent = "El archivo supera los 500MB permitidos.";
                     errorMsg.classList.remove('d-none');
                     return;
                 }
-
-                // Validación Formato
                 if (!['video/mp4', 'video/webm'].includes(file.type)) {
                     errorMsg.textContent = "Formato no válido. Solo MP4 o WEBM.";
                     errorMsg.classList.remove('d-none');
@@ -361,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 errorMsg.classList.add('d-none');
 
-                // Simulación Barra de Progreso
+                // Simulación Visual de Subida
                 const progressContainer = document.getElementById('uploadProgress');
                 const progressBar = progressContainer.querySelector('.progress-bar');
                 const progressPercent = document.getElementById('progressPercent');
@@ -374,49 +527,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 const interval = setInterval(() => {
                     if (width >= 100) {
                         clearInterval(interval);
-                        finishSaveClase(name, editClaseDuration.value || '5', tipo);
+                        // Subida completa: Guardar datos en el DOM
+                        finishSaveClase(name, editClaseDuration.value || '5', tipo, contentData);
                         
-                        // Reset botón
+                        // Restaurar botón
                         saveClaseBtn.disabled = false;
                         saveClaseBtn.textContent = 'Guardar';
                     } else {
-                        width += 5;
+                        width += 5; // Velocidad de simulación
                         progressBar.style.width = width + '%';
                         progressPercent.textContent = width + '%';
                     }
-                }, 100); // Velocidad simulación
-                return; // Detener flujo, finishSaveClase se llama al terminar
+                }, 100);
+                return; // IMPORTANTE: Detener ejecución aquí, finishSaveClase se llama en el callback
             }
 
-            // === H4.3 CAPTURA DE CONTENIDO TEXTO ===
-            let richContent = null;
-            if (tipo === 'texto' && quillEditor) {
-                richContent = quillEditor.root.innerHTML;
-            }
-
-            // Guardado inmediato para otros tipos o edición
-            finishSaveClase(name, editClaseDuration.value || '5', tipo, richContent);
+            // --- 5.3 GUARDADO INMEDIATO (Si no hay subida) ---
+            finishSaveClase(name, editClaseDuration.value || '5', tipo, contentData);
         });
     }
 
-    // === FUNCIÓN DE ACTUALIZACIÓN DEL DOM ===
+    // ==========================================
+    // 6. ACTUALIZACIÓN DE LA LISTA EN EL DOM
+    // ==========================================
     function finishSaveClase(name, duration, tipo, customContent = null) {
         const typeInfo = claseTypes[tipo];
         
         if (editingClaseId) {
-            // --- EDITAR EXISTENTE ---
+            // --- EDITANDO ---
             const claseItem = document.querySelector(`.clase-item[data-clase-id="${editingClaseId}"]`);
             if (claseItem) {
                 claseItem.querySelector('.clase-name').textContent = `Clase ${editingClaseId}: ${name}`;
                 claseItem.querySelector('.clase-duration').textContent = duration + ' min.';
-                
-                // Actualizar contenido guardado (H4.3)
+                // Actualizar metadata guardada
                 if (customContent !== null) {
                     claseItem.setAttribute('data-content', customContent);
                 }
             }
         } else {
-            // --- CREAR NUEVA ---
+            // --- CREANDO ---
             claseCounter++;
             const newClase = document.createElement('div');
             newClase.className = 'clase-item';
@@ -424,18 +573,17 @@ document.addEventListener('DOMContentLoaded', () => {
             newClase.setAttribute('data-tipo', tipo);
             newClase.setAttribute('draggable', 'true');
             
-            // Guardar contenido rico si existe (H4.3)
+            // Guardar contenido rico
             if (customContent !== null) {
                 newClase.setAttribute('data-content', customContent);
             }
             
-            // Generar botones de acción
             let actionsHTML = '';
             
-            // Botón Play si es video (H4.1)
-            if (tipo === 'video') {
+            // Agregar botón Play si tiene video asociado (Video o Entrega)
+            if (tipo === 'video' || tipo === 'entrega') {
                 actionsHTML += `
-                    <button type="button" class="btn-clase-play" title="Previsualizar" onclick="previewVideo('${name}')">
+                    <button type="button" class="btn-clase-play" title="Previsualizar Video" onclick="previewVideo('${name}')">
                         <i class="fas fa-play"></i>
                     </button>
                 `;
@@ -463,14 +611,14 @@ document.addEventListener('DOMContentLoaded', () => {
             clasesContainer.appendChild(newClase);
         }
         
-        // Finalizar
         updateModuleDuration();
         editClaseModal.hide();
         editingClaseId = null;
     }
     
-    // === ELIMINAR CLASE ===
-    
+    // ==========================================
+    // 7. ELIMINAR CLASE
+    // ==========================================
     const deleteClaseBtn = document.getElementById('deleteClaseBtn');
     if (deleteClaseBtn && deleteClaseModal) {
         deleteClaseBtn.addEventListener('click', () => {
@@ -493,11 +641,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // === GUARDAR MÓDULO (Simulación final) ===
+    // Guardar Todo el Módulo (Simulación Final)
     if (moduleEditForm) {
         moduleEditForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            // Aquí iría la lógica de envío al backend
             if (saveSuccessAlert) {
                 saveSuccessAlert.classList.remove('d-none');
                 setTimeout(() => saveSuccessAlert.classList.add('d-none'), 3000);
@@ -505,19 +652,124 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // === FUNCIÓN GLOBAL PREVIEW VIDEO (H4.1) ===
+    // ==========================================
+    // 8. PREVISUALIZACIÓN DE VIDEO (GLOBAL)
+    // ==========================================
     window.previewVideo = function(title) {
         const videoModal = new bootstrap.Modal(document.getElementById('videoPreviewModal'));
         document.getElementById('videoPreviewTitle').textContent = title;
-        // Aquí asignarías el src real del video subido o blob
+        // Aquí asignarías el src real. Para demo está vacío o estático.
+        // document.getElementById('videoPlayer').src = "URL_DEL_VIDEO";
+        
         videoModal.show();
         
-        // Pausar al cerrar
-        const modalEl = document.getElementById('videoPreviewModal');
-        modalEl.addEventListener('hidden.bs.modal', () => {
+        // Pausar video al cerrar modal
+        document.getElementById('videoPreviewModal').addEventListener('hidden.bs.modal', () => {
             const player = document.getElementById('videoPlayer');
             if(player) player.pause();
         }, { once: true });
     };
+
+    // ==========================================
+    // 9. LOGICA DEL CONSTRUCTOR DE QUIZ
+    // ==========================================
+    
+    function initQuizBuilder() {
+        const btnAdd = document.getElementById('btnAddQuestion');
+        if (btnAdd) {
+            // Clonar para limpiar listeners antiguos y evitar duplicados
+            const newBtn = btnAdd.cloneNode(true);
+            btnAdd.parentNode.replaceChild(newBtn, btnAdd);
+            
+            newBtn.addEventListener('click', () => {
+                const emptyMsg = document.querySelector('.empty-quiz-msg');
+                if(emptyMsg) emptyMsg.style.display = 'none';
+                addQuestionToDOM();
+            });
+        }
+    }
+
+    function addQuestionToDOM(data = null) {
+        const container = document.getElementById('quizQuestionsContainer');
+        const qId = Date.now() + Math.random().toString(16).slice(2);
+        const title = data ? data.title : '';
+        const points = data ? data.points : 10;
+        
+        const card = document.createElement('div');
+        card.className = 'card quiz-question-card mb-3 border-light shadow-sm';
+        card.innerHTML = `
+            <div class="card-body p-3 bg-light rounded">
+                <div class="d-flex justify-content-between mb-2">
+                    <h6 class="fw-bold text-muted mb-0"><i class="fas fa-question-circle me-1"></i>Pregunta</h6>
+                    <button type="button" class="btn btn-sm text-danger btn-remove-question"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-9">
+                        <input type="text" class="form-control form-control-sm question-title-input" placeholder="Escribe el enunciado..." value="${title}">
+                    </div>
+                    <div class="col-3">
+                        <div class="input-group input-group-sm">
+                            <input type="number" class="form-control question-points-input" placeholder="Pts" value="${points}" min="1">
+                            <span class="input-group-text">pts</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="options-container ps-3 border-start border-3 border-secondary-subtle">
+                    </div>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 mt-2 btn-add-option">+ Agregar Opción</button>
+            </div>
+        `;
+
+        // Eliminar Pregunta
+        card.querySelector('.btn-remove-question').addEventListener('click', () => {
+            card.remove();
+            updateQuizTotalPoints();
+        });
+
+        const optionsContainer = card.querySelector('.options-container');
+        
+        // Función Agregar Opción
+        const addOption = (optData = null) => {
+            const optText = optData ? optData.text : '';
+            const isCorrect = optData ? optData.isCorrect : false;
+            
+            const optRow = document.createElement('div');
+            optRow.className = 'option-item d-flex align-items-center mb-2';
+            optRow.innerHTML = `
+                <input type="radio" name="correct_${qId}" class="form-check-input me-2 option-correct-input" ${isCorrect ? 'checked' : ''} title="Respuesta Correcta">
+                <input type="text" class="form-control form-control-sm me-2 option-text-input" placeholder="Respuesta..." value="${optText}">
+                <button type="button" class="btn btn-sm text-muted py-0 px-1 btn-remove-option"><i class="fas fa-times"></i></button>
+            `;
+            
+            optRow.querySelector('.btn-remove-option').addEventListener('click', () => optRow.remove());
+            optionsContainer.appendChild(optRow);
+        };
+
+        card.querySelector('.btn-add-option').addEventListener('click', () => addOption());
+
+        // Cargar opciones iniciales
+        if (data && data.options) {
+            data.options.forEach(opt => addOption(opt));
+        } else {
+            addOption();
+            addOption();
+        }
+
+        // Escuchar cambios en puntos para actualizar total
+        card.querySelector('.question-points-input').addEventListener('input', updateQuizTotalPoints);
+
+        container.appendChild(card);
+        updateQuizTotalPoints();
+    }
+
+    // Calcular puntos totales del quiz
+    function updateQuizTotalPoints() {
+        let total = 0;
+        document.querySelectorAll('.question-points-input').forEach(input => {
+            total += parseInt(input.value) || 0;
+        });
+        const totalInput = document.getElementById('quizTotalPoints');
+        if(totalInput) totalInput.value = total;
+    }
     
 });
