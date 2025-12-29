@@ -1,0 +1,74 @@
+/* Importamos los estilos base de la marca */
+@import url('layout.css');
+@import url('account.css');
+
+:root {
+    --sidebar-width: 300px;
+    /* Los colores ya vienen definidos en layout.css */
+}
+
+body {
+    /* Mantenemos el fondo animado de layout.css */
+    margin: 0;
+    padding: 0;
+}
+
+#main-layout {
+    display: flex;
+    min-height: 100vh;
+    /* El padding-top se ajusta para la navbar doble */
+    padding-top: 130px; 
+}
+
+/* Aplicamos la estética de account-card a las lecciones y contenido */
+#sidebar, #content-area .card, .quiz-container, .assignment-container {
+    background-color: rgba(217, 205, 184, 0.95) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+}
+
+#content-area {
+    flex-grow: 1;
+    padding: 30px;
+}
+
+.lesson-list-item {
+    padding: 15px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.lesson-list-item.active {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.lesson-list-item i.text-success {
+    color: var(--accent-color) !important;
+}
+
+.video-container {
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.progress-custom {
+    height: 8px;
+    background-color: rgba(255,255,255,0.4);
+    border-radius: 5px;
+}
+
+.progress-fill {
+    background-color: var(--primary-color);
+    border-radius: 5px;
+}
