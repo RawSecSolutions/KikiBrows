@@ -4,25 +4,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = document.getElementById('password');
     const loginErrorMsg = document.getElementById('login-error-msg');
 
-    // 1. FUNCIONALIDAD MOSTRAR/OCULTAR CONTRASEÑA
+    // 1. MOSTRAR/OCULTAR CONTRASEÑA
     if (mostrarPassCheckbox && passwordInput) {
         mostrarPassCheckbox.addEventListener('change', () => {
-            // Si está marcado -> text, si no -> password
             passwordInput.type = mostrarPassCheckbox.checked ? 'text' : 'password';
         });
     }
 
     // --- FUNCIONES VISUALES ---
     const mostrarErrorCampo = (input) => {
-        input.classList.add('is-invalid'); // Solo borde rojo, sin texto específico abajo
+        input.classList.add('is-invalid');
     };
 
     const limpiarErrores = () => {
-        // Quitamos bordes rojos
         const inputs = loginForm.querySelectorAll('.form-control');
         inputs.forEach(input => input.classList.remove('is-invalid'));
-        
-        // Ocultamos la alerta de error genérico
         if (loginErrorMsg) loginErrorMsg.style.display = 'none';
     };
 
@@ -35,11 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const emailInput = document.getElementById('email');
             const passInput = document.getElementById('password');
             
-            const email = emailInput.value.trim();
+            const email = emailInput.value.trim().toLowerCase(); // Normalizamos a minúsculas
             const pass = passInput.value;
             let camposVacios = false;
 
-            // VALIDACIÓN 1: Campos Vacíos (Solo feedback visual en el campo)
+            // VALIDACIÓN 1: Campos Vacíos
             if (!email) {
                 mostrarErrorCampo(emailInput);
                 camposVacios = true;
@@ -49,44 +45,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 camposVacios = true;
             }
 
-            // Si hay campos vacíos, no seguimos, pero NO mostramos mensaje "Credenciales inválidas" todavía
-            // porque es obvio para el usuario que le falta escribir.
             if (camposVacios) return;
 
-            // VALIDACIÓN 2: Formato de Email (Regex)
-            // Si el formato está mal, AQUÍ SÍ mostramos "Credenciales inválidas" para no dar pistas
+            // VALIDACIÓN 2: Formato Email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 if (loginErrorMsg) loginErrorMsg.style.display = 'block';
                 return;
             }
 
-            // SIMULACIÓN DE LOGIN
-            // Aquí iría: await supabase.auth.signInWithPassword(...)
+            // SIMULACIÓN Y LÓGICA DE ROLES (HISTORIA 3)
+            // ----------------------------------------------------------------
+            console.log("Procesando login para:", email);
             
-            console.log("Intentando loguear con:", email);
-
-            // Para efectos de prueba (MVP), simularemos éxito siempre que el formato sea válido.
-            // Si quisieras simular fallo, descomenta esto:
-            /*
-            if (email === 'error@test.com') {
-                if (loginErrorMsg) loginErrorMsg.style.display = 'block';
-                return;
-            }
-            */
-
-            // --- ÉXITO ---
+            // Simulación visual de carga
             const btnSubmit = loginForm.querySelector('button[type="submit"]');
-            const originalText = btnSubmit.innerText;
-            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+            const textoOriginal = btnSubmit.innerText;
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
             btnSubmit.disabled = true;
 
-            // Guardamos sesión simulada
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userName', email.split('@')[0]);
-
             setTimeout(() => {
-                window.location.href = 'index.html'; 
+                // A. Guardamos sesión
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', email.split('@')[0]);
+
+                // B. DETECCIÓN DE ROL (Simulada)
+                // Si el email incluye 'admin', lo tratamos como Admin.
+                let destino = '';
+                
+                if (email.includes('admin')) {
+                    console.log("Rol detectado: ADMIN");
+                    localStorage.setItem('userRole', 'admin'); // Guardamos rol para usarlo después
+                    destino = 'adminPanel.html'; // Según tu lista de archivos
+                } else {
+                    console.log("Rol detectado: ALUMNO");
+                    localStorage.setItem('userRole', 'student');
+                    destino = 'landing.html'; // El cambio que pediste
+                }
+
+                // C. Redirección
+                window.location.href = destino;
+
             }, 1000);
         });
     }
