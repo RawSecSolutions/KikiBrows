@@ -12,12 +12,12 @@
     <div id="header-component"></div>
 
     <div id="main-layout">
-        <div id="sidebar-component"></div> <main id="content-area">
+        <div id="sidebar-component"></div> <main id="content-area" Alt="Curso">
             <h2 class="fw-bold mb-4">Mi Biblioteca de Aprendizaje</h2>
             <div class="row g-4">
                 <div class="col-12 col-md-6 col-lg-4">
                     <div class="card course-card">
-                        <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Curso">
+                        <img src="https://via.placeholder.com/400x200" class="card-img-top">
                         <div class="card-body">
                             <h5 class="fw-bold">Microblading Expert</h5>
                             <p class="text-muted small">Módulo 3: Pigmentología</p>
@@ -38,7 +38,7 @@
     <script src="js/componentsAlumn.js"></script>
     <script>
         UI.initNavbar();
-        // En esta vista el sidebar podría ser general o estar oculto
+	UI.renderLibrary();
     </script>
 </body>
 </html>

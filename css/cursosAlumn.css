@@ -72,3 +72,64 @@ body {
     background-color: var(--primary-color);
     border-radius: 5px;
 }
+/* Añadir al final de cursosAlumn.css */
+
+.course-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.course-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+}
+
+.lesson-list-item {
+    transition: all 0.2s ease;
+}
+
+.lesson-list-item:hover:not(.text-muted) {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    padding-left: 20px;
+}
+
+/* Efecto de carga para el video */
+.video-container iframe {
+    transition: opacity 0.5s ease;
+}
+
+.custom-btn-guardar {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    transition: filter 0.2s;
+}
+
+.custom-btn-guardar:hover {
+    filter: brightness(1.1);
+}
+/* Feedback de interacción */
+.lesson-list-item {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.lesson-list-item:hover:not(.text-muted) {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding-left: 20px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.lesson-list-item.active {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-left: 4px solid var(--accent-color);
+}
+
+.course-card {
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+}
