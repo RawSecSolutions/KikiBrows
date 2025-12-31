@@ -47,6 +47,7 @@ const UI = {
             <nav class="navbar navbar-expand-lg main-navbar py-1">
                 <div class="container justify-content-center">
                     <ul class="navbar-nav gap-3">
+		    	<li class="nav-item"><a class="nav-link" href="landin.html">INICIO</a></li>
                         <li class="nav-item"><a class="nav-link" href="cursosAlumn.html">BIBLIOTECA</a></li>
                         <li class="nav-item"><a class="nav-link active" href="#">AULA VIRTUAL</a></li>
                     </ul>
