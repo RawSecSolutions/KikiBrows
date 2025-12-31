@@ -48,8 +48,8 @@ const UI = {
                 <div class="container justify-content-center">
                     <ul class="navbar-nav gap-3">
 		    	<li class="nav-item"><a class="nav-link" href="landin.html">INICIO</a></li>
-                        <li class="nav-item"><a class="nav-link" href="cursosAlumn.html">BIBLIOTECA</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="#">AULA VIRTUAL</a></li>
+                        <li class="nav-item"><a class="nav-link" href="cursosAlumn.html">MIS CURSOS</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="#">CONSULTAS</a></li>
                     </ul>
                 </div>
             </nav>`;
