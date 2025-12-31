@@ -5,67 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Contraseña - KIKIBROWS</title>
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">    
     <link rel="stylesheet" href="css/layout.css">
-    
-    <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="css/recover.css"> 
-    
-</head>
-<body class="p-0 m-0">
-    
-    <div id="navbar-global"></div>
-    
+    <link rel="stylesheet" href="css/recover.css"> </head>
+<body class="p-0 m-0"> 
+
+   <div id="navbar-global"></div>
+
     <main class="d-flex justify-content-center align-items-center">
-        <section class="registro-container shadow rounded col-11 col-sm-10 col-md-8 col-lg-6 col-xl-5 mt-4 mb-4">
+        <section class="registro-container shadow rounded col-11 col-sm-10 col-md-8 col-lg-6 col-xl-5 mt-4 mb-4"> 
             
-            <div id="forgot-password" class="recovery-section active">
-                <h2 class="text-center mb-4">¿Olvidaste tu contraseña?</h2>
-                <p class="section-description text-center mb-4">Introduce tu dirección de correo electrónico para recibir un enlace de restablecimiento de contraseña.</p>
-                
-                <form id="forgot-password-form" class="recovery-form d-flex flex-column gap-3">
-                    <div class="form-group">
-                        <label for="email">Correo Electrónico *</label>
-                        <input type="email" id="email" name="email" class="form-control w-100" placeholder="Ej: ejemplomail@mail.com" required>
-                        <span class="error-message text-danger" id="email-error"></span>
+            <div id="recover-step-1">
+                <h1 class="mb-3">RECUPERAR CONTRASEÑA</h1>
+                <p class="text-muted text-center mb-4" style="font-size: 0.9rem;">
+                    Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
+
+                <form id="recover-form" action="#" method="POST" class="user-registration-form d-flex flex-column gap-3" novalidate>
+                    <div class="mb-3"> 
+                        <div class="form-group">
+                            <label for="email">Correo Electrónico</label>
+                            <input type="email" id="email" name="email" placeholder="ej. usuario@kiki.com" required class="w-100 form-control">
+                        </div>
                     </div>
-                    <button type="submit" class="register-button w-100 mt-2">Enviar</button>
-                    <p class="required-fields text-center mt-3">* Campos Obligatorios</p>
+
+                    <div class="form-controls mt-2">
+                        <button type="submit" class="register-button w-100 mb-3">
+                            Enviar Enlace
+                        </button>
+                        
+                        <div class="text-center">
+                            <a href="login.html" class="text-decoration-none text-muted">
+                                <i class="fas fa-arrow-left"></i> Volver al inicio de sesión
+                            </a>
+                        </div>
+                    </div>
                 </form>
             </div>
 
-            <div id="check-inbox-message" class="recovery-message" style="display: none;">
-                <h3 class="text-center mb-3">¡Revisa tu bandeja de entrada!</h3>
-                <p class="text-center">Si existe una cuenta asociada a la dirección <span id="displayed-email" class="fw-bold">ejemplo@mail.com</span>, recibirás un enlace de restablecimiento de contraseña.</p>
+            <div id="recover-step-2" style="display: none; text-align: center;">
+                <div class="mb-4">
+                    <i class="fas fa-envelope-open-text text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="mb-3">¡Correo Enviado!</h2>
+                <p class="text-muted">
+                    Si el correo <strong><span id="sent-email-span"></span></strong> existe en nuestra base de datos, recibirás un enlace en los próximos minutos.
+                </p>
+                <p class="small text-muted mb-4">Revisa tu carpeta de Spam por si acaso.</p>
+                
+                <a href="login.html" class="register-button w-100 text-decoration-none d-block">
+                    Volver al Login
+                </a>
             </div>
 
-            <div id="create-new-password" class="recovery-section" style="display: none;">
-                <h2 class="text-center mb-4">Crea una nueva contraseña</h2>
-                <p class="section-description text-center mb-4">Por favor, introduce una nueva contraseña para tu cuenta.</p>
-                
-                <form id="new-password-form" class="recovery-form d-flex flex-column gap-3">
-                    <div class="form-group">
-                        <label for="new-password">Nueva Contraseña *</label>
-                        <input type="password" id="new-password" name="new-password" class="form-control w-100" placeholder="Nueva Contraseña" required>
-                        <span class="error-message text-danger" id="new-password-error"></span>
-                    </div>
-                    <div class="form-group">
-                        <label for="repeat-password">Repetir Nueva Contraseña *</label>
-                        <input type="password" id="repeat-password" name="repeat-password" class="form-control w-100" placeholder="Repetir Nueva Contraseña" required>
-                        <span class="error-message text-danger" id="repeat-password-error"></span>
-                    </div>
-                    <button type="submit" class="register-button w-100 mt-2">Guardar</button>
-                    <p class="required-fields text-center mt-3">* Campos Obligatorios</p>
-                </form>
-            </div>
         </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/componentes.js"></script>
     <script src="js/recover.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
