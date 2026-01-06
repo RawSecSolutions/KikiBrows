@@ -3,7 +3,9 @@
  * Control de vistas para la sección Mi Cuenta
  */
 
-// 1. Abrir edición simple (Del Dashboard -> 1 Tarjeta)
+// --- FUNCIONES DE INTERFAZ (Botones) ---
+
+// 1. Abrir edición simple
 function openSimpleEdit(event) {
     if(event) event.preventDefault();
     
@@ -15,12 +17,10 @@ function openSimpleEdit(event) {
         dashboard.classList.add('d-none');
         simpleEdit.classList.remove('d-none');
         if(splitEdit) splitEdit.classList.add('d-none');
-    } else {
-        console.error("No se encontraron los elementos del DOM");
     }
 }
 
-// 2. Dividir en 2 tarjetas (Al tocar el lápiz del correo)
+// 2. Dividir en 2 tarjetas
 function splitToEmailEdit() {
     const simpleEdit = document.getElementById('simple-edit-view');
     const splitEdit = document.getElementById('split-edit-view');
@@ -43,3 +43,17 @@ function cancelEdit(event) {
     if(splitEdit) splitEdit.classList.add('d-none');
     if(dashboard) dashboard.classList.remove('d-none');
 }
+
+// --- INICIALIZACIÓN AUTOMÁTICA ---
+// Esto carga el Navbar en cuanto el HTML está listo
+document.addEventListener("DOMContentLoaded", () => {
+    
+    // Verificamos si existe el objeto UI del componentsAlumn.js
+    if (typeof UI !== 'undefined' && UI.initNavbar) {
+        console.log("Inicializando Navbar de Alumno en Mi Cuenta...");
+        UI.initNavbar();
+    } else {
+        console.warn("UI no definido. Asegúrate de cargar componentsAlumn.js antes.");
+    }
+
+});

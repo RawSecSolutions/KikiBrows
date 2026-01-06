@@ -1,0 +1,89 @@
+/* css/historialCompras.css */
+
+/* Forzamos la fuente Teachers en todo por seguridad */
+body, h1, h2, h3, h4, h5, h6, p, a, div, span, button, input {
+    font-family: 'Teachers', sans-serif !important;
+}
+
+/* Ajustes de la tarjeta de compra individual */
+.purchase-card-item {
+    /* Usamos tu estilo glass de account.css/cursosAlumn.css */
+    background-color: rgba(217, 205, 184, 0.95) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s;
+    overflow: hidden;
+}
+
+.purchase-card-item:hover {
+    transform: translateY(-2px);
+}
+
+.purchase-date {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.purchase-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.status-text {
+    color: var(--accent-color, #6B7C54); /* Tu verde oliva */
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.course-title-history {
+    font-size: 1.1rem;
+    color: var(--text-dark, #333);
+    font-weight: 600;
+    margin: 4px 0;
+}
+
+/* Botones usando tus variables */
+.btn-kiki {
+    background-color: var(--primary-color, #8B9D6F);
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 6px 20px;
+    border-radius: 50px; /* Rounded pill como en tus otros botones */
+    text-decoration: none;
+    transition: filter 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn-kiki:hover {
+    filter: brightness(0.9);
+    color: white;
+}
+
+.btn-kiki-outline {
+    background-color: transparent;
+    color: var(--text-dark, #333);
+    border: 1px solid #ccc;
+    font-weight: 500;
+    padding: 6px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-kiki-outline:hover {
+    background-color: rgba(0,0,0,0.05);
+    color: var(--text-dark);
+}

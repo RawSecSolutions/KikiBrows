@@ -10,9 +10,7 @@
     
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/account.css">
-    <link rel="stylesheet" href="css/cursosAlumn.css">
-    
-    <link rel="stylesheet" href="css/historialCompras.css">
+
 </head>
 <body>
 
@@ -22,7 +20,7 @@
         <main id="content-area" class="container" style="max-width: 900px;">
             
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
-                <h2 class="fw-bold mb-0" style="color: var(--text-dark);">Mis Cursos</h2>
+                <h2 class="fw-bold mb-0" style="color: var(--text-dark);">Mis Compras</h2>
                 
                 <div class="input-group" style="max-width: 300px;">
                     <input type="text" id="searchHistory" class="form-control" placeholder="Buscar..." 
@@ -42,6 +40,13 @@
     
     <script src="js/componentsAlumn.js"></script>
 
+    <script>
+        // Inicializamos el navbar igual que en cursosAlumn.html
+        if (typeof UI !== 'undefined' && UI.initNavbar) {
+            UI.initNavbar();
+        }
+    </script>
+    
     <script src="js/historialCompras.js"></script>
 </body>
 </html>

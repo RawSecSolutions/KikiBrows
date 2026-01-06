@@ -1,121 +1,173 @@
-/* css/account.css - ESTILO UNIFICADO (CARDS + INPUTS) */
+/* css/account.css */
 
-.account-section {
-    padding: 20px 0;
-}
-
-/* --- ESTILOS DE LA TARJETA (Igual al Login) --- */
-.account-card {
-    background-color: rgba(217, 205, 184, 0.99) !important; /* Beige Transparente */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+/* =======================================================
+   1. LA TARJETA MAESTRA (SIEMPRE BEIGE)
+   ======================================================= */
+/* Aplicamos el estilo beige a las 3 secciones */
+.account-card, 
+.purchase-card-item, 
+.cert-card {
+    background-color: #D9CDB8 !important; /* Beige Sólido */
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
-    
-    border: none; 
-    min-height: 200px;
-    padding: 25px; 
-    transition: transform 0.3s ease;
-}
-
-.account-card:hover {
-    transform: translateY(-5px);
-}
-
-/* Tipografía de la tarjeta */
-.account-card h2 {
-    font-size: clamp(1rem, 2.5vw, 1.6em);
-    color: #333333; 
-    font-weight: 600;
-    text-align: left;
-    margin-top: 0;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1); 
+    width: 100%;
+    color: #333;
+    text-align: left !important; /* Fuerza alineación izquierda */
+    
+    /* Nota: El padding lo pone tu JS con la clase "p-4", 
+       así que no lo forzamos aquí para no duplicar espacio */
 }
 
-.info-content p {
-    font-size: 0.95rem;
-    color: #444444; 
-    margin-bottom: 5px;
-}
-
-.info-content strong {
-    color: #6B7C54; 
-}
-
-/* Footer de acciones */
-.card-footer-actions {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    font-size: 0.9rem;
+/* =======================================================
+   2. MI CUENTA (Vertical)
+   ======================================================= */
+.account-card {
     display: flex;
-    gap: 15px;
+    flex-direction: column;
+    height: 100%; 
+    padding: 30px; /* Aquí sí ponemos padding porque el HTML es estático */
+}
+
+.account-card h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding-bottom: 10px;
+    width: 100%;
+}
+
+.card-footer-actions {
+    margin-top: auto;
+    padding-top: 15px;
 }
 
 .card-footer-actions a {
-    color: #8B9D6F; 
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.2s;
+    color: #7A8B60;
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.85em;
-    letter-spacing: 0.5px;
-}
-
-.card-footer-actions a:hover {
-    color: #333333; 
-}
-
-/* Botones */
-.custom-btn-guardar {
-    background-color: #8B9D6F;
-    border-color: #8B9D6F;
-    color: #FFFFFF;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    padding: 8px 20px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-}
-
-.custom-btn-guardar:hover {
-    background-color: #6B7C54;
-    border-color: #6B7C54;
-}
-
-.cancel-btn {
-    color: #666666 !important; 
+    font-size: 0.75rem;
+    letter-spacing: 1px;
     text-decoration: none;
+    margin-right: 15px;
 }
 
-.cancel-btn:hover {
-    color: #333333 !important;
+/* =======================================================
+   3. HISTORIAL DE COMPRAS (Adaptado a tu JS)
+   ======================================================= */
+/* Tu JS usa .row y .col, así que solo estilamos los textos */
+
+.purchase-date {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    font-weight: 600;
 }
 
-/* --- NUEVO: ESTILOS DE INPUTS (Igual al Login) --- */
-
-/* 1. Estado Normal: Semi-transparente ("Cafesito") */
-.account-card .form-control {
-    padding: 12px;
-    background-color: rgba(255, 255, 255, 0.6) !important; /* Deja ver el color de la card */
-    border: 1px solid #CCCCCC; /* Borde gris suave */
-    color: #333333;
-    transition: all 0.3s ease;
+.status-text {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #6B7C54; /* Verde oscuro */
+    font-weight: 700;
+    margin-bottom: 2px;
 }
 
-/* 2. Estado Focus (Al hacer click): Se vuelve blanco */
-.account-card .form-control:focus {
-    background-color: rgba(255, 255, 255, 0.9) !important; /* Casi blanco puro */
-    box-shadow: none; 
-    border-color: #8B9D6F; /* Borde verde al escribir */
-    color: #000;
+.course-title-history {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 5px 0;
+    color: #333;
 }
 
-/* Corrección para inputs deshabilitados (como el correo a veces) */
-.account-card .form-control:disabled, 
-.account-card .form-control[readonly] {
-    background-color: rgba(255, 255, 255, 0.3) !important; /* Más transparente si no se puede editar */
-    opacity: 1;
+.purchase-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* =======================================================
+   4. CERTIFICADOS (Adaptado a tu JS)
+   ======================================================= */
+/* Tu JS usa .cert-body-flex para alinear */
+
+.cert-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.cert-detail {
+    margin: 2px 0;
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.cert-detail strong {
+    color: #333;
+}
+
+/* =======================================================
+   5. BOTONES UNIFICADOS (Los que usa tu JS)
+   ======================================================= */
+/* Tu JS usa: btn-kiki, btn-kiki-primary y btn-kiki-outline */
+
+.btn-kiki, 
+.btn-kiki-primary {
+    background-color: #333; /* O tu verde #8B9D6F si prefieres */
+    color: #fff;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    display: inline-block;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-kiki:hover, 
+.btn-kiki-primary:hover {
+    background-color: #000;
+    color: #fff;
+}
+
+.btn-kiki-outline {
+    background-color: transparent;
+    border: 1px solid #333;
+    color: #333;
+    padding: 6px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    display: inline-block;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-kiki-outline:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+/* Ajuste para que los botones no se peguen en móvil */
+@media (max-width: 768px) {
+    .cert-body-flex, 
+    .purchase-card-item .row {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .cert-actions, 
+    .text-end {
+        margin-top: 15px;
+        width: 100%;
+        text-align: left !important;
+    }
 }

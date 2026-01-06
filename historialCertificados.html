@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Certificados - KIKIBROWS</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/account.css">
+
+
+</head>
+<body>
+    <div id="header-component"></div>
+    <main class="container py-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="text-center text-white text-uppercase">Mis Certificados</h1>
+                <p class="text-center text-white">Visualiza y descarga tus diplomas obtenidos.</p>
+            </div>
+        </div>
+
+        <div id="certificados-container" class="row g-4 justify-content-center">
+        </div>
+        <div id="no-certs-message" class="text-center text-white d-none mt-5">
+            <i class="fa-solid fa-graduation-cap fa-3x mb-3"></i>
+            <h3>Aún no tienes certificados disponibles.</h3>
+            <a href="cursosAlumn.html" class="btn btn-outline-light mt-3">Ver Cursos Disponibles</a>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/componentsAlumn.js"></script>
+    <script src="js/historialCertificados.js"></script>
+
+</body>
+
+</html>
