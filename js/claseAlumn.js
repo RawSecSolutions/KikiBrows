@@ -1,305 +1,1038 @@
-// js/claseAlumn.js - Lógica de LMS, Progreso y Validación (H6.3 + H4.x)
+// js/claseAlumn.js - Aula Virtual LMS Completo (H6.2-H6.6)
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar datos
+    CursosData.init();
+    CursosData.initStudent();
 
-    // === 1. DATOS DEL CURSO (Simulación DB) ===
-    // Estados: 'locked', 'active', 'completed', 'pending_review'
-    const courseData = {
-        id: 1,
-        title: "Microblading Expert",
-        modules: [
+    // Estado global
+    let currentCursoId = parseInt(localStorage.getItem('activeCourseId')) || 1;
+    let currentModuloId = parseInt(localStorage.getItem('activeModuloId')) || null;
+    let currentClaseId = parseInt(localStorage.getItem('activeClaseId')) || null;
+    let currentClase = null;
+    let videoWatchProgress = 0;
+
+    // Referencias DOM
+    const courseName = document.getElementById('course-name');
+    const globalProgressText = document.getElementById('global-progress-text');
+    const globalProgressBar = document.getElementById('global-progress-bar');
+    const sidebarProgressText = document.getElementById('sidebar-progress-text');
+    const sidebarProgressBar = document.getElementById('sidebar-progress-bar');
+    const modulesAccordion = document.getElementById('modulesAccordion');
+    const contentTypeBadge = document.getElementById('contentTypeBadge');
+    const contentTitle = document.getElementById('contentTitle');
+    const dynamicContent = document.getElementById('dynamicContent');
+    const contentDescription = document.getElementById('contentDescription');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const completionStatus = document.getElementById('completionStatus');
+    const completionText = document.getElementById('completionText');
+    const certificateItem = document.getElementById('certificateItem');
+    const certStatus = document.getElementById('certStatus');
+    const certLock = document.getElementById('certLock');
+
+    // Sidebar Mobile
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const closeSidebar = document.getElementById('closeSidebar');
+
+    // Datos de quiz para simulación
+    const quizQuestions = {
+        4: [ // Quiz del módulo 1
             {
                 id: 1,
-                title: "Fundamentos Teóricos",
-                lessons: [
-                    // H4.1 Video (Debe verse completo)
-                    { id: 101, type: 'video', title: 'Bienvenida e Introducción', src: 'assets/video_demo.mp4', duration: '5 min', status: 'completed' },
-                    // H4.3 Texto (Lectura)
-                    { id: 102, type: 'texto', title: 'Anatomía de la Piel', content: '<h3>La Dermis y Epidermis</h3><p>Lectura obligatoria...</p>', duration: '10 min', status: 'active' },
-                    // H4.2 PDF (Visualización obligatoria)
-                    { id: 103, type: 'pdf', title: 'Manual de Higiene', src: 'assets/manual.pdf', duration: '15 min', status: 'locked' }
-                ]
+                pregunta: '¿Cuál es la capa superficial de la piel donde se realiza el microblading?',
+                opciones: ['Hipodermis', 'Dermis', 'Epidermis', 'Subcutánea'],
+                correcta: 2,
+                puntos: 25
             },
             {
                 id: 2,
-                title: "Evaluación y Práctica",
-                lessons: [
-                    // H4.4 Quiz (Debe aprobarse)
-                    { id: 201, type: 'quiz', title: 'Examen Teórico', passingScore: 70, questions: 3, status: 'locked' },
-                    // H4.5 Entrega Práctica (Video Demo + Upload)
-                    { id: 202, type: 'entrega', title: 'Práctica en Látex', demoVideo: 'assets/demo_latex.mp4', instructions: 'Sube tu video replicando la técnica.', status: 'locked' }
-                ]
+                pregunta: '¿Cuánto tiempo dura aproximadamente el microblading?',
+                opciones: ['6 meses', '1-2 años', '5 años', 'Permanente'],
+                correcta: 1,
+                puntos: 25
+            },
+            {
+                id: 3,
+                pregunta: '¿Qué instrumento se utiliza principalmente en microblading?',
+                opciones: ['Máquina rotativa', 'Aguja individual', 'Tebori/Microhoja', 'Dermógrafo'],
+                correcta: 2,
+                puntos: 25
+            },
+            {
+                id: 4,
+                pregunta: '¿Cuál es el porcentaje de retoque recomendado después del primer procedimiento?',
+                opciones: ['No se necesita retoque', '10-20%', '40-60%', '80-100%'],
+                correcta: 2,
+                puntos: 25
+            }
+        ],
+        12: [ // Quiz del módulo 3
+            {
+                id: 1,
+                pregunta: '¿Cuál es el ángulo correcto para realizar trazos de microblading?',
+                opciones: ['15-20 grados', '30-45 grados', '60-75 grados', '90 grados'],
+                correcta: 1,
+                puntos: 33
+            },
+            {
+                id: 2,
+                pregunta: '¿En qué dirección deben ir los trazos en la cola de la ceja?',
+                opciones: ['Hacia arriba', 'Horizontal', 'Hacia abajo diagonal', 'En espiral'],
+                correcta: 2,
+                puntos: 33
+            },
+            {
+                id: 3,
+                pregunta: '¿Cuántas pasadas se recomiendan por trazo?',
+                opciones: ['1 pasada', '2-3 pasadas', '5-6 pasadas', '10 pasadas'],
+                correcta: 1,
+                puntos: 34
             }
         ]
     };
 
-    // Estado actual
-    let currentLesson = null;
-    let currentModuleIndex = 0;
-    let currentLessonIndex = 1; // Empezamos en la 102 (Texto) para probar
+    // Inicialización
+    init();
 
-    // Elementos DOM
-    const dynamicContainer = document.getElementById('dynamic-content-area');
-    const contentTitle = document.getElementById('contentTitle');
-    const badge = document.getElementById('lessonTypeBadge');
-    const btnNext = document.getElementById('btn-next');
-    const btnPrev = document.getElementById('btn-prev');
-    const accordion = document.getElementById('courseAccordion');
-    const progressText = document.getElementById('global-progress-text');
-    const progressBar = document.getElementById('global-progress-bar');
-    const completionMsg = document.getElementById('completion-message');
+    function init() {
+        const curso = CursosData.getCurso(currentCursoId);
+        if (!curso) {
+            window.location.href = 'cursosAlumn.html';
+            return;
+        }
 
-    // === 2. INICIALIZACIÓN ===
-    renderSidebar();
-    loadLesson(currentModuleIndex, currentLessonIndex);
+        // Mostrar nombre del curso
+        courseName.textContent = curso.nombre;
+        document.title = `${curso.nombre} | KIKIBROWS`;
 
-    // === 3. RENDERIZADO SIDEBAR ===
+        // Si no hay clase seleccionada, obtener la última
+        if (!currentClaseId || !currentModuloId) {
+            const ultima = CursosData.getUltimaClase(currentCursoId);
+            if (ultima) {
+                currentClaseId = ultima.claseId;
+                currentModuloId = ultima.moduloId;
+            }
+        }
+
+        // Renderizar sidebar
+        renderSidebar();
+
+        // Cargar contenido inicial
+        if (currentClaseId && currentModuloId) {
+            loadClase(currentModuloId, currentClaseId);
+        }
+
+        // Actualizar estado del certificado
+        updateCertificateStatus();
+
+        // Event listeners
+        setupEventListeners();
+    }
+
+    function setupEventListeners() {
+        // Navegación
+        btnPrev.addEventListener('click', navigatePrev);
+        btnNext.addEventListener('click', navigateNext);
+
+        // Sidebar Mobile
+        sidebarToggle?.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('show');
+        });
+
+        closeSidebar?.addEventListener('click', closeSidebarMobile);
+        sidebarOverlay?.addEventListener('click', closeSidebarMobile);
+    }
+
+    function closeSidebarMobile() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('show');
+    }
+
+    // ==================== SIDEBAR ====================
+
     function renderSidebar() {
-        accordion.innerHTML = '';
-        let totalLessons = 0;
-        let completedLessons = 0;
+        const modulos = CursosData.getModulosByCurso(currentCursoId);
+        const progresoGlobal = CursosData.calcularProgresoCurso(currentCursoId);
 
-        courseData.modules.forEach((mod, mIdx) => {
-            let lessonsHTML = '';
-            
-            mod.lessons.forEach((lesson, lIdx) => {
-                totalLessons++;
-                if (lesson.status === 'completed') completedLessons++;
+        // Actualizar barras de progreso globales
+        updateProgressBars(progresoGlobal.porcentaje);
 
-                // Iconos según estado (H6.3)
-                let icon = '<i class="far fa-circle text-muted"></i>'; // Default
-                if (lesson.status === 'completed') icon = '<i class="fas fa-check-circle status-completed"></i>';
-                if (lesson.status === 'pending_review') icon = '<i class="fas fa-clock status-pending"></i>'; // H4.5
-                if (lesson.status === 'locked') icon = '<i class="fas fa-lock status-locked"></i>';
-                if (mIdx === currentModuleIndex && lIdx === currentLessonIndex) icon = '<i class="fas fa-play-circle text-primary"></i>';
+        // Renderizar módulos
+        modulesAccordion.innerHTML = modulos.map((modulo, index) => {
+            const clases = CursosData.getClasesByModulo(modulo.id);
+            const progresoModulo = CursosData.calcularProgresoModulo(currentCursoId, modulo.id);
+            const isExpanded = modulo.id === currentModuloId;
 
-                // Clases CSS
-                const isActive = (mIdx === currentModuleIndex && lIdx === currentLessonIndex) ? 'active' : '';
-                const isLocked = lesson.status === 'locked' ? 'locked' : '';
+            const clasesHTML = clases.map(clase => {
+                const estado = CursosData.getEstadoClase(currentCursoId, modulo.id, clase.id);
+                const isDesbloqueada = CursosData.isClaseDesbloqueada(currentCursoId, modulo.id, clase.id);
+                const isActive = clase.id === currentClaseId;
+                const ultimaEntrega = clase.tipo === 'entrega' ? CursosData.getUltimaEntrega(clase.id) : null;
 
-                lessonsHTML += `
-                    <div class="lesson-item list-group-item d-flex align-items-center justify-content-between p-3 ${isActive} ${isLocked}" 
-                         onclick="tryLoadLesson(${mIdx}, ${lIdx})">
-                        <div class="d-flex align-items-center">
-                            <div class="status-icon me-3">${icon}</div>
-                            <div>
-                                <div class="fw-semibold">${lesson.title}</div>
-                                <div class="small text-muted"><i class="far fa-clock me-1"></i> ${lesson.duration || '5 min'}</div>
+                let statusIcon = '<i class="far fa-circle"></i>';
+                let statusClass = '';
+                let pendingBadge = '';
+
+                if (estado.completado) {
+                    statusIcon = '<i class="fas fa-check-circle"></i>';
+                    statusClass = 'completed';
+                } else if (ultimaEntrega?.estado === 'pendiente') {
+                    statusIcon = '<i class="fas fa-clock"></i>';
+                    pendingBadge = '<span class="pending-badge">Pendiente</span>';
+                } else if (!isDesbloqueada) {
+                    statusIcon = '<i class="fas fa-lock"></i>';
+                    statusClass = 'locked';
+                }
+
+                if (isActive) {
+                    statusIcon = '<i class="fas fa-play-circle text-primary"></i>';
+                }
+
+                const tipoIcon = getTypeIcon(clase.tipo);
+
+                return `
+                    <div class="lesson-item ${statusClass} ${isActive ? 'active' : ''}"
+                         onclick="window.selectClase(${modulo.id}, ${clase.id})"
+                         data-clase-id="${clase.id}">
+                        <div class="lesson-status">${statusIcon}</div>
+                        <div class="lesson-info">
+                            <div class="lesson-title">${clase.nombre}</div>
+                            <div class="lesson-meta">
+                                <span class="lesson-type-icon"><i class="fas ${tipoIcon}"></i></span>
+                                <span>${clase.duracion || 5} min</span>
+                                ${pendingBadge}
                             </div>
                         </div>
                     </div>
                 `;
-            });
+            }).join('');
 
-            const showClass = mIdx === currentModuleIndex ? 'show' : ''; // Expandir módulo actual
-            
-            const moduleHTML = `
-                <div class="accordion-item border-0">
+            return `
+                <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button ${showClass ? '' : 'collapsed'} bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#mod-${mIdx}">
-                            <strong>${mod.title}</strong>
+                        <button class="accordion-button ${isExpanded ? '' : 'collapsed'}"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#module-${modulo.id}">
+                            <div class="w-100">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>${index + 1}. ${modulo.nombre}</span>
+                                </div>
+                                <div class="module-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: ${progresoModulo.porcentaje}%"></div>
+                                    </div>
+                                    <span>${progresoModulo.completados}/${progresoModulo.total}</span>
+                                </div>
+                            </div>
                         </button>
                     </h2>
-                    <div id="mod-${mIdx}" class="accordion-collapse collapse ${showClass}" data-bs-parent="#courseAccordion">
-                        <div class="list-group list-group-flush">
-                            ${lessonsHTML}
+                    <div id="module-${modulo.id}" class="accordion-collapse collapse ${isExpanded ? 'show' : ''}"
+                         data-bs-parent="#modulesAccordion">
+                        <div class="lessons-list">
+                            ${clasesHTML}
                         </div>
                     </div>
                 </div>
             `;
-            accordion.insertAdjacentHTML('beforeend', moduleHTML);
-        });
-
-        // Actualizar Barra Global
-        const percent = Math.round((completedLessons / totalLessons) * 100);
-        progressBar.style.width = `${percent}%`;
-        progressText.innerText = `${percent}%`;
+        }).join('');
     }
 
-    // === 4. LÓGICA DE CARGA DE CONTENIDOS (POR TIPO) ===
-    window.tryLoadLesson = (mIdx, lIdx) => {
-        const targetLesson = courseData.modules[mIdx].lessons[lIdx];
-        if (targetLesson.status === 'locked') {
-            alert("Debes completar las lecciones anteriores para desbloquear esta.");
+    function updateProgressBars(percentage) {
+        globalProgressText.textContent = `${percentage}%`;
+        globalProgressBar.style.width = `${percentage}%`;
+        sidebarProgressText.textContent = `${percentage}%`;
+        sidebarProgressBar.style.width = `${percentage}%`;
+    }
+
+    function getTypeIcon(tipo) {
+        const icons = {
+            video: 'fa-play-circle',
+            texto: 'fa-file-alt',
+            pdf: 'fa-file-pdf',
+            quiz: 'fa-question-circle',
+            entrega: 'fa-upload'
+        };
+        return icons[tipo] || 'fa-file';
+    }
+
+    function getTypeBadge(tipo) {
+        const badges = {
+            video: 'VIDEO',
+            texto: 'LECTURA',
+            pdf: 'PDF',
+            quiz: 'CUESTIONARIO',
+            entrega: 'ENTREGA PRÁCTICA'
+        };
+        return badges[tipo] || tipo.toUpperCase();
+    }
+
+    // ==================== CARGA DE CONTENIDO ====================
+
+    window.selectClase = (moduloId, claseId) => {
+        const isDesbloqueada = CursosData.isClaseDesbloqueada(currentCursoId, moduloId, claseId);
+        if (!isDesbloqueada) {
+            alert('Debes completar las lecciones anteriores para desbloquear esta.');
             return;
         }
-        loadLesson(mIdx, lIdx);
+        loadClase(moduloId, claseId);
+        closeSidebarMobile();
     };
 
-    function loadLesson(mIdx, lIdx) {
-        currentModuleIndex = mIdx;
-        currentLessonIndex = lIdx;
-        currentLesson = courseData.modules[mIdx].lessons[lIdx];
+    function loadClase(moduloId, claseId) {
+        currentModuloId = moduloId;
+        currentClaseId = claseId;
+        currentClase = CursosData.getClase(claseId);
 
-        // UI Updates
-        contentTitle.innerText = currentLesson.title;
-        badge.innerText = currentLesson.type.toUpperCase();
-        renderSidebar(); // Refrescar active state
-        
-        // Reset Footer state
-        btnNext.disabled = true; // POR DEFECTO BLOQUEADO
-        completionMsg.classList.add('d-none');
-        
-        // Si ya estaba completada, habilitar siguiente
-        if (currentLesson.status === 'completed' || currentLesson.status === 'pending_review') {
-            btnNext.disabled = false;
-            completionMsg.classList.remove('d-none');
+        if (!currentClase) return;
+
+        // Guardar posición actual
+        localStorage.setItem('activeModuloId', moduloId);
+        localStorage.setItem('activeClaseId', claseId);
+
+        // Actualizar UI del sidebar
+        renderSidebar();
+
+        // Actualizar header
+        contentTypeBadge.textContent = getTypeBadge(currentClase.tipo);
+        contentTitle.textContent = currentClase.nombre;
+
+        // Reset estado de navegación
+        btnNext.disabled = true;
+        completionStatus.classList.add('d-none');
+
+        // Verificar si ya está completada
+        const estado = CursosData.getEstadoClase(currentCursoId, moduloId, claseId);
+        if (estado.completado) {
+            enableNext();
+            showCompletionStatus('Completado');
         }
 
-        // RENDERIZAR SEGÚN TIPO (H4.x)
-        dynamicContainer.innerHTML = ''; // Limpiar
-
-        switch(currentLesson.type) {
-            
-            case 'video': // H4.1
-                dynamicContainer.innerHTML = `
-                    <div class="video-wrapper">
-                        <video id="mainVideo" controls width="100%" height="100%">
-                            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"> </video>
-                    </div>`;
-                
-                const video = document.getElementById('mainVideo');
-                // LOGICA AUTOMÁTICA: Al terminar video -> Desbloquear Siguiente
-                video.addEventListener('ended', () => {
-                    markAsComplete();
-                });
-                break;
-
-            case 'texto': // H4.3
-                dynamicContainer.innerHTML = `<div class="p-5">${currentLesson.content}</div>`;
-                // Texto: Se considera "visto" al cargar, pero forzamos al usuario a dar clic en siguiente
-                // Opcional: Detectar scroll al final
-                btnNext.disabled = false; // En texto permitimos avanzar (User request "al apretar siguiente")
-                break;
-
-            case 'pdf': // H4.2 (Visualizar NO Descargar)
-                dynamicContainer.innerHTML = `
-                    <iframe src="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" class="pdf-viewer"></iframe>
-                `;
-                // PDF: Permitimos avanzar tras cargar
-                btnNext.disabled = false; 
-                break;
-
-            case 'quiz': // H4.4 (Lógica Real de Aprobación)
-                dynamicContainer.innerHTML = `
-                    <div class="p-5">
-                        <h4><i class="fas fa-question-circle text-primary"></i> Evaluación Teórica</h4>
-                        <p>Responde correctamente para avanzar. Aprobación: ${currentLesson.passingScore}%</p>
-                        <hr>
-                        <form id="quizForm">
-                            <div class="mb-3">
-                                <label class="fw-bold">1. ¿Cuál es la capa superficial de la piel?</label><br>
-                                <input type="radio" name="q1" value="wrong"> Dermis<br>
-                                <input type="radio" name="q1" value="correct"> Epidermis<br>
-                            </div>
-                            <button type="button" class="btn btn-success" onclick="submitQuiz()">Enviar Respuestas</button>
-                        </form>
-                        <div id="quizResult" class="mt-3"></div>
-                    </div>`;
-                break;
-
-            case 'entrega': // H4.5 (Video Demo + Upload)
-                const uploadStatus = currentLesson.status === 'pending_review' 
-                    ? '<div class="alert alert-warning"><i class="fas fa-clock"></i> Tu entrega está siendo revisada. Puedes avanzar.</div>' 
-                    : '';
-
-                dynamicContainer.innerHTML = `
-                    <div class="p-4">
-                        <h5>1. Video Demostrativo (Instructora)</h5>
-                        <div class="ratio ratio-16x9 mb-4 rounded overflow-hidden">
-                            <video controls><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video>
-                        </div>
-                        
-                        <h5>2. Tu Turno: Sube tu Práctica</h5>
-                        <p class="text-muted small">${currentLesson.instructions}</p>
-                        ${uploadStatus}
-                        
-                        <div class="border dashed p-4 text-center bg-light rounded" id="uploadZone">
-                            <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i><br>
-                            <button class="btn btn-outline-primary btn-sm" onclick="triggerUpload()">Seleccionar Video</button>
-                        </div>
-                    </div>`;
-                break;
+        // Actualizar última actividad
+        const student = CursosData.getStudent();
+        if (!student.progreso[currentCursoId]) {
+            student.progreso[currentCursoId] = { modulos: {} };
         }
+        student.progreso[currentCursoId].ultimaActividad = new Date().toISOString();
+        student.progreso[currentCursoId].ultimaClaseId = claseId;
+        student.progreso[currentCursoId].ultimoModuloId = moduloId;
+        CursosData.saveStudent(student);
+
+        // Cargar contenido según tipo
+        switch (currentClase.tipo) {
+            case 'video':
+                renderVideoContent();
+                break;
+            case 'texto':
+                renderTextContent();
+                break;
+            case 'pdf':
+                renderPDFContent();
+                break;
+            case 'quiz':
+                renderQuizContent();
+                break;
+            case 'entrega':
+                renderEntregaContent();
+                break;
+            default:
+                dynamicContent.innerHTML = '<div class="p-5 text-center">Contenido no disponible</div>';
+        }
+
+        // Actualizar descripción
+        contentDescription.innerHTML = currentClase.descripcion || '';
+
+        // Actualizar navegación
+        updateNavigation();
     }
 
-    // === 5. FUNCIONES DE COMPLETITUD (Lógica de Negocio) ===
+    // ==================== CONTENIDO: VIDEO ====================
 
-    // Función genérica para marcar completado y habilitar botón
-    function markAsComplete() {
-        if (currentLesson.status !== 'completed') {
-            currentLesson.status = 'completed';
-            completionMsg.classList.remove('d-none');
-            completionMsg.innerHTML = '<i class="fas fa-check-circle"></i> ¡Lección Completada!';
-            btnNext.disabled = false;
-            renderSidebar(); // Actualiza checks en sidebar
-        }
+    function renderVideoContent() {
+        const videoSrc = currentClase.src || 'https://www.w3schools.com/html/mov_bbb.mp4';
+
+        dynamicContent.innerHTML = `
+            <div class="video-container">
+                <video id="mainVideo" controls>
+                    <source src="${videoSrc}" type="video/mp4">
+                    Tu navegador no soporta video HTML5.
+                </video>
+            </div>
+        `;
+
+        const video = document.getElementById('mainVideo');
+        videoWatchProgress = 0;
+
+        video.addEventListener('timeupdate', () => {
+            if (video.duration) {
+                const progress = (video.currentTime / video.duration) * 100;
+                videoWatchProgress = Math.max(videoWatchProgress, progress);
+
+                // Marcar como completado al 90%
+                if (videoWatchProgress >= 90 && !isClaseCompleted()) {
+                    markAsCompleted();
+                }
+            }
+        });
+
+        video.addEventListener('ended', () => {
+            if (!isClaseCompleted()) {
+                markAsCompleted();
+            }
+        });
     }
 
-    // H4.4: Lógica de Quiz
+    // ==================== CONTENIDO: TEXTO ====================
+
+    function renderTextContent() {
+        const content = currentClase.contenido || `
+            <h2>Contenido de la Lección</h2>
+            <p>Este es el contenido de texto de la lección "${currentClase.nombre}".</p>
+            <p>El texto enriquecido permite incluir:</p>
+            <ul>
+                <li>Listas ordenadas y no ordenadas</li>
+                <li>Texto en <strong>negrita</strong> y <em>cursiva</em></li>
+                <li>Enlaces y referencias</li>
+            </ul>
+            <h3>Subtítulos</h3>
+            <p>Los subtítulos ayudan a organizar el contenido de manera clara y estructurada.</p>
+        `;
+
+        dynamicContent.innerHTML = `
+            <div class="text-content">
+                ${content}
+            </div>
+        `;
+
+        // Texto se puede avanzar directamente
+        enableNext();
+    }
+
+    // ==================== CONTENIDO: PDF ====================
+
+    function renderPDFContent() {
+        const pdfSrc = currentClase.src || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+
+        dynamicContent.innerHTML = `
+            <div class="pdf-container position-relative">
+                <button class="btn btn-sm btn-light pdf-fullscreen-btn" onclick="window.openPdfFullscreen('${pdfSrc}')">
+                    <i class="fas fa-expand me-1"></i>Pantalla Completa
+                </button>
+                <iframe src="${pdfSrc}#toolbar=1&navpanes=1" allowfullscreen></iframe>
+            </div>
+        `;
+
+        // PDF se puede avanzar directamente
+        enableNext();
+    }
+
+    window.openPdfFullscreen = (src) => {
+        window.open(src, '_blank');
+    };
+
+    // ==================== CONTENIDO: QUIZ (H6.4) ====================
+
+    function renderQuizContent() {
+        const questions = quizQuestions[currentClaseId] || quizQuestions[4];
+        const passingScore = currentClase.passingScore || 70;
+        const totalPoints = questions.reduce((sum, q) => sum + q.puntos, 0);
+        const intentos = CursosData.getIntentosQuiz(currentClaseId);
+        const ultimoIntento = intentos.length > 0 ? intentos[intentos.length - 1] : null;
+        const estado = CursosData.getEstadoClase(currentCursoId, currentModuloId, currentClaseId);
+
+        let lastScoreHTML = '';
+        if (ultimoIntento) {
+            const scoreClass = ultimoIntento.aprobado ? 'text-success' : 'text-danger';
+            lastScoreHTML = `
+                <div class="quiz-last-score">
+                    <span>Último intento: </span>
+                    <strong class="${scoreClass}">${ultimoIntento.puntaje}%</strong>
+                    <span class="ms-2">${ultimoIntento.aprobado ? '(Aprobado)' : '(Reprobado)'}</span>
+                </div>
+            `;
+        }
+
+        // Si ya está aprobado, mostrar vista de completado
+        if (estado.completado) {
+            dynamicContent.innerHTML = `
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <h4><i class="fas fa-check-circle text-success me-2"></i>Quiz Completado</h4>
+                        <p class="text-muted">Has aprobado este cuestionario exitosamente.</p>
+                        ${lastScoreHTML}
+                    </div>
+                    <div class="text-center mt-4">
+                        <button class="btn btn-outline-primary" onclick="window.retryQuiz()">
+                            <i class="fas fa-redo me-2"></i>Volver a Intentar
+                        </button>
+                    </div>
+                </div>
+            `;
+            enableNext();
+            return;
+        }
+
+        const questionsHTML = questions.map((q, index) => `
+            <div class="question-card" data-question-id="${q.id}">
+                <div class="question-number">
+                    Pregunta ${index + 1} de ${questions.length}
+                    <span class="question-points">${q.puntos} pts</span>
+                </div>
+                <div class="question-text">${q.pregunta}</div>
+                <div class="question-options">
+                    ${q.opciones.map((opcion, optIndex) => `
+                        <label class="answer-option" onclick="window.selectAnswer(${q.id}, ${optIndex})">
+                            <input type="radio" name="question-${q.id}" value="${optIndex}">
+                            <span>${opcion}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        dynamicContent.innerHTML = `
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <h4><i class="fas fa-question-circle text-primary me-2"></i>Evaluación</h4>
+                    <p class="text-muted">Responde correctamente para avanzar</p>
+                    <div class="quiz-info">
+                        <div class="quiz-info-item">
+                            <div class="value">${questions.length}</div>
+                            <div class="label">Preguntas</div>
+                        </div>
+                        <div class="quiz-info-item">
+                            <div class="value">${totalPoints}</div>
+                            <div class="label">Puntos</div>
+                        </div>
+                        <div class="quiz-info-item">
+                            <div class="value">${passingScore}%</div>
+                            <div class="label">Para Aprobar</div>
+                        </div>
+                    </div>
+                    ${lastScoreHTML}
+                </div>
+
+                <form id="quizForm">
+                    ${questionsHTML}
+                    <button type="button" class="btn btn-primary quiz-submit-btn" onclick="window.submitQuiz()" id="submitQuizBtn" disabled>
+                        <i class="fas fa-paper-plane me-2"></i>Enviar Respuestas
+                    </button>
+                </form>
+            </div>
+        `;
+
+        // Almacenar datos del quiz para validación
+        window.currentQuizData = { questions, passingScore, totalPoints };
+    }
+
+    window.selectAnswer = (questionId, optionIndex) => {
+        // Marcar opción seleccionada visualmente
+        const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+        questionCard.querySelectorAll('.answer-option').forEach((opt, idx) => {
+            opt.classList.toggle('selected', idx === optionIndex);
+        });
+
+        // Verificar si todas las preguntas están respondidas
+        const allAnswered = window.currentQuizData.questions.every(q => {
+            return document.querySelector(`input[name="question-${q.id}"]:checked`);
+        });
+
+        document.getElementById('submitQuizBtn').disabled = !allAnswered;
+    };
+
     window.submitQuiz = () => {
-        // Simulación: Validar respuestas
-        const q1 = document.querySelector('input[name="q1"]:checked');
-        const resultDiv = document.getElementById('quizResult');
-        
-        if (!q1) { alert("Responde todas las preguntas"); return; }
+        const { questions, passingScore, totalPoints } = window.currentQuizData;
+        let puntosObtenidos = 0;
+        const respuestas = [];
 
-        if (q1.value === 'correct') {
-            resultDiv.innerHTML = '<div class="alert alert-success">¡Aprobado! (100%)</div>';
-            markAsComplete(); // DESBLOQUEA EL BOTÓN SIGUIENTE
-        } else {
-            resultDiv.innerHTML = '<div class="alert alert-danger">Reprobado. Intenta de nuevo.</div>';
-            btnNext.disabled = true; // Mantiene bloqueado
-        }
+        questions.forEach(q => {
+            const selected = document.querySelector(`input[name="question-${q.id}"]:checked`);
+            const selectedIndex = selected ? parseInt(selected.value) : -1;
+            const isCorrect = selectedIndex === q.correcta;
+
+            if (isCorrect) {
+                puntosObtenidos += q.puntos;
+            }
+
+            respuestas.push({
+                questionId: q.id,
+                selected: selectedIndex,
+                correct: q.correcta,
+                isCorrect,
+                puntos: isCorrect ? q.puntos : 0
+            });
+        });
+
+        const porcentaje = Math.round((puntosObtenidos / totalPoints) * 100);
+        const aprobado = porcentaje >= passingScore;
+
+        // Guardar intento
+        CursosData.guardarIntentoQuiz(currentClaseId, respuestas, porcentaje, aprobado);
+
+        // Mostrar resultados
+        showQuizResults(respuestas, porcentaje, aprobado, questions);
     };
 
-    // H4.5: Lógica de Entrega
-    window.triggerUpload = () => {
-        // Simulación de subida
+    function showQuizResults(respuestas, porcentaje, aprobado, questions) {
+        const modal = new bootstrap.Modal(document.getElementById('quizResultsModal'));
+        const header = document.getElementById('quizResultHeader');
+        const title = document.getElementById('quizResultTitle');
+        const body = document.getElementById('quizResultBody');
+        const footer = document.getElementById('quizResultFooter');
+
+        header.className = `modal-header ${aprobado ? 'passed' : 'failed'}`;
+        title.innerHTML = aprobado
+            ? '<i class="fas fa-check-circle me-2"></i>¡Aprobado!'
+            : '<i class="fas fa-times-circle me-2"></i>Reprobado';
+
+        const feedbackHTML = respuestas.map((r, idx) => {
+            const question = questions.find(q => q.id === r.questionId);
+            return `
+                <div class="feedback-item ${r.isCorrect ? 'correct' : 'incorrect'}">
+                    <div class="d-flex justify-content-between">
+                        <strong>Pregunta ${idx + 1}</strong>
+                        <span>${r.isCorrect ? '<i class="fas fa-check text-success"></i>' : '<i class="fas fa-times text-danger"></i>'}</span>
+                    </div>
+                    <div class="small mt-1">
+                        Tu respuesta: ${question.opciones[r.selected] || 'Sin respuesta'}
+                        ${!r.isCorrect ? `<br>Correcta: ${question.opciones[r.correct]}` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        body.innerHTML = `
+            <div class="text-center mb-4">
+                <div class="result-score ${aprobado ? 'passed' : 'failed'}">${porcentaje}%</div>
+                <p class="text-muted">${aprobado ? '¡Felicidades! Has demostrado tu conocimiento.' : 'No te preocupes, puedes intentarlo de nuevo.'}</p>
+            </div>
+            <h6 class="mb-3">Retroalimentación:</h6>
+            ${feedbackHTML}
+        `;
+
+        if (aprobado) {
+            footer.innerHTML = `
+                <button type="button" class="btn btn-success" onclick="window.closeQuizAndContinue()">
+                    <i class="fas fa-arrow-right me-2"></i>Continuar
+                </button>
+            `;
+            // Marcar como completado
+            markAsCompleted();
+        } else {
+            footer.innerHTML = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="window.retryQuiz()">
+                    <i class="fas fa-redo me-2"></i>Reintentar
+                </button>
+            `;
+        }
+
+        modal.show();
+    }
+
+    window.closeQuizAndContinue = () => {
+        bootstrap.Modal.getInstance(document.getElementById('quizResultsModal')).hide();
+    };
+
+    window.retryQuiz = () => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('quizResultsModal'));
+        if (modal) modal.hide();
+        renderQuizContent();
+    };
+
+    // ==================== CONTENIDO: ENTREGA (H6.5) ====================
+
+    function renderEntregaContent() {
+        const modulo = CursosData.getModulo(currentModuloId);
+        const ultimaEntrega = CursosData.getUltimaEntrega(currentClaseId);
+        const instrucciones = currentClase.instrucciones || 'Sube un video demostrando la técnica aprendida en este módulo.';
+        const demoVideo = currentClase.demoVideo || 'https://www.w3schools.com/html/mov_bbb.mp4';
+
+        let uploadSection = '';
+        let statusSection = '';
+
+        if (!ultimaEntrega || ultimaEntrega.estado === 'rechazada') {
+            // Permitir subida
+            uploadSection = `
+                <div class="entrega-section">
+                    <h5 class="entrega-section-title">
+                        <span class="number">2</span>
+                        ${ultimaEntrega?.estado === 'rechazada' ? 'Reenviar Tu Entrega' : 'Sube Tu Práctica'}
+                    </h5>
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('videoInput').click()">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Arrastra aquí tu video o haz clic para seleccionar</div>
+                        <div class="upload-hint">Formatos: MP4, WEBM | Máximo: 500MB</div>
+                        <button class="btn btn-primary upload-btn" type="button">
+                            <i class="fas fa-upload me-2"></i>Seleccionar Video
+                        </button>
+                        <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden onchange="window.handleFileUpload(event)">
+                    </div>
+                </div>
+            `;
+        }
+
+        if (ultimaEntrega) {
+            let statusClass = '';
+            let statusIcon = '';
+            let statusTitle = '';
+            let statusMsg = '';
+
+            switch (ultimaEntrega.estado) {
+                case 'pendiente':
+                    statusClass = 'pending';
+                    statusIcon = 'fas fa-clock';
+                    statusTitle = 'Pendiente de Revisión';
+                    statusMsg = 'Tu entrega ha sido enviada y está esperando la revisión del instructor.';
+                    break;
+                case 'aprobada':
+                    statusClass = 'approved';
+                    statusIcon = 'fas fa-check-circle';
+                    statusTitle = 'Entrega Aprobada';
+                    statusMsg = '¡Felicidades! Tu entrega ha sido aprobada.';
+                    break;
+                case 'rechazada':
+                    statusClass = 'rejected';
+                    statusIcon = 'fas fa-times-circle';
+                    statusTitle = 'Entrega Rechazada';
+                    statusMsg = 'Tu entrega necesita correcciones. Por favor revisa el feedback y vuelve a intentar.';
+                    break;
+            }
+
+            const feedbackHTML = ultimaEntrega.feedback
+                ? `<div class="entrega-feedback">
+                       <strong><i class="fas fa-comment-alt me-2"></i>Feedback del Instructor:</strong>
+                       <p class="mb-0 mt-2">${ultimaEntrega.feedback}</p>
+                   </div>`
+                : '';
+
+            statusSection = `
+                <div class="entrega-status ${statusClass}">
+                    <div class="d-flex align-items-center">
+                        <i class="${statusIcon} fa-2x me-3"></i>
+                        <div>
+                            <strong>${statusTitle}</strong>
+                            <p class="mb-0 small">${statusMsg}</p>
+                        </div>
+                    </div>
+                    ${feedbackHTML}
+                </div>
+            `;
+
+            // Permitir avanzar si está pendiente o aprobada
+            if (ultimaEntrega.estado === 'pendiente' || ultimaEntrega.estado === 'aprobada') {
+                enableNext();
+                if (ultimaEntrega.estado === 'aprobada') {
+                    showCompletionStatus('Entrega Aprobada');
+                } else {
+                    showCompletionStatus('Pendiente de Revisión', 'warning');
+                }
+            }
+        }
+
+        dynamicContent.innerHTML = `
+            <div class="entrega-container">
+                <div class="entrega-instructions">
+                    <strong><i class="fas fa-tasks me-2"></i>Instrucciones:</strong>
+                    <p class="mb-0 mt-2">${instrucciones}</p>
+                </div>
+
+                <div class="entrega-section">
+                    <h5 class="entrega-section-title">
+                        <span class="number">1</span>
+                        Video Demostrativo
+                    </h5>
+                    <div class="entrega-demo-video">
+                        <div class="video-container">
+                            <video controls>
+                                <source src="${demoVideo}" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
+                </div>
+
+                ${uploadSection}
+                ${statusSection}
+            </div>
+        `;
+
+        // Setup drag and drop
+        setTimeout(setupDragAndDrop, 100);
+    }
+
+    function setupDragAndDrop() {
         const uploadZone = document.getElementById('uploadZone');
-        uploadZone.innerHTML = '<div class="spinner-border text-primary" role="status"></div> Subiendo...';
-        
-        setTimeout(() => {
-            uploadZone.innerHTML = '<div class="text-success fw-bold"><i class="fas fa-check"></i> Archivo enviado</div>';
-            
-            // Lógica especial: Entrega no es "completed" sino "pending_review"
-            // Pero permitimos avanzar para no bloquear el curso entero (Regla de negocio común)
-            currentLesson.status = 'pending_review';
-            completionMsg.classList.remove('d-none');
-            completionMsg.innerHTML = '<i class="fas fa-clock"></i> Pendiente de Revisión';
-            btnNext.disabled = false; // Habilitamos siguiente
-            renderSidebar();
-        }, 1500);
+        if (!uploadZone) return;
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) processFile(file);
+        });
+    }
+
+    window.handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) processFile(file);
     };
 
-    // === 6. NAVEGACIÓN (Botón Siguiente) ===
-    btnNext.addEventListener('click', () => {
-        // Al dar click, primero aseguramos que el estado actual se guarde (si aplica)
-        // Y calculamos cuál es la siguiente lección
-        
-        // Lógica para desbloquear la SIGUIENTE lección en la data
-        let nextM = currentModuleIndex;
-        let nextL = currentLessonIndex + 1;
-
-        // Si se acaba el módulo, saltar al siguiente
-        if (nextL >= courseData.modules[currentModuleIndex].lessons.length) {
-            nextM++;
-            nextL = 0;
+    function processFile(file) {
+        // Validar formato
+        const validTypes = ['video/mp4', 'video/webm'];
+        if (!validTypes.includes(file.type)) {
+            alert('Formato no válido. Solo se permiten archivos MP4 o WEBM.');
+            return;
         }
 
-        // Validar si existe esa siguiente lección
-        if (courseData.modules[nextM] && courseData.modules[nextM].lessons[nextL]) {
-            // DESBLOQUEO AUTOMÁTICO (H6.3)
-            courseData.modules[nextM].lessons[nextL].status = 'active'; // Quitar candado
-            loadLesson(nextM, nextL);
+        // Validar tamaño (500MB)
+        const maxSize = 500 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('El archivo excede el límite de 500MB.');
+            return;
+        }
+
+        // Simular subida
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <div class="fw-bold">Subiendo video...</div>
+                <div class="progress mt-3" style="height: 8px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="uploadProgress" style="width: 0%"></div>
+                </div>
+            </div>
+        `;
+
+        // Simular progreso
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 20;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                completeUpload(file.name);
+            }
+            document.getElementById('uploadProgress').style.width = `${progress}%`;
+        }, 300);
+    }
+
+    function completeUpload(fileName) {
+        // Guardar entrega
+        CursosData.guardarEntrega(currentClaseId, fileName);
+
+        // Actualizar estado en el progreso (NO completado, solo pendiente)
+        const student = CursosData.getStudent();
+        if (!student.progreso[currentCursoId].modulos[currentModuloId]) {
+            student.progreso[currentCursoId].modulos[currentModuloId] = { clases: {} };
+        }
+        student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] = {
+            completado: false,
+            estado: 'pendiente',
+            fecha: new Date().toISOString()
+        };
+        CursosData.saveStudent(student);
+
+        // Recargar contenido
+        renderEntregaContent();
+        renderSidebar();
+    }
+
+    // ==================== CERTIFICADO (H6.6) ====================
+
+    function updateCertificateStatus() {
+        const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
+
+        if (canGet.puede) {
+            certificateItem.classList.remove('locked');
+            certificateItem.classList.add('unlocked');
+            certStatus.textContent = '¡Disponible para descargar!';
+            certLock.className = 'fas fa-unlock cert-lock text-success';
         } else {
-            alert("¡Felicidades! Has terminado todo el curso.");
+            certificateItem.classList.add('locked');
+            certificateItem.classList.remove('unlocked');
+
+            if (canGet.razon === 'pendiente') {
+                certStatus.textContent = `Esperando corrección: ${canGet.moduloNombre || 'entrega práctica'}`;
+            } else if (canGet.razon === 'entrega') {
+                certStatus.textContent = `Completa la entrega: ${canGet.moduloNombre || 'práctica pendiente'}`;
+            } else {
+                certStatus.textContent = 'Completa el curso para desbloquear';
+            }
         }
-    });
+    }
 
-    btnPrev.addEventListener('click', () => {
-        // Lógica inversa simple para retroceder
-        // ... (Implementación similar restando índices)
-    });
+    window.showCertificate = () => {
+        const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
+        const modal = new bootstrap.Modal(document.getElementById('certificateModal'));
+        const body = document.getElementById('certificateBody');
 
+        if (canGet.puede) {
+            const curso = CursosData.getCurso(currentCursoId);
+            const student = CursosData.getStudent();
+            const today = new Date().toLocaleDateString('es-CL', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            body.innerHTML = `
+                <div class="certificate-preview">
+                    <div class="certificate-logo">KIKIBROWS</div>
+                    <div class="certificate-text">Certificado de Finalización</div>
+                    <div class="certificate-text">Se otorga a:</div>
+                    <div class="certificate-name">${student.nombre}</div>
+                    <div class="certificate-text">Por completar satisfactoriamente el curso:</div>
+                    <div class="certificate-course">${curso.nombre}</div>
+                    <div class="certificate-date">${today}</div>
+                </div>
+                <div class="mt-4">
+                    <button class="btn btn-success btn-lg" onclick="window.downloadCertificate()">
+                        <i class="fas fa-download me-2"></i>Descargar PDF
+                    </button>
+                </div>
+            `;
+        } else {
+            let message = '';
+            if (canGet.razon === 'pendiente') {
+                message = `
+                    <i class="fas fa-clock fa-4x text-warning mb-4"></i>
+                    <h4>¡Casi listo!</h4>
+                    <p class="text-muted">Tu certificado se desbloqueará cuando aprobemos tu entrega práctica.</p>
+                    <p><strong>Estado:</strong> Esperando corrección del instructor</p>
+                `;
+            } else if (canGet.razon === 'entrega') {
+                message = `
+                    <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
+                    <h4>Entrega Rechazada</h4>
+                    <p class="text-muted">Tu entrega fue rechazada. Por favor corrige tu entrega práctica en el módulo "<strong>${canGet.moduloNombre}</strong>" para obtener tu certificado.</p>
+                `;
+            } else {
+                message = `
+                    <i class="fas fa-lock fa-4x text-muted mb-4"></i>
+                    <h4>Certificado Bloqueado</h4>
+                    <p class="text-muted">Completa todo el contenido del curso y aprueba tus prácticas para desbloquear tu certificado.</p>
+                    <div class="progress mt-4" style="height: 20px;">
+                        <div class="progress-bar" style="width: ${CursosData.calcularProgresoCurso(currentCursoId).porcentaje}%">
+                            ${CursosData.calcularProgresoCurso(currentCursoId).porcentaje}%
+                        </div>
+                    </div>
+                `;
+            }
+            body.innerHTML = message;
+        }
+
+        modal.show();
+    };
+
+    window.downloadCertificate = () => {
+        // Registrar descarga
+        CursosData.generarCertificado(currentCursoId);
+
+        // Simular descarga de PDF
+        alert('¡Certificado descargado! (En producción esto generaría un PDF real)');
+    };
+
+    // ==================== NAVEGACIÓN ====================
+
+    function updateNavigation() {
+        const { prevClase, nextClase } = getAdjacentClases();
+
+        btnPrev.disabled = !prevClase;
+        // btnNext se habilita según el contenido completado
+    }
+
+    function getAdjacentClases() {
+        const modulos = CursosData.getModulosByCurso(currentCursoId);
+        let allClases = [];
+
+        modulos.forEach(modulo => {
+            const clases = CursosData.getClasesByModulo(modulo.id);
+            clases.forEach(clase => {
+                allClases.push({ moduloId: modulo.id, claseId: clase.id });
+            });
+        });
+
+        const currentIndex = allClases.findIndex(c => c.claseId === currentClaseId);
+
+        return {
+            prevClase: currentIndex > 0 ? allClases[currentIndex - 1] : null,
+            nextClase: currentIndex < allClases.length - 1 ? allClases[currentIndex + 1] : null
+        };
+    }
+
+    function navigatePrev() {
+        const { prevClase } = getAdjacentClases();
+        if (prevClase) {
+            loadClase(prevClase.moduloId, prevClase.claseId);
+        }
+    }
+
+    function navigateNext() {
+        // Marcar como completado si es texto/pdf y no está marcado
+        if (['texto', 'pdf'].includes(currentClase?.tipo) && !isClaseCompleted()) {
+            markAsCompleted();
+        }
+
+        const { nextClase } = getAdjacentClases();
+        if (nextClase) {
+            loadClase(nextClase.moduloId, nextClase.claseId);
+        } else {
+            // Fin del curso
+            updateCertificateStatus();
+            const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
+            if (canGet.puede) {
+                showCertificate();
+            } else {
+                alert('¡Felicidades! Has llegado al final del contenido. Completa las entregas pendientes para obtener tu certificado.');
+            }
+        }
+    }
+
+    // ==================== UTILIDADES ====================
+
+    function isClaseCompleted() {
+        const estado = CursosData.getEstadoClase(currentCursoId, currentModuloId, currentClaseId);
+        return estado.completado;
+    }
+
+    function markAsCompleted() {
+        CursosData.marcarClaseCompletada(currentCursoId, currentModuloId, currentClaseId);
+        renderSidebar();
+        updateCertificateStatus();
+        enableNext();
+        showCompletionStatus('Completado');
+    }
+
+    function enableNext() {
+        btnNext.disabled = false;
+    }
+
+    function showCompletionStatus(text, type = 'success') {
+        completionStatus.classList.remove('d-none');
+        completionText.textContent = text;
+
+        if (type === 'warning') {
+            completionStatus.className = 'completion-status text-warning';
+            completionStatus.querySelector('i').className = 'fas fa-clock me-1';
+        } else {
+            completionStatus.className = 'completion-status text-success';
+            completionStatus.querySelector('i').className = 'fas fa-check-circle me-1';
+        }
+    }
 });

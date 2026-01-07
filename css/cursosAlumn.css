@@ -1,14 +1,10 @@
-/* Importamos los estilos base de la marca */
-@import url('layout.css');
-@import url('account.css');
+/* css/cursosAlumn.css - Dashboard Mis Cursos (H6.1) */
 
 :root {
     --sidebar-width: 300px;
-    /* Los colores ya vienen definidos en layout.css */
 }
 
 body {
-    /* Mantenemos el fondo animado de layout.css */
     margin: 0;
     padding: 0;
 }
@@ -16,18 +12,7 @@ body {
 #main-layout {
     display: flex;
     min-height: 100vh;
-    /* El padding-top se ajusta para la navbar doble */
-    padding-top: 130px; 
-}
-
-/* Aplicamos la estética de account-card a las lecciones y contenido */
-#sidebar, #content-area .card, .quiz-container, .assignment-container {
-    background-color: rgba(217, 205, 184, 0.95) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 8px;
-    border: none;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    padding-top: 130px;
 }
 
 #content-area {
@@ -35,101 +20,263 @@ body {
     padding: 30px;
 }
 
-.lesson-list-item {
-    padding: 15px;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    color: var(--text-dark);
-    font-weight: 500;
+/* Dashboard Header */
+.dashboard-header {
+    margin-bottom: 2rem;
 }
 
-.lesson-list-item.active {
-    background-color: var(--primary-color) !important;
-    color: white !important;
+.dashboard-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
 }
 
-.lesson-list-item i.text-success {
-    color: var(--accent-color) !important;
-}
-
-.video-container {
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-    aspect-ratio: 16/9;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.progress-custom {
-    height: 8px;
-    background-color: rgba(255,255,255,0.4);
-    border-radius: 5px;
-}
-
-.progress-fill {
-    background-color: var(--primary-color);
-    border-radius: 5px;
-}
-/* Añadir al final de cursosAlumn.css */
-
+/* Course Cards */
 .course-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .course-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
-.lesson-list-item {
-    transition: all 0.2s ease;
+.course-card.completed {
+    border: 2px solid var(--primary-color);
 }
 
-.lesson-list-item:hover:not(.text-muted) {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-    padding-left: 20px;
-}
-
-/* Efecto de carga para el video */
-.video-container iframe {
-    transition: opacity 0.5s ease;
-}
-
-.custom-btn-guardar {
-    background-color: var(--accent-color);
+/* Completed Badge */
+.completed-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     color: white;
-    border: none;
-    transition: filter 0.2s;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    display: flex;
+    align-items: center;
 }
 
-.custom-btn-guardar:hover {
-    filter: brightness(1.1);
-}
-/* Feedback de interacción */
-.lesson-list-item {
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
+/* Course Image */
+.course-image {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
 }
 
-.lesson-list-item:hover:not(.text-muted) {
-    background-color: rgba(0, 0, 0, 0.05);
-    padding-left: 20px;
-    border-left: 4px solid var(--primary-color);
-}
-
-.lesson-list-item.active {
-    background-color: var(--primary-color) !important;
-    color: white !important;
-    border-left: 4px solid var(--accent-color);
-}
-
-.course-card {
+.course-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-.course-card:hover {
-    transform: translateY(-5px);
+.course-card:hover .course-image img {
+    transform: scale(1.05);
 }
+
+.course-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+
+.duration-badge {
+    background: rgba(255,255,255,0.9);
+    color: var(--text-dark);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Course Body */
+.course-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.course-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.course-description {
+    font-size: 0.85rem;
+    color: var(--text-grey);
+    margin-bottom: 16px;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+/* Progress Section */
+.progress-section {
+    margin-bottom: 16px;
+}
+
+.progress-label {
+    font-size: 0.8rem;
+    color: var(--text-grey);
+    font-weight: 500;
+}
+
+.progress-percentage {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.progress-bar-container {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.progress-bar-fill.completed {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.progress-detail {
+    font-size: 0.75rem;
+    color: var(--text-grey);
+    margin-top: 6px;
+}
+
+/* Last Activity */
+.last-activity {
+    font-size: 0.8rem;
+    color: var(--text-grey);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.last-activity i {
+    color: var(--secondary-color);
+}
+
+/* Buttons */
+.btn-kiki {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-kiki:hover {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 157, 111, 0.4);
+}
+
+.btn-kiki-secondary {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-kiki-secondary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Empty State */
+.empty-state-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.empty-state-container i {
+    color: var(--secondary-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #main-layout {
+        padding-top: 120px;
+    }
+
+    #content-area {
+        padding: 15px;
+    }
+
+    .course-card {
+        margin-bottom: 0;
+    }
+
+    .dashboard-header h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .course-image {
+        height: 140px;
+    }
+
+    .course-body {
+        padding: 15px;
+    }
+
+    .course-title {
+        font-size: 1rem;
+    }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.course-card {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.col-12:nth-child(1) .course-card { animation-delay: 0.1s; }
+.col-12:nth-child(2) .course-card { animation-delay: 0.2s; }
+.col-12:nth-child(3) .course-card { animation-delay: 0.3s; }
+.col-12:nth-child(4) .course-card { animation-delay: 0.4s; }
+.col-12:nth-child(5) .course-card { animation-delay: 0.5s; }
+.col-12:nth-child(6) .course-card { animation-delay: 0.6s; }
