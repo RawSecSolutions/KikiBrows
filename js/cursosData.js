@@ -383,10 +383,357 @@ const CursosData = {
             entrega: 'text-success'
         };
         return colores[tipo] || 'text-secondary';
+    },
+
+    // ==================== ALUMNA / PROGRESO ====================
+
+    // Clave para datos de alumna
+    STUDENT_STORAGE_KEY: 'kikibrows_student',
+
+    // Datos por defecto de alumna (simulación)
+    defaultStudentData: {
+        id: 1,
+        nombre: 'María García',
+        email: 'maria@example.com',
+        cursosAdquiridos: [1, 2], // IDs de cursos comprados
+        progreso: {
+            // cursoId: { moduloId: { claseId: { completado: bool, fecha: date } } }
+            1: {
+                ultimaActividad: '2026-01-06T10:30:00',
+                ultimaClaseId: 2,
+                ultimoModuloId: 1,
+                modulos: {
+                    1: {
+                        clases: {
+                            1: { completado: true, fecha: '2026-01-05T09:00:00' },
+                            2: { completado: false, fecha: null },
+                            3: { completado: false, fecha: null },
+                            4: { completado: false, fecha: null }
+                        }
+                    },
+                    2: {
+                        clases: {
+                            5: { completado: false, fecha: null },
+                            6: { completado: false, fecha: null },
+                            7: { completado: false, fecha: null }
+                        }
+                    },
+                    3: {
+                        clases: {
+                            8: { completado: false, fecha: null },
+                            9: { completado: false, fecha: null },
+                            10: { completado: false, fecha: null },
+                            11: { completado: false, fecha: null, estado: 'sin_entregar' }, // entrega
+                            12: { completado: false, fecha: null }
+                        }
+                    }
+                }
+            },
+            2: {
+                ultimaActividad: '2026-01-04T15:00:00',
+                ultimaClaseId: 13,
+                ultimoModuloId: 4,
+                modulos: {
+                    4: {
+                        clases: {
+                            13: { completado: true, fecha: '2026-01-04T14:30:00' },
+                            14: { completado: true, fecha: '2026-01-04T15:00:00' },
+                            15: { completado: false, fecha: null }
+                        }
+                    },
+                    5: {
+                        clases: {
+                            16: { completado: false, fecha: null },
+                            17: { completado: false, fecha: null, estado: 'sin_entregar' }
+                        }
+                    }
+                }
+            }
+        },
+        quizAttempts: {
+            // claseId: [{ fecha, respuestas, puntaje, aprobado }]
+        },
+        entregas: {
+            // claseId: [{ fecha, archivo, estado: 'pendiente'|'aprobada'|'rechazada', feedback }]
+        },
+        certificados: {
+            // cursoId: { fecha, descargado }
+        }
+    },
+
+    // Inicializar datos de alumna
+    initStudent() {
+        const stored = localStorage.getItem(this.STUDENT_STORAGE_KEY);
+        if (!stored) {
+            this.saveStudent(this.defaultStudentData);
+        }
+        return this.getStudent();
+    },
+
+    getStudent() {
+        const stored = localStorage.getItem(this.STUDENT_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : this.defaultStudentData;
+    },
+
+    saveStudent(data) {
+        localStorage.setItem(this.STUDENT_STORAGE_KEY, JSON.stringify(data));
+    },
+
+    resetStudent() {
+        this.saveStudent(this.defaultStudentData);
+        return this.defaultStudentData;
+    },
+
+    // Obtener cursos adquiridos por la alumna
+    getCursosAdquiridos() {
+        const student = this.getStudent();
+        const cursos = [];
+        student.cursosAdquiridos.forEach(cursoId => {
+            const curso = this.getCurso(cursoId);
+            if (curso) {
+                cursos.push({
+                    ...curso,
+                    progreso: this.calcularProgresoCurso(cursoId),
+                    ultimaActividad: student.progreso[cursoId]?.ultimaActividad || null
+                });
+            }
+        });
+        // Ordenar por última actividad (más reciente primero)
+        return cursos.sort((a, b) => {
+            if (!a.ultimaActividad) return 1;
+            if (!b.ultimaActividad) return -1;
+            return new Date(b.ultimaActividad) - new Date(a.ultimaActividad);
+        });
+    },
+
+    // Calcular progreso de un curso (porcentaje)
+    calcularProgresoCurso(cursoId) {
+        const student = this.getStudent();
+        const progresoData = student.progreso[cursoId];
+        if (!progresoData) return { porcentaje: 0, completados: 0, total: 0 };
+
+        let totalClases = 0;
+        let clasesCompletadas = 0;
+
+        const modulos = this.getModulosByCurso(cursoId);
+        modulos.forEach(modulo => {
+            const clases = this.getClasesByModulo(modulo.id);
+            clases.forEach(clase => {
+                totalClases++;
+                const claseProgreso = progresoData.modulos?.[modulo.id]?.clases?.[clase.id];
+                if (claseProgreso?.completado) {
+                    clasesCompletadas++;
+                }
+            });
+        });
+
+        return {
+            porcentaje: totalClases > 0 ? Math.round((clasesCompletadas / totalClases) * 100) : 0,
+            completados: clasesCompletadas,
+            total: totalClases
+        };
+    },
+
+    // Calcular progreso de un módulo
+    calcularProgresoModulo(cursoId, moduloId) {
+        const student = this.getStudent();
+        const progresoData = student.progreso[cursoId]?.modulos?.[moduloId];
+        if (!progresoData) return { porcentaje: 0, completados: 0, total: 0 };
+
+        const clases = this.getClasesByModulo(moduloId);
+        let completadas = 0;
+        clases.forEach(clase => {
+            if (progresoData.clases?.[clase.id]?.completado) {
+                completadas++;
+            }
+        });
+
+        return {
+            porcentaje: clases.length > 0 ? Math.round((completadas / clases.length) * 100) : 0,
+            completados: completadas,
+            total: clases.length
+        };
+    },
+
+    // Marcar clase como completada
+    marcarClaseCompletada(cursoId, moduloId, claseId) {
+        const student = this.getStudent();
+        if (!student.progreso[cursoId]) {
+            student.progreso[cursoId] = { modulos: {} };
+        }
+        if (!student.progreso[cursoId].modulos[moduloId]) {
+            student.progreso[cursoId].modulos[moduloId] = { clases: {} };
+        }
+        student.progreso[cursoId].modulos[moduloId].clases[claseId] = {
+            completado: true,
+            fecha: new Date().toISOString()
+        };
+        student.progreso[cursoId].ultimaActividad = new Date().toISOString();
+        student.progreso[cursoId].ultimaClaseId = claseId;
+        student.progreso[cursoId].ultimoModuloId = moduloId;
+        this.saveStudent(student);
+    },
+
+    // Obtener estado de una clase
+    getEstadoClase(cursoId, moduloId, claseId) {
+        const student = this.getStudent();
+        return student.progreso[cursoId]?.modulos?.[moduloId]?.clases?.[claseId] || { completado: false };
+    },
+
+    // Verificar si elemento está desbloqueado (secuencial)
+    isClaseDesbloqueada(cursoId, moduloId, claseId) {
+        const modulos = this.getModulosByCurso(cursoId);
+        let prevCompleted = true;
+
+        for (const modulo of modulos) {
+            const clases = this.getClasesByModulo(modulo.id);
+            for (const clase of clases) {
+                if (clase.id === claseId) {
+                    return prevCompleted;
+                }
+                const estado = this.getEstadoClase(cursoId, modulo.id, clase.id);
+                prevCompleted = estado.completado;
+            }
+        }
+        return false;
+    },
+
+    // Obtener última clase vista (para "Continuar")
+    getUltimaClase(cursoId) {
+        const student = this.getStudent();
+        const progreso = student.progreso[cursoId];
+        if (progreso && progreso.ultimaClaseId) {
+            return {
+                claseId: progreso.ultimaClaseId,
+                moduloId: progreso.ultimoModuloId
+            };
+        }
+        // Si es primera vez, devolver primer elemento
+        const modulos = this.getModulosByCurso(cursoId);
+        if (modulos.length > 0) {
+            const clases = this.getClasesByModulo(modulos[0].id);
+            if (clases.length > 0) {
+                return { claseId: clases[0].id, moduloId: modulos[0].id };
+            }
+        }
+        return null;
+    },
+
+    // ==================== QUIZZES ====================
+
+    // Guardar intento de quiz
+    guardarIntentoQuiz(claseId, respuestas, puntaje, aprobado) {
+        const student = this.getStudent();
+        if (!student.quizAttempts[claseId]) {
+            student.quizAttempts[claseId] = [];
+        }
+        student.quizAttempts[claseId].push({
+            fecha: new Date().toISOString(),
+            respuestas,
+            puntaje,
+            aprobado
+        });
+        this.saveStudent(student);
+    },
+
+    // Obtener intentos de quiz
+    getIntentosQuiz(claseId) {
+        const student = this.getStudent();
+        return student.quizAttempts[claseId] || [];
+    },
+
+    // ==================== ENTREGAS ====================
+
+    // Guardar entrega
+    guardarEntrega(claseId, archivo) {
+        const student = this.getStudent();
+        if (!student.entregas[claseId]) {
+            student.entregas[claseId] = [];
+        }
+        student.entregas[claseId].push({
+            fecha: new Date().toISOString(),
+            archivo,
+            estado: 'pendiente',
+            feedback: null
+        });
+        this.saveStudent(student);
+    },
+
+    // Obtener entregas
+    getEntregas(claseId) {
+        const student = this.getStudent();
+        return student.entregas[claseId] || [];
+    },
+
+    // Obtener última entrega
+    getUltimaEntrega(claseId) {
+        const entregas = this.getEntregas(claseId);
+        return entregas.length > 0 ? entregas[entregas.length - 1] : null;
+    },
+
+    // Actualizar estado de entrega (para simulación admin)
+    actualizarEstadoEntrega(claseId, indice, estado, feedback) {
+        const student = this.getStudent();
+        if (student.entregas[claseId] && student.entregas[claseId][indice]) {
+            student.entregas[claseId][indice].estado = estado;
+            student.entregas[claseId][indice].feedback = feedback;
+            this.saveStudent(student);
+        }
+    },
+
+    // ==================== CERTIFICADOS ====================
+
+    // Verificar si puede obtener certificado
+    puedeObtenerCertificado(cursoId) {
+        const progreso = this.calcularProgresoCurso(cursoId);
+        if (progreso.porcentaje < 100) return { puede: false, razon: 'progreso' };
+
+        // Verificar entregas aprobadas
+        const student = this.getStudent();
+        const modulos = this.getModulosByCurso(cursoId);
+        for (const modulo of modulos) {
+            const clases = this.getClasesByModulo(modulo.id);
+            for (const clase of clases) {
+                if (clase.tipo === 'entrega') {
+                    const ultimaEntrega = this.getUltimaEntrega(clase.id);
+                    if (!ultimaEntrega || ultimaEntrega.estado !== 'aprobada') {
+                        return {
+                            puede: false,
+                            razon: ultimaEntrega?.estado === 'pendiente' ? 'pendiente' : 'entrega',
+                            moduloNombre: modulo.nombre
+                        };
+                    }
+                }
+            }
+        }
+        return { puede: true };
+    },
+
+    // Generar certificado
+    generarCertificado(cursoId) {
+        const student = this.getStudent();
+        if (!student.certificados) student.certificados = {};
+        student.certificados[cursoId] = {
+            fecha: new Date().toISOString(),
+            descargado: true
+        };
+        this.saveStudent(student);
+    },
+
+    // Obtener conteo de módulos completados
+    getModulosCompletados(cursoId) {
+        const modulos = this.getModulosByCurso(cursoId);
+        let completados = 0;
+        modulos.forEach(modulo => {
+            const progreso = this.calcularProgresoModulo(cursoId, modulo.id);
+            if (progreso.porcentaje === 100) completados++;
+        });
+        return { completados, total: modulos.length };
     }
 };
 
 // Inicializar al cargar
 document.addEventListener('DOMContentLoaded', () => {
     CursosData.init();
+    CursosData.initStudent();
 });
