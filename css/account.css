@@ -29,11 +29,16 @@ main, #content-area {
 /* =======================================================
    3. MI CUENTA (Vertical)
    ======================================================= */
-.account-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%; 
-    padding: 30px; 
+.account-card, 
+.purchase-card-item, 
+.cert-card {
+    background-color: #D9CDB8 !important;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    width: 100%;
+    color: #333;
 }
 
 .account-card h2 {
@@ -172,20 +177,3 @@ main, #content-area {
     border-color: #6B7C54;
 }
 
-/* =======================================================
-   8. RESPONSIVE
-   ======================================================= */
-@media (max-width: 768px) {
-    .cert-body-flex, 
-    .purchase-card-item .row {
-        flex-direction: column;
-        align-items: flex-start !important;
-    }
-    
-    .cert-actions, 
-    .text-end {
-        margin-top: 15px;
-        width: 100%;
-        text-align: left !important;
-    }
-}
