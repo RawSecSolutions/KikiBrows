@@ -1,42 +1,68 @@
 // js/componenteAdmin.js
 
-const navbarHTML = `
-    <div class="container-fluid h-100 d-flex justify-content-between align-items-center">
-        
-        <button id="sidebar-toggle-btn" class="btn border-0 p-2 me-3 d-lg-none" type="button" aria-label="Toggle sidebar">
-            <i class="fas fa-bars text-dark fs-2"></i> 
+const renderNavbarAdmin = () => {
+    const adminName = localStorage.getItem('userName') || 'Admin';
+
+    const navbarHTML = `
+    <div class="top-navbar container-fluid d-flex justify-content-between align-items-center position-relative py-2">
+        <div class="top-left d-none d-lg-block"></div>
+        <button class="navbar-toggler custom-toggler d-lg-none border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-bars text-dark fs-2"></i>
         </button>
-        
-        <div class="kikibrows-logo fs-3 fw-bold text-dark flex-grow-1 text-center text-lg-start">KIKIBROWS</div>
-        
-        <div class="top-icons d-flex align-items-center gap-3">
-            <a href="#" class="text-secondary position-relative">
-                <i class="fas fa-bell fs-5"></i>
+        <div class="kikibrows-logo position-absolute start-50 translate-middle-x">KIKIBROWS</div>
+        <div class="top-icons">
+            <a href="#" class="text-secondary position-relative me-2">
+                <i class="fas fa-bell"></i>
                 <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
                     <span class="visually-hidden">Alertas</span>
                 </span>
             </a>
             <div class="dropdown">
-                <a class="nav-link text-secondary d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="d-flex flex-column text-end line-height-1">
-                        <span class="d-none d-md-inline fs-6 fw-bold">Emilio Admin</span>
-                        <span class="d-none d-md-inline text-muted" style="font-size: 0.75rem;">Super Admin</span>
-                    </div>
-                    <i class="fa-solid fa-circle-user fs-4 ms-1"></i>
+                <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-user-shield text-success"></i>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-3">
-                    <li><h6 class="dropdown-header">Sesión Activa</h6></li>
-                    <li><a class="dropdown-item text-danger" href="login.html"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><h6 class="dropdown-header">Hola, ${adminName}</h6></li>
+                    <li><span class="dropdown-item-text text-muted small">Super Admin</span></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="adminPanel.html">Panel Admin</a></li>
+                    <li><a class="dropdown-item" href="#" id="btn-logout-admin">Cerrar Sesión</a></li>
                 </ul>
             </div>
         </div>
     </div>
-    <div id="mobile-backdrop" class="sidebar-backdrop"></div>
-`;
 
-// Insertar el HTML
-const navbarContainer = document.getElementById('navbar-global');
-if (navbarContainer) {
-    navbarContainer.className = 'top-navbar'; 
-    navbarContainer.innerHTML = navbarHTML;
-}
+    <nav class="navbar navbar-expand-lg main-navbar py-1">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="navbarContenido">
+                <ul class="navbar-nav mb-2 mb-lg-0 gap-1 gap-lg-3">
+                    <li class="nav-item separator"><a class="nav-link" href="adminPanel.html">PANEL</a></li>
+                    <li class="nav-item separator"><a class="nav-link" href="adminCalendar.html">CALENDARIO</a></li>
+                    <li class="nav-item separator"><a class="nav-link" href="adminTransa.html">TRANSACCIONES</a></li>
+                    <li class="nav-item separator"><a class="nav-link" href="index.html">VER SITIO</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <hr class="navbar-divider">
+    `;
+
+    const navbarContainer = document.getElementById('navbar-global');
+    if (navbarContainer) {
+        navbarContainer.innerHTML = navbarHTML;
+
+        // Listener para el botón de cerrar sesión
+        const logoutBtn = document.getElementById('btn-logout-admin');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userName');
+                window.location.href = 'index.html';
+            });
+        }
+    }
+};
+
+// Ejecutamos la función
+renderNavbarAdmin();
