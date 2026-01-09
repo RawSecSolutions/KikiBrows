@@ -1,30 +1,32 @@
-/* css/creaCurso.css - Estilos para Creación de Curso */
+/* css/creaCurso.css - Estilos para Creación de Curso - DISEÑO MINIMALISTA */
 
 :root {
-    --primary-color: #8B9D6F;
-    --secondary-color: #B5C49A;
-    --accent-color: #6B7C54;
-    --card-bg: #FFFFFF;
-    --text-dark: #333333;
-    --text-grey: #666666;
-    --border-color: #e0e0e0;
-    --input-bg: #f8f8f8;
+    --primary-color: #8A835A;
+    --secondary-color: #D8B6B1;
+    --accent-color: #6B664A;
+    --card-bg: #FDFCFA;
+    --text-dark: #2C2A25;
+    --text-grey: #6B6862;
+    --border-color: rgba(138, 131, 90, 0.15);
+    --input-bg: #FFFFFF;
 }
 
 /* Layout */
 .page-title {
-    font-size: 1.4rem;
-    font-weight: 600;
+    font-size: 2rem;
+    font-weight: 400;
     color: var(--text-dark);
+    font-family: 'Cormorant Garamond', serif;
+    letter-spacing: 2px;
 }
 
 /* Cards */
 .card-section {
-    background: rgba(217, 205, 184, 0.85);
+    background: var(--card-bg);
     border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
 }
 
 .section-title {

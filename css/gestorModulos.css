@@ -1,8 +1,8 @@
 /* css/gestorModulos.css - Estilos para Edición de Módulo */
 
 :root {
-    --primary-color: #8B9D6F;
-    --secondary-color: #B5C49A;
+    --primary-color: var(--primary-color);
+    --secondary-color: var(--secondary-color);
     --accent-color: #6B7C54;
     --card-bg: #FFFFFF;
     --text-dark: #333333;
@@ -20,7 +20,7 @@
 
 /* Cards */
 .card-section {
-    background: rgba(217, 205, 184, 0.85);
+    background: rgba(253, 252, 250, 0.95);
     border-radius: 12px;
     padding: 25px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);

@@ -1,11 +1,11 @@
 /* css/gestionCursos.css - Gestión de Cursos */
 
 :root {
-    --primary-color: #8B9D6F;
-    --secondary-color: #B5C49A;
+    --primary-color: var(--primary-color);
+    --secondary-color: var(--secondary-color);
     --accent-color: #6B7C54;
-    --beige-bg: rgba(217, 205, 184, 0.85);
-    --beige-light: #D9CDB8;
+    --beige-bg: rgba(253, 252, 250, 0.95);
+    --beige-light: var(--card-bg);
     --card-bg: #FFFFFF;
     --text-dark: #333333;
     --text-grey: #666666;

@@ -1,18 +1,19 @@
-/* css/claseAlumn.css - Aula Virtual LMS (H6.2-H6.6) */
+/* css/claseAlumn.css - Aula Virtual LMS (H6.2-H6.6) - DISEÑO MINIMALISTA */
 
 :root {
-    --primary-color: #8B9D6F;
-    --secondary-color: #B5C49A;
-    --accent-color: #6B7C54;
-    --light-bg: #F5F7F5;
-    --card-bg: #FFFFFF;
-    --text-dark: #333333;
-    --text-grey: #666666;
-    --text-muted: #999999;
-    --border-color: #e0e0e0;
-    --success-color: #28a745;
-    --warning-color: #ffc107;
-    --danger-color: #dc3545;
+    /* Paleta principal del documento de enseñanza */
+    --primary-color: #8A835A;
+    --secondary-color: #D8B6B1;
+    --accent-color: #6B664A;
+    --light-bg: #F0EAE0;
+    --card-bg: #FDFCFA;
+    --text-dark: #2C2A25;
+    --text-grey: #6B6862;
+    --text-muted: #9A9690;
+    --border-color: rgba(138, 131, 90, 0.15);
+    --success-color: #6B8F71;
+    --warning-color: #D4A574;
+    --danger-color: #C44536;
     --sidebar-width: 320px;
     --navbar-height: 60px;
     --footer-height: 70px;

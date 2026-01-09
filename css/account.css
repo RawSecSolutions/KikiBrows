@@ -11,35 +11,31 @@ main, #content-area {
 }
 
 /* =======================================================
-   2. LA TARJETA MAESTRA (SIEMPRE BEIGE)
+   2. LA TARJETA MAESTRA (DISEÑO MINIMALISTA)
    ======================================================= */
-.account-card, 
-.purchase-card-item, 
+.account-card,
+.purchase-card-item,
 .cert-card {
-    background-color: #D9CDB8 !important; /* Beige Sólido */
-    border-radius: 8px;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
+    background-color: var(--card-bg) !important;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    margin-bottom: 2rem;
     width: 100%;
-    color: #333;
+    color: var(--text-dark);
     text-align: left !important;
+    transition: box-shadow 0.3s ease;
+}
+
+.account-card:hover,
+.purchase-card-item:hover,
+.cert-card:hover {
+    box-shadow: 0 8px 32px rgba(138, 131, 90, 0.12);
 }
 
 /* =======================================================
    3. MI CUENTA (Vertical)
    ======================================================= */
-.account-card, 
-.purchase-card-item, 
-.cert-card {
-    background-color: #D9CDB8 !important;
-    border-radius: 8px;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-    width: 100%;
-    color: #333;
-}
 
 .account-card h2 {
     font-size: 1.4rem;
@@ -56,13 +52,19 @@ main, #content-area {
 }
 
 .card-footer-actions a {
-    color: #7A8B60;
-    font-weight: 700;
+    color: var(--primary-color);
+    font-weight: 500;
     text-transform: uppercase;
     font-size: 0.75rem;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     text-decoration: none;
     margin-right: 15px;
+    transition: color 0.3s ease;
+    font-family: 'Lato', sans-serif;
+}
+
+.card-footer-actions a:hover {
+    color: var(--accent-color);
 }
 
 /* =======================================================
@@ -123,42 +125,53 @@ main, #content-area {
 /* =======================================================
    6. BOTONES UNIFICADOS
    ======================================================= */
-.btn-kiki, 
+.btn-kiki,
 .btn-kiki-primary {
-    background-color: #333; 
-    color: #fff;
+    background-color: var(--primary-color);
+    color: var(--white);
     border: none;
-    padding: 6px 15px;
+    padding: 10px 24px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     display: inline-block;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     text-align: center;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'Lato', sans-serif;
 }
 
-.btn-kiki:hover, 
+.btn-kiki:hover,
 .btn-kiki-primary:hover {
-    background-color: #000;
-    color: #fff;
+    background-color: var(--accent-color);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
 .btn-kiki-outline {
     background-color: transparent;
-    border: 1px solid #333;
-    color: #333;
-    padding: 6px 15px;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 10px 24px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     display: inline-block;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     text-align: center;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'Lato', sans-serif;
 }
 
 .btn-kiki-outline:hover {
-    background-color: #333;
-    color: #fff;
+    background-color: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);
 }
 
 /* =======================================================

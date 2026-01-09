@@ -1,35 +1,32 @@
-/* css/layoutAdmin.css - CORREGIDO PARA EVITAR COLISIÓN */
+/* css/layoutAdmin.css - DISEÑO MINIMALISTA ELEGANTE */
 
 :root {
-    --primary-color: #8B9D6F;
-    --secondary-color: #B5C49A;
-    --accent-color: #6B7C54;
-    --light-bg: #E8E4D8;
-    --card-bg: #D9CDB8;
-    --text-dark: #333333;
-    --text-grey: #666666;
-    --white: #FFFFFF;
-    
+    /* Paleta principal del documento de enseñanza */
+    --primary-color: #8A835A;        /* Verde oliva elegante */
+    --secondary-color: #D8B6B1;      /* Rosa empolvado suave */
+    --accent-color: #6B664A;         /* Verde oliva oscuro */
+    --light-bg: #F0EAE0;             /* Beige claro cálido */
+    --card-bg: #FDFCFA;              /* Crema muy claro para tarjetas */
+    --text-dark: #2C2A25;            /* Gris carbón suave */
+    --text-grey: #6B6862;            /* Gris medio cálido */
+    --white: #FFFFFF;                /* Blanco puro */
+
+    /* Colores adicionales para detalles */
+    --overlay-dark: rgba(44, 42, 37, 0.75);
+    --border-light: rgba(138, 131, 90, 0.15);
+
     /* Dimensiones Estructurales */
     --sidebar-width: 280px;
-    --navbar-height: 70px; /* Altura fija para el navbar */
+    --navbar-height: 75px;
 }
 
 body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(to right, #8B9D6F, #B5C49A, #9DAF82, #8B9D6F); 
-    background-size: 400% 400%;
-    animation: gradient-animation 15s ease infinite;
-    /* Añadimos padding al body para que el contenido no quede oculto por el navbar fijo */
-    padding-top: var(--navbar-height); 
-}
-
-@keyframes gradient-animation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    background: #F0EAE0;
+    color: var(--text-dark);
+    padding-top: var(--navbar-height);
 }
 
 /* --- NAVBAR FIJO SUPERIOR --- */

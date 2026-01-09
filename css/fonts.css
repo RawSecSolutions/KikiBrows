@@ -1,8 +1,12 @@
 /* ============================================================================
    css/fonts.css - CONFIGURACIÓN CENTRALIZADA DE FUENTES KIKIBROWS
+   Diseño Minimalista Elegante - Inspirado en documento de enseñanza
    ============================================================================ */
 
-/* 1. TEACHERS - DEFINICIÓN DE FUENTES LOCALES */
+/* 1. GOOGLE FONTS - IMPORTACIÓN */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap');
+
+/* 2. TEACHERS - DEFINICIÓN DE FUENTES LOCALES (FALLBACK) */
 @font-face {
     font-family: 'Teachers';
     src: url('../fonts/Teachers/Teachers-Regular.woff2') format('woff2'),
@@ -21,8 +25,37 @@
     font-display: swap;
 }
 
-/* 2. APLICACIÓN GLOBAL */
-/* Esto asegura que H1, H2, el logo y el menú usen Teachers automáticamente */
+/* 3. APLICACIÓN GLOBAL */
 body {
-    font-family: 'Teachers', sans-serif;
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+    line-height: 1.7;
+}
+
+/* 4. TIPOGRAFÍA SERIF PARA TÍTULOS Y ELEMENTOS DESTACADOS */
+h1, h2, h3, h4, h5, h6,
+.kikibrows-logo,
+.serif-text {
+    font-family: 'Cormorant Garamond', 'Teachers', serif;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+h1 {
+    font-weight: 500;
+    letter-spacing: 2px;
+}
+
+h2 {
+    font-weight: 400;
+    letter-spacing: 1.5px;
+}
+
+/* 5. TEXTO ELEGANTE EN MAYÚSCULAS */
+.text-uppercase-elegant {
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.85em;
+    font-weight: 400;
 }
