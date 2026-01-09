@@ -370,7 +370,7 @@
     border-color: var(--border-color) !important;
     background-color: #fff;
     border-radius: 0 0 8px 8px;
-    font-family: 'Teachers', sans-serif !important; /* Usar tu fuente */
+    font-family: 'Lato', 'Teachers', sans-serif !important; /* Fuente estandarizada */
     font-size: 1rem;
 }
 

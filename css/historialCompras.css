@@ -1,8 +1,8 @@
 /* css/historialCompras.css */
 
-/* Forzamos la fuente Teachers en todo por seguridad */
+/* Estandarizamos la fuente en todo el documento */
 body, h1, h2, h3, h4, h5, h6, p, a, div, span, button, input {
-    font-family: 'Teachers', sans-serif !important;
+    font-family: 'Lato', 'Teachers', sans-serif !important;
 }
 
 /* Ajustes de la tarjeta de compra individual */
