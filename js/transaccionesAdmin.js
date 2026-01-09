@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${t.fecha}</td>
                 <td>#${t.id}</td>
                 <td>
-                    <button class="btn btn-sm text-white" style="background-color: #8B9D6F;" 
+                    <button class="btn btn-sm text-white" style="background-color: #8FA888;" 
                             data-id="${t.id}" data-bs-toggle="modal" data-bs-target="#transactionDetailModal">
                         <i class="fas fa-eye"></i>
                     </button>

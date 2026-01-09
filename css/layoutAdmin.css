@@ -2,9 +2,9 @@
 
 :root {
     /* Paleta principal del documento de enseñanza */
-    --primary-color: #8A835A;        /* Verde oliva elegante */
+    --primary-color: #8FA888;        /* Verde vibrante consistente */
     --secondary-color: #D8B6B1;      /* Rosa empolvado suave */
-    --accent-color: #6B664A;         /* Verde oliva oscuro */
+    --accent-color: #7A9D7E;         /* Verde medio */
     --light-bg: #F0EAE0;             /* Beige claro cálido */
     --card-bg: #FDFCFA;              /* Crema muy claro para tarjetas */
     --text-dark: #2C2A25;            /* Gris carbón suave */
@@ -13,7 +13,7 @@
 
     /* Colores adicionales para detalles */
     --overlay-dark: rgba(44, 42, 37, 0.75);
-    --border-light: rgba(138, 131, 90, 0.15);
+    --border-light: rgba(143, 168, 136, 0.15);
 
     /* Dimensiones Estructurales */
     --sidebar-width: 280px;
