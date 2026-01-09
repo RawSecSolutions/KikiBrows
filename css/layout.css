@@ -1,101 +1,111 @@
 /* css/layout.css */
-/* VERSIÓN DEFINITIVA - Navbar Beige Semi-Transparente */
+/* DISEÑO MINIMALISTA ELEGANTE - Inspirado en documento de enseñanza */
+/* Paleta de colores: Verde oliva (#8A835A), Rosa empolvado (#D8B6B1), Beige claro (#F0EAE0) */
 
 /* 1. CONFIGURACIÓN BASE Y FONDO */
 :root {
-    --primary-color: #8B9D6F;
-    --secondary-color: #B5C49A;
-    --accent-color: #6B7C54;
-    --light-bg: #E8E4D8;
-    --card-bg: #D9CDB8;
-    --text-dark: #333333;
-    --text-grey: #666666;
-    --white: #FFFFFF;
+    /* Paleta principal del documento de enseñanza */
+    --primary-color: #8A835A;        /* Verde oliva elegante */
+    --secondary-color: #D8B6B1;      /* Rosa empolvado suave */
+    --accent-color: #6B664A;         /* Verde oliva oscuro */
+    --light-bg: #F0EAE0;             /* Beige claro cálido */
+    --card-bg: #FDFCFA;              /* Crema muy claro para tarjetas */
+    --text-dark: #2C2A25;            /* Gris carbón suave */
+    --text-grey: #6B6862;            /* Gris medio cálido */
+    --white: #FFFFFF;                /* Blanco puro */
+
+    /* Colores adicionales para detalles */
+    --overlay-dark: rgba(44, 42, 37, 0.75);
+    --border-light: rgba(138, 131, 90, 0.15);
 }
 
 body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(to right, #8B9D6F, #B5C49A, #9DAF82, #8B9D6F); 
-    background-size: 400% 400%;
-    animation: gradient-animation 15s ease infinite;
-}
-
-@keyframes gradient-animation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    background: #F0EAE0;
+    color: var(--text-dark);
 }
 
 /* 2. HEADER SUPERIOR (Top Navbar) */
 .top-navbar {
-    padding: 0.5px 2%;
-    background-color: var(--white); 
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 1rem 2%;
+    background-color: var(--white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid var(--border-light);
 }
 
 .kikibrows-logo {
-    font-size: clamp(1.5rem, 4vw, 2.2rem);
-    font-weight: 700;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 400;
     text-align: center;
-    color: var(--text-dark);
-    flex-grow: 1; 
+    color: var(--primary-color);
+    flex-grow: 1;
+    letter-spacing: 2px;
 }
 
 .top-icons {
     display: flex;
-    align-items: center; 
-    gap: 20px; 
-    font-size: 1.2em;
+    align-items: center;
+    gap: 20px;
+    font-size: 1.1em;
     color: var(--text-grey);
 }
 
 .top-icons .dropdown .nav-link {
-    color: var(--text-grey); 
-    padding: 0; 
+    color: var(--text-grey);
+    padding: 0;
+    transition: color 0.3s ease;
+}
+
+.top-icons .dropdown .nav-link:hover {
+    color: var(--primary-color);
 }
 
 .navbar-toggler.custom-toggler {
-    border: none !important; 
-    padding: 0.25rem 0.75rem; 
+    border: none !important;
+    padding: 0.25rem 0.75rem;
+    color: var(--primary-color);
 }
 .navbar-toggler.custom-toggler:focus {
-    box-shadow: none !important; 
+    box-shadow: none !important;
     outline: none !important;
 }
 
 /* 3. MENÚ PRINCIPAL (Main Navbar) */
 .main-navbar {
-    background-color: rgba(217, 205, 184, 0.65);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-    padding: 8px 0;
-    margin-bottom: 20px;
+    background-color: rgba(253, 252, 250, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 0.5rem 0;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .main-navbar .navbar-nav {
-    /* CAMBIO: Reducimos el ancho máximo para que coincida con la tarjeta de login */
-    max-width: 700px; 
-    margin: 0 auto;        
-    justify-content: center; 
+    max-width: 900px;
+    margin: 0 auto;
+    justify-content: center;
     width: 100%;
+    gap: 2rem;
 }
 
 .main-navbar .nav-link {
-    font-weight: 500;
-    color: var(--text-dark) !important;
-    padding: 10px 0;
-    font-size: clamp(0.8rem, 1.5vw, 1.1rem) !important;    
-    letter-spacing: 1.5px;
-    border-bottom: 4px solid transparent; 
-    transition: border-bottom 0.3s;
+    font-weight: 400;
+    color: var(--text-grey) !important;
+    padding: 0.75rem 0;
+    font-size: clamp(0.75rem, 1.5vw, 0.95rem) !important;
+    letter-spacing: 2.5px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
     text-transform: uppercase;
+    font-family: 'Lato', sans-serif;
 }
 
 .main-navbar .nav-link:hover {
-    border-bottom: 4px solid var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    color: var(--primary-color) !important;
 }
 
 @media (min-width: 992px) {
@@ -126,25 +136,42 @@ body {
 /* 4. TIPOGRAFÍA GENERAL */
 h1 {
     font-weight: 400;
-    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-size: clamp(2rem, 5vw, 3rem);
     color: var(--text-dark);
-    padding-bottom: 10px;
-    margin-bottom: 30px;
+    padding-bottom: 0.5rem;
+    margin-bottom: 2.5rem;
     text-align: center;
+    letter-spacing: 2px;
 }
 
 h2 {
-    font-size: clamp(1.1rem, 3vw, 2.0em);
-    color: var(--text-grey);
-    font-weight: normal;
-    letter-spacing: 1px;
-    margin-top: 25px;
-    margin-bottom: 15px;
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    color: var(--text-dark);
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
     text-align: center;
-} 
+}
+
+h3 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    color: var(--text-grey);
+    font-weight: 400;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
 
 label {
-    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
     color: var(--text-grey);
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+p {
+    line-height: 1.8;
+    color: var(--text-grey);
+    margin-bottom: 1.25rem;
 }
