@@ -1,16 +1,7 @@
 /* css/gestionCursos.css - Gestión de Cursos */
 
-:root {
-    --primary-color: var(--primary-color);
-    --secondary-color: var(--secondary-color);
-    --accent-color: #6B664A;
-    --beige-bg: rgba(253, 252, 250, 0.95);
-    --beige-light: var(--card-bg);
-    --card-bg: #FFFFFF;
-    --text-dark: #333333;
-    --text-grey: #666666;
-    --border-color: #e0e0e0;
-}
+/* Las variables CSS ya están definidas en layoutAdmin.css */
+/* No necesitamos redefinirlas aquí para evitar conflictos */
 
 /* Header de página */
 .page-header {
@@ -75,35 +66,13 @@
     color: #fff;
 }
 
-/* Grid de cursos */
+/* Grid de cursos - Usando CSS Grid sin media queries
+   El responsive se maneja con Bootstrap 5 en las clases del HTML */
 .cursos-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
-}
-
-@media (max-width: 1200px) {
-    .cursos-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (max-width: 992px) {
-    .cursos-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .cursos-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-    
-    .main-card {
-        padding: 20px;
-    }
 }
 
 /* Card de curso */

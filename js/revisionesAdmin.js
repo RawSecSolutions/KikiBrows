@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             // Activar actual
-            e.target.style.borderBottom = '3px solid #8B9D6F';
+            e.target.style.borderBottom = '3px solid #8A835A';
             e.target.classList.remove('text-muted');
             e.target.classList.add('text-dark');
             
