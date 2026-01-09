@@ -3,7 +3,7 @@
 :root {
     --primary-color: var(--primary-color);
     --secondary-color: var(--secondary-color);
-    --accent-color: #6B7C54;
+    --accent-color: #6B664A;
     --beige-bg: rgba(253, 252, 250, 0.95);
     --beige-light: var(--card-bg);
     --card-bg: #FFFFFF;
