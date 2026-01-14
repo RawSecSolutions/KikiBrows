@@ -67,13 +67,15 @@
 
                 <div class="col-lg-6">
                     <div class="account-card p-4 h-100 d-flex flex-column text-start">
-                        <h2>Direcciones</h2>
-                        <div class="info-content flex-grow-1">
-                            <p>Información de ubicación y dirección de facturación</p>
-                            <p class="text-muted fst-italic">Ninguna dirección guardada.</p>
+                        <h2>Mis Cursos</h2>
+                        <div class="info-content flex-grow-1" id="mis-cursos-content">
+                            <p class="mb-3">Cursos adquiridos y tiempo de acceso restante</p>
+                            <div id="cursos-list">
+                                <p class="text-muted fst-italic">Cargando cursos...</p>
+                            </div>
                         </div>
                         <div class="card-footer-actions mt-auto">
-                            <a href="#">Editar</a> | <a href="#">Eliminar</a>
+                            <a href="cursosAlumn.html">Ver todos mis cursos</a>
                         </div>
                     </div>
                 </div>
@@ -160,9 +162,60 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script src="js/componentsAlumn.js"></script> 
-    
-    <script src="js/accountEdit.js"></script> 
+
+    <script src="js/cursosData.js"></script>
+    <script src="js/componentsAlumn.js"></script>
+    <script src="js/accountEdit.js"></script>
+
+    <script>
+        // Cargar cursos en la tarjeta de Mis Cursos
+        document.addEventListener('DOMContentLoaded', () => {
+            const cursosList = document.getElementById('cursos-list');
+            if (!cursosList) return;
+
+            // Obtener cursos adquiridos
+            const cursosAdquiridos = CursosData.getCursosAdquiridos();
+
+            if (cursosAdquiridos.length === 0) {
+                cursosList.innerHTML = '<p class="text-muted fst-italic">No tienes cursos adquiridos.</p>';
+                return;
+            }
+
+            // Mostrar solo los primeros 2 cursos en la tarjeta
+            const cursosToShow = cursosAdquiridos.slice(0, 2);
+
+            cursosList.innerHTML = cursosToShow.map(curso => {
+                let statusClass = '';
+                let statusIcon = '';
+
+                if (curso.accesoExpirado) {
+                    statusClass = 'text-danger';
+                    statusIcon = '<i class="fas fa-exclamation-circle me-1"></i>';
+                } else if (curso.accesoPorVencer) {
+                    statusClass = 'text-warning';
+                    statusIcon = '<i class="fas fa-clock me-1"></i>';
+                } else {
+                    statusClass = 'text-success';
+                    statusIcon = '<i class="fas fa-check-circle me-1"></i>';
+                }
+
+                return `
+                    <div class="mb-3 pb-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <p class="mb-1 fw-semibold">${curso.nombre}</p>
+                                <small class="${statusClass}">
+                                    ${statusIcon}${curso.tiempoRestante}
+                                </small>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            Vence: ${curso.fechaExpiracionFormato}
+                        </small>
+                    </div>
+                `;
+            }).join('');
+        });
+    </script>
 </body>
 </html>

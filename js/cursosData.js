@@ -396,6 +396,19 @@ const CursosData = {
         nombre: 'María García',
         email: 'maria@example.com',
         cursosAdquiridos: [1, 2], // IDs de cursos comprados
+        accesoCursos: {
+            // cursoId: { fechaCompra, fechaExpiracion, diasAcceso }
+            1: {
+                fechaCompra: '2025-10-15',
+                fechaExpiracion: '2026-04-15', // 6 meses de acceso
+                diasAcceso: 180
+            },
+            2: {
+                fechaCompra: '2025-11-01',
+                fechaExpiracion: '2026-05-01', // 6 meses de acceso
+                diasAcceso: 180
+            }
+        },
         progreso: {
             // cursoId: { moduloId: { claseId: { completado: bool, fecha: date } } }
             1: {
@@ -494,7 +507,13 @@ const CursosData = {
                 cursos.push({
                     ...curso,
                     progreso: this.calcularProgresoCurso(cursoId),
-                    ultimaActividad: student.progreso[cursoId]?.ultimaActividad || null
+                    ultimaActividad: student.progreso[cursoId]?.ultimaActividad || null,
+                    acceso: this.getAccesoCurso(cursoId),
+                    diasRestantes: this.getDiasRestantesAcceso(cursoId),
+                    fechaExpiracionFormato: this.formatearFechaExpiracion(cursoId),
+                    tiempoRestante: this.formatearTiempoRestante(cursoId),
+                    accesoExpirado: this.hasAccesoExpirado(cursoId),
+                    accesoPorVencer: this.isAccesoPorVencer(cursoId)
                 });
             }
         });
@@ -729,6 +748,69 @@ const CursosData = {
             if (progreso.porcentaje === 100) completados++;
         });
         return { completados, total: modulos.length };
+    },
+
+    // ==================== ACCESO A CURSOS ====================
+
+    // Obtener información de acceso de un curso
+    getAccesoCurso(cursoId) {
+        const student = this.getStudent();
+        return student.accesoCursos?.[cursoId] || null;
+    },
+
+    // Calcular días restantes de acceso
+    getDiasRestantesAcceso(cursoId) {
+        const acceso = this.getAccesoCurso(cursoId);
+        if (!acceso || !acceso.fechaExpiracion) return null;
+
+        const hoy = new Date();
+        const fechaExp = new Date(acceso.fechaExpiracion);
+        const diffTime = fechaExp - hoy;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        return diffDays;
+    },
+
+    // Formatear fecha de expiración
+    formatearFechaExpiracion(cursoId) {
+        const acceso = this.getAccesoCurso(cursoId);
+        if (!acceso || !acceso.fechaExpiracion) return 'Sin límite';
+
+        const fecha = new Date(acceso.fechaExpiracion);
+        return fecha.toLocaleDateString('es-CL', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    },
+
+    // Verificar si el acceso está por vencer (menos de 30 días)
+    isAccesoPorVencer(cursoId) {
+        const diasRestantes = this.getDiasRestantesAcceso(cursoId);
+        return diasRestantes !== null && diasRestantes <= 30 && diasRestantes > 0;
+    },
+
+    // Verificar si el acceso ha expirado
+    hasAccesoExpirado(cursoId) {
+        const diasRestantes = this.getDiasRestantesAcceso(cursoId);
+        return diasRestantes !== null && diasRestantes <= 0;
+    },
+
+    // Formatear tiempo restante de forma legible
+    formatearTiempoRestante(cursoId) {
+        const diasRestantes = this.getDiasRestantesAcceso(cursoId);
+        if (diasRestantes === null) return 'Acceso permanente';
+        if (diasRestantes <= 0) return 'Acceso expirado';
+        if (diasRestantes === 1) return '1 día restante';
+        if (diasRestantes < 30) return `${diasRestantes} días restantes`;
+
+        const meses = Math.floor(diasRestantes / 30);
+        const dias = diasRestantes % 30;
+
+        if (meses === 1 && dias === 0) return '1 mes restante';
+        if (meses === 1) return `1 mes y ${dias} días restantes`;
+        if (dias === 0) return `${meses} meses restantes`;
+        return `${meses} meses y ${dias} días restantes`;
     }
 };
 
