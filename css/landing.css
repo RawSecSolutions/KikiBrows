@@ -25,8 +25,7 @@ body {
 /* Z-index escalonado para que cada sección 'pise' a la anterior */
 #inicio { z-index: 10; }
 #nosotros { z-index: 20; }
-#cursos { z-index: 30; }
-#contacto { z-index: 40; }
+#contacto { z-index: 30; }
 
 /* 2. CARRUSEL (Sección Inicio) */
 .carousel-full-width {
@@ -81,40 +80,6 @@ body {
 }
 
 /* 3. SECCIÓN NOSOTROS & CONTACTO */
-.nosotros-background {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
-.nosotros-background::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 1;
-}
-
-.nosotros-content-centered {
-    position: relative;
-    z-index: 2;
-    background-color: rgba(253, 252, 250, 0.95);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: 12px;
-    max-width: 800px;
-    border: 1px solid var(--border-light);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-}
-
-.nosotros-content-centered h2 {
-    font-family: 'Cormorant Garamond', serif;
-    letter-spacing: 2px;
-}
-
 .nosotros-content {
     background-color: var(--white);
     height: 100%;
@@ -161,126 +126,4 @@ body {
 .animate-up.visible {
     opacity: 1;
     transform: translateY(0);
-}
-
-/* 5. GRID DE PRODUCTOS/CURSOS */
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
-    padding: 1rem 0;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.product-card {
-    background-color: var(--white);
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    border: 1px solid var(--border-light);
-    display: flex;
-    flex-direction: column;
-}
-
-.product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.product-image {
-    width: 100%;
-    height: 220px;
-    background-size: cover;
-    background-position: center;
-    background-color: var(--light-beige);
-    position: relative;
-}
-
-.product-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: var(--accent-color);
-    color: white;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.product-content {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.product-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 0.75rem;
-    letter-spacing: 1px;
-}
-
-.product-description {
-    color: var(--text-light);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 1.25rem;
-    flex-grow: 1;
-}
-
-.product-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-light);
-}
-
-.product-price {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--accent-color);
-    font-family: 'Lato', sans-serif;
-}
-
-.btn-product {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 4px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    font-size: 0.85rem;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-product:hover {
-    background-color: var(--accent-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(138, 131, 90, 0.3);
-    color: white;
-}
-
-/* Responsive para grid de productos */
-@media (max-width: 768px) {
-    .products-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    #cursos .container {
-        padding: 2rem 1rem;
-    }
 }
