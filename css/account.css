@@ -190,3 +190,186 @@ main, #content-area {
     border-color: #6B7C54;
 }
 
+/* =======================================================
+   8. FORMULARIO DE CAMBIO DE CONTRASEÑA
+   ======================================================= */
+
+/* Botón de toggle para mostrar/ocultar contraseña */
+.toggle-password {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-password:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.toggle-password i {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Indicador de fortaleza de contraseña */
+#password-strength {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#password-strength .progress {
+    border-radius: 4px;
+    background-color: #e9ecef;
+}
+
+#password-strength .progress-bar {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 4px;
+}
+
+#password-strength .strength-text {
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+}
+
+/* Alertas personalizadas */
+#change-password-view .alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#change-password-view .alert-info {
+    background-color: #e7f3ff;
+    color: #014361;
+}
+
+#change-password-view .alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+#change-password-view .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+#change-password-view .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Estilos de los inputs del formulario */
+#change-password-form .form-control {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#change-password-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(107, 124, 84, 0.15);
+}
+
+#change-password-form .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Botones del formulario */
+#change-password-form .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+#change-password-form .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+#change-password-form .btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107, 124, 84, 0.3);
+}
+
+#change-password-form .btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+#change-password-form .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* Icono del título */
+#change-password-view .fa-lock {
+    color: var(--primary-color);
+}
+
+/* Lista de requisitos */
+#change-password-view .alert-info ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0;
+}
+
+#change-password-view .alert-info li {
+    margin-bottom: 0.25rem;
+}
+
+/* Input group con botón de toggle */
+#change-password-form .input-group {
+    border-radius: 6px;
+}
+
+#change-password-form .input-group .form-control {
+    border-right: none;
+}
+
+#change-password-form .input-group .btn-outline-secondary {
+    border-left: 1px solid #dee2e6;
+    background-color: transparent;
+}
+
+#change-password-form .input-group .form-control:focus + .btn-outline-secondary {
+    border-color: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #change-password-view .col-lg-7 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    #change-password-form .btn {
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    #change-password-view .d-flex.gap-2 {
+        flex-direction: column;
+    }
+
+    #change-password-view .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+}
+

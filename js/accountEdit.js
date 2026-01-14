@@ -38,9 +38,11 @@ function cancelEdit(event) {
     const dashboard = document.getElementById('dashboard-view');
     const simpleEdit = document.getElementById('simple-edit-view');
     const splitEdit = document.getElementById('split-edit-view');
+    const changePasswordView = document.getElementById('change-password-view');
 
     if(simpleEdit) simpleEdit.classList.add('d-none');
     if(splitEdit) splitEdit.classList.add('d-none');
+    if(changePasswordView) changePasswordView.classList.add('d-none');
     if(dashboard) dashboard.classList.remove('d-none');
 }
 

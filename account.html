@@ -29,8 +29,8 @@
                             <p><strong>Nombre:</strong> Daniela Candi</p>
                             <p><strong>Correo:</strong> correo@correo.com</p>
                         </div>
-                        <div class="card-footer-actions mt-auto"> 
-                            <a href="#" class="edit-btn" onclick="openSimpleEdit(event)">Editar</a> | <a href="#">Cambiar Contraseña</a>
+                        <div class="card-footer-actions mt-auto">
+                            <a href="#" class="edit-btn" onclick="openSimpleEdit(event)">Editar</a> | <a href="#" onclick="openChangePasswordView(event)">Cambiar Contraseña</a>
                         </div>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
                                 <label for="apellidoSplit" class="form-label">Apellido*</label>
                                 <input type="text" class="form-control" id="apellidoSplit" value="Candi">
                             </div>
-                            
+
                             <button type="submit" class="btn btn-primary custom-btn-guardar">Guardar cambios</button>
                             <a href="#" class="ms-2 text-secondary text-decoration-none" onclick="cancelEdit(event)">Cancelar</a>
                         </form>
@@ -158,6 +158,148 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Vista: Cambiar Contraseña -->
+        <div id="change-password-view" class="d-none">
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <div class="account-card p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="fas fa-lock fs-3 me-3 text-primary"></i>
+                            <h2 class="mb-0">Cambiar Contraseña</h2>
+                        </div>
+
+                        <!-- Mensaje de seguridad -->
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Requisitos de seguridad:</strong>
+                            <ul class="mb-0 mt-2 small">
+                                <li>Mínimo 8 caracteres</li>
+                                <li>Al menos una letra mayúscula (A-Z)</li>
+                                <li>Al menos una letra minúscula (a-z)</li>
+                                <li>Al menos un número (0-9)</li>
+                                <li>Al menos un carácter especial (!@#$%^&*)</li>
+                            </ul>
+                        </div>
+
+                        <!-- Contenedor de mensajes de error/éxito -->
+                        <div id="change-password-error"></div>
+
+                        <!-- Formulario -->
+                        <form id="change-password-form">
+                            <!-- Contraseña actual -->
+                            <div class="mb-4">
+                                <label for="current-password" class="form-label">
+                                    <i class="fas fa-key me-2"></i>Contraseña actual*
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="current-password"
+                                        required
+                                        autocomplete="current-password"
+                                        placeholder="Ingresa tu contraseña actual"
+                                    >
+                                    <button
+                                        class="btn btn-outline-secondary toggle-password"
+                                        type="button"
+                                        data-target="current-password"
+                                        tabindex="-1"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Nueva contraseña -->
+                            <div class="mb-3">
+                                <label for="new-password" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>Nueva contraseña*
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="new-password"
+                                        required
+                                        autocomplete="new-password"
+                                        placeholder="Ingresa tu nueva contraseña"
+                                    >
+                                    <button
+                                        class="btn btn-outline-secondary toggle-password"
+                                        type="button"
+                                        data-target="new-password"
+                                        tabindex="-1"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Indicador de fortaleza -->
+                            <div id="password-strength" class="mb-4 d-none">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Fortaleza de la contraseña:</small>
+                                    <small class="strength-text fw-bold">Media</small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div
+                                        class="progress-bar"
+                                        role="progressbar"
+                                        style="width: 0%;"
+                                        aria-valuenow="0"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <!-- Confirmar nueva contraseña -->
+                            <div class="mb-4">
+                                <label for="confirm-password" class="form-label">
+                                    <i class="fas fa-check-double me-2"></i>Confirmar nueva contraseña*
+                                </label>
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="confirm-password"
+                                        required
+                                        autocomplete="new-password"
+                                        placeholder="Confirma tu nueva contraseña"
+                                    >
+                                    <button
+                                        class="btn btn-outline-secondary toggle-password"
+                                        type="button"
+                                        data-target="confirm-password"
+                                        tabindex="-1"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Nota de seguridad -->
+                            <div class="alert alert-warning small mb-4">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Importante:</strong> Después de cambiar tu contraseña, tu sesión se cerrará automáticamente y deberás iniciar sesión nuevamente.
+                            </div>
+
+                            <!-- Botones -->
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary custom-btn-guardar flex-grow-1">
+                                    <i class="fas fa-save me-2"></i>Cambiar Contraseña
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="cancelEdit(event)">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div> 
     </main>
 
@@ -166,6 +308,7 @@
     <script src="js/cursosData.js"></script>
     <script src="js/componentsAlumn.js"></script>
     <script src="js/accountEdit.js"></script>
+    <script src="js/changePassword.js"></script>
 
     <script>
         // Cargar cursos en la tarjeta de Mis Cursos
