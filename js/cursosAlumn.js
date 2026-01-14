@@ -103,6 +103,36 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span>${lastActivity}</span>
                             </div>
 
+                            <!-- Acceso/Expiración -->
+                            ${(() => {
+                                if (!curso.acceso || !curso.acceso.fechaExpiracion) {
+                                    return '';
+                                }
+
+                                let accesoClass = 'text-success';
+                                let accesoIcon = 'fa-check-circle';
+
+                                if (curso.accesoExpirado) {
+                                    accesoClass = 'text-danger';
+                                    accesoIcon = 'fa-exclamation-circle';
+                                } else if (curso.accesoPorVencer) {
+                                    accesoClass = 'text-warning';
+                                    accesoIcon = 'fa-clock';
+                                }
+
+                                return `
+                                    <div class="access-info mb-3 p-2 rounded" style="background: rgba(138, 131, 90, 0.05);">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas ${accesoIcon} ${accesoClass} me-2"></i>
+                                            <div class="flex-grow-1">
+                                                <small class="d-block fw-semibold ${accesoClass}">${curso.tiempoRestante}</small>
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Acceso hasta: ${curso.fechaExpiracionFormato}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            })()}
+
                             <!-- Botón de acción -->
                             <button class="btn ${buttonClass} w-100" onclick="goToCourse(${curso.id})">
                                 <i class="fas ${buttonIcon} me-2"></i>${buttonText}
