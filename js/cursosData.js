@@ -16,6 +16,7 @@ const CursosData = {
                 precio: 150000,
                 estado: 'publicado',
                 fechaCreacion: '2024-01-15',
+                duracionAcceso: 180, // días de acceso desde la compra
                 portada: null,
                 video: null,
                 carrusel: true,
@@ -29,6 +30,7 @@ const CursosData = {
                 precio: 120000,
                 estado: 'publicado',
                 fechaCreacion: '2024-02-20',
+                duracionAcceso: 180, // días de acceso desde la compra
                 portada: null,
                 video: null,
                 carrusel: false,
@@ -42,6 +44,7 @@ const CursosData = {
                 precio: 80000,
                 estado: 'borrador',
                 fechaCreacion: '2024-03-10',
+                duracionAcceso: 90, // días de acceso desde la compra
                 portada: null,
                 video: null,
                 carrusel: false,

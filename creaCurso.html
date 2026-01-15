@@ -55,18 +55,30 @@
                                     <div class="col-6">
                                         <label for="coursePrice" class="form-label">Precio</label>
                                         <div class="input-group">
-                                            <input type="number" class="form-control input-kikibrows" id="coursePrice" 
+                                            <input type="number" class="form-control input-kikibrows" id="coursePrice"
                                                    placeholder="0" required>
                                             <span class="input-group-text">CLP</span>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <label class="form-label">Duración total</label>
+                                        <label for="courseAccessDuration" class="form-label">Duración total (acceso)</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control input-kikibrows" id="courseAccessDuration"
+                                                   placeholder="0" min="0" required>
+                                            <span class="input-group-text">días</span>
+                                        </div>
+                                        <small class="text-muted">Tiempo de acceso desde la compra</small>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mt-2">
+                                    <div class="col-6">
+                                        <label class="form-label">Contenido en video</label>
                                         <div class="duration-display" id="courseDurationDisplay">
-                                            <i class="fas fa-clock me-2"></i>
+                                            <i class="fas fa-video me-2"></i>
                                             <span id="courseDurationText">0 min</span>
                                         </div>
-                                        <small class="text-muted">Calculada automáticamente</small>
+                                        <small class="text-muted">Calculado automáticamente</small>
                                     </div>
                                 </div>
                             </div>
