@@ -14,11 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Usuarios con curso asignado (courseId)
     let usersDB = [
-        { id: 1, name: 'Emilio Castillo', email: 'emilio@kikibrows.com', role: 'Superadmin', status: 'Activo', courseId: null },
-        { id: 2, name: 'Daniela Candi', email: 'dani@kikibrows.com', role: 'Admin', status: 'Activo', courseId: null },
-        { id: 3, name: 'Ana García', email: 'ana@gmail.com', role: 'Cliente', status: 'Activo', courseId: 1 }, // Tiene Microblading
-        { id: 4, name: 'Juan Pérez', email: 'juan@gmail.com', role: 'Cliente', status: 'Inactivo', courseId: null },
-        { id: 5, name: 'Carla Lopez', email: 'carla@hotmail.com', role: 'Cliente', status: 'Activo', courseId: 2 } // Tiene Lifting
+        { id: 1, name: 'Emilio Castillo', email: 'emilio@kikibrows.com', role: 'Superadmin', status: 'Activo', courseId: null, blocked: false },
+        { id: 2, name: 'Daniela Candi', email: 'dani@kikibrows.com', role: 'Admin', status: 'Activo', courseId: null, blocked: false },
+        { id: 3, name: 'Ana García', email: 'ana@gmail.com', role: 'Cliente', status: 'Activo', courseId: 1, blocked: false }, // Tiene Microblading
+        { id: 4, name: 'Juan Pérez', email: 'juan@gmail.com', role: 'Cliente', status: 'Inactivo', courseId: null, blocked: false },
+        { id: 5, name: 'Carla Lopez', email: 'carla@hotmail.com', role: 'Cliente', status: 'Activo', courseId: 2, blocked: false } // Tiene Lifting
     ];
 
     const userListContainer = document.getElementById('user-list');
@@ -51,8 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return '<span class="badge bg-secondary">Cliente</span>';
     }
 
-    function getStatus(status) {
-        return status === 'Activo' 
+    function getStatus(status, blocked) {
+        if (blocked) {
+            return '<span class="text-danger fw-bold"><i class="fas fa-lock me-1"></i>Bloqueado</span>';
+        }
+        return status === 'Activo'
             ? '<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Activo</span>'
             : '<span class="text-muted"><i class="fas fa-ban me-1"></i>Inactivo</span>';
     }
@@ -106,10 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
             row.className = 'row d-flex align-items-center p-3 mb-2 rounded border bg-white-50';
             row.style.backgroundColor = 'rgba(255,255,255,0.5)';
             row.innerHTML = `
-                <div class="col-3 fw-bold text-truncate">${u.name}</div>
+                <div class="col-2 fw-bold text-truncate">${u.name}</div>
                 <div class="col-3 text-truncate text-muted small">${u.email}</div>
                 <div class="col-2">${getBadge(u.role)}</div>
-                <div class="col-2">${getCourseName(u.courseId)}</div>
+                <div class="col-2">${getStatus(u.status, u.blocked)}</div>
+                <div class="col-1">${getCourseName(u.courseId)}</div>
                 <div class="col-2 text-end">${buttonsHTML}</div>
             `;
             userListContainer.appendChild(row);
@@ -127,12 +131,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('userName').value = user.name;
         document.getElementById('userEmail').value = user.email;
         document.getElementById('userStatus').value = user.status;
-        
+
+        // Cargar estado de bloqueo
+        document.getElementById('userBlocked').checked = user.blocked || false;
+
         // Cargar Curso Asignado
         courseSelect.value = user.courseId || "";
 
         const roleSelect = document.getElementById('userRole');
-        
+
         if (user.role === 'Superadmin') {
             roleSelect.innerHTML = '<option value="Superadmin">Super Admin</option>';
             roleSelect.disabled = true;
@@ -165,14 +172,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('userForm').reset();
             document.getElementById('userId').value = '';
             courseSelect.value = ""; // Reset curso
-            
+            document.getElementById('userBlocked').checked = false; // Reset bloqueo
+
             const roleSelect = document.getElementById('userRole');
             roleSelect.innerHTML = `
                 <option value="Admin">Administrador</option>
                 <option value="Cliente" selected>Cliente</option>
             `;
             roleSelect.disabled = false;
-            
+
             document.getElementById('passwordGroup').classList.remove('d-none');
             userModal.show();
         });
@@ -186,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const roleEl = document.getElementById('userRole');
         const status = document.getElementById('userStatus').value;
         const courseId = document.getElementById('userCourse').value;
+        const blocked = document.getElementById('userBlocked').checked;
 
         if (!name || !email) {
             alert('Nombre y Email son obligatorios');
@@ -200,11 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 usersDB[index].email = email;
                 usersDB[index].status = status;
                 usersDB[index].courseId = courseId ? parseInt(courseId) : null;
-                
+                usersDB[index].blocked = blocked;
+
                 if (!roleEl.disabled) {
                     usersDB[index].role = roleEl.value;
                 }
-                showToast('Datos actualizados.');
+                showToast(blocked ? 'Usuario bloqueado.' : 'Datos actualizados.');
             }
         } else {
             // Creación
@@ -214,7 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: email,
                 role: roleEl.value,
                 status: status,
-                courseId: courseId ? parseInt(courseId) : null
+                courseId: courseId ? parseInt(courseId) : null,
+                blocked: blocked
             };
             usersDB.push(newUser);
             showToast('Usuario creado exitosamente.');
