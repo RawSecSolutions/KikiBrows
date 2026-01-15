@@ -60,6 +60,7 @@ const UI = {
                         <li class="nav-item separator"><a class="nav-link" href="landing.html#nosotros">NOSOTROS</a></li>
                         <li class="nav-item separator"><a class="nav-link" href="landing.html">CURSOS</a></li>
                         <li class="nav-item separator"><a class="nav-link" href="cursosAlumn.html">MIS CURSOS</a></li>
+                        <li class="nav-item separator"><a class="nav-link" href="consultasAlumn.html">CONSULTAS</a></li>
                     </ul>
                 </div>
             </div>
