@@ -1,5 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- CONFIGURACIÓN ZOOM API ---
+    // Cargar configuración guardada
+    function loadZoomConfig() {
+        const token = localStorage.getItem('zoomAccessToken');
+        const userId = localStorage.getItem('zoomUserId') || 'me';
+
+        if (token) {
+            document.getElementById('zoom-access-token').value = token;
+        }
+        if (userId) {
+            document.getElementById('zoom-user-id').value = userId;
+        }
+
+        return { token, userId };
+    }
+
+    // Guardar configuración
+    document.getElementById('btn-save-zoom-config').addEventListener('click', () => {
+        const token = document.getElementById('zoom-access-token').value.trim();
+        const userId = document.getElementById('zoom-user-id').value.trim() || 'me';
+        const statusDiv = document.getElementById('zoom-status');
+
+        if (!token) {
+            statusDiv.className = 'alert alert-warning';
+            statusDiv.textContent = 'Por favor ingresa un Access Token válido';
+            statusDiv.classList.remove('d-none');
+            return;
+        }
+
+        // Guardar en localStorage (en producción esto debería estar en el backend)
+        localStorage.setItem('zoomAccessToken', token);
+        localStorage.setItem('zoomUserId', userId);
+
+        statusDiv.className = 'alert alert-success';
+        statusDiv.textContent = '✓ Configuración guardada exitosamente';
+        statusDiv.classList.remove('d-none');
+
+        showToast('Configuración de Zoom guardada exitosamente');
+
+        setTimeout(() => {
+            bootstrap.Modal.getInstance(document.getElementById('zoomConfigModal')).hide();
+        }, 1500);
+    });
+
+    // Cargar configuración al iniciar
+    loadZoomConfig();
+
     // --- BASE DE DATOS LOCAL SIMULADA ---
     let slotsDB = [
         { 
@@ -185,16 +232,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CREAR SLOT ---
-    document.getElementById('create-slot-form').addEventListener('submit', (e) => {
+    document.getElementById('create-slot-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const fecha = document.getElementById('slot-date').value;
         const inicio = document.getElementById('start-time').value;
         const fin = document.getElementById('end-time').value;
-        
+
         if(inicio >= fin) {
             alert('La hora de fin debe ser después del inicio.');
             return;
+        }
+
+        // Obtener configuración de Zoom
+        const zoomConfig = loadZoomConfig();
+
+        // --- INTEGRACIÓN CON ZOOM API (EJEMPLO) ---
+        // Si tienes configurado el token de Zoom, aquí harías la llamada a la API
+        let zoomStart = `https://zoom.us/s/${Date.now()}?role=host`;
+        let zoomJoin = `https://zoom.us/j/${Date.now()}`;
+
+        if (zoomConfig.token) {
+            // En producción, esto sería una llamada a tu backend que usa Zoom API
+            /*
+            try {
+                const response = await fetch('/api/zoom/create-meeting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${zoomConfig.token}`
+                    },
+                    body: JSON.stringify({
+                        topic: `Consulta ${fecha} ${inicio}-${fin}`,
+                        type: 2, // Scheduled meeting
+                        start_time: `${fecha}T${inicio}:00`,
+                        duration: calculateDuration(inicio, fin),
+                        timezone: 'America/Mexico_City',
+                        settings: {
+                            host_video: true,
+                            participant_video: true,
+                            join_before_host: false,
+                            mute_upon_entry: true
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                zoomStart = data.start_url; // Link para el host
+                zoomJoin = data.join_url;   // Link para participantes
+
+                console.log('✓ Meeting de Zoom creado exitosamente');
+                console.log('Meeting ID:', data.id);
+            } catch (error) {
+                console.error('Error al crear meeting de Zoom:', error);
+                showToast('Advertencia: No se pudo crear el meeting de Zoom automáticamente');
+            }
+            */
+
+            console.log('📝 Token de Zoom configurado. En producción, aquí se crearía el meeting automáticamente.');
         }
 
         const newSlot = {
@@ -205,9 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
             cuposMax: parseInt(document.getElementById('max-slots').value),
             cuposOcupados: 0,
             estado: 'available',
-            // Simulamos links únicos
-            zoomStart: `https://zoom.us/s/${Date.now()}?role=host`,
-            zoomJoin: `https://zoom.us/j/${Date.now()}`,
+            zoomStart: zoomStart,
+            zoomJoin: zoomJoin,
             reservas: []
         };
 
