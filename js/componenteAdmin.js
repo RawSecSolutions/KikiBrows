@@ -5,7 +5,9 @@ const renderNavbarAdmin = () => {
 
     const navbarHTML = `
     <div class="top-navbar container-fluid d-flex justify-content-between align-items-center py-3">
-        <div class="kikibrows-logo">KIKIBROWS</div>
+        <div class="kikibrows-logo">
+            <img src="img/kikibrows-logo.png" alt="KIKIBROWS" style="height: 40px;">
+        </div>
         <div class="top-icons">
             <a href="#" class="text-secondary position-relative me-2">
                 <i class="fas fa-bell"></i>
