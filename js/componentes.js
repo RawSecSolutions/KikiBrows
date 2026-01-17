@@ -11,7 +11,9 @@ const renderNavbar = () => {
         <button class="navbar-toggler custom-toggler d-lg-none border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
             <i class="fas fa-bars text-dark fs-2"></i>
         </button>
-        <div class="kikibrows-logo position-absolute start-50 translate-middle-x">KIKIBROWS</div>
+        <div class="kikibrows-logo position-absolute start-50 translate-middle-x">
+            <img src="img/kikibrows-logo.png" alt="KIKIBROWS" style="height: 40px;">
+        </div>
         <div class="top-icons">
             <div class="dropdown">
                 <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
