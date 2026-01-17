@@ -102,11 +102,21 @@
 
             <div class="row mt-4">
                 <div class="col-lg-7">
-                    <div class="rounded d-flex align-items-center justify-content-center bg-white border" style="height: 300px;">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-video fs-1 mb-2"></i> 
-                            <p>Visualizador de Archivo</p>
-                        </div>
+                    <div class="visualizador-container" style="width: 100%; height: auto; background: #000; border-radius: 8px; overflow: hidden;">
+
+                        <video
+                            id="videoPlayer"
+                            width="100%"
+                            height="100%"
+                            controls
+                            controlsList="nodownload"
+                            preload="metadata">
+
+                            <source src="https://tu-proyecto.supabase.co/storage/v1/object/public/entregas/video-ana.mp4" type="video/mp4">
+
+                            Tu navegador no soporta la reproducción de video.
+                        </video>
+
                     </div>
                 </div>
                 
