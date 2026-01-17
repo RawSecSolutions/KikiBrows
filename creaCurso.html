@@ -73,6 +73,14 @@
 
                                 <div class="row g-3 mt-2">
                                     <div class="col-6">
+                                        <label for="courseStatus" class="form-label">Estado del curso</label>
+                                        <select class="form-select input-kikibrows" id="courseStatus" required>
+                                            <option value="borrador">Borrador</option>
+                                            <option value="publicado">Publicado</option>
+                                        </select>
+                                        <small class="text-muted">Los borradores no son visibles para los usuarios</small>
+                                    </div>
+                                    <div class="col-6">
                                         <label class="form-label">Contenido en video</label>
                                         <div class="duration-display" id="courseDurationDisplay">
                                             <i class="fas fa-video me-2"></i>

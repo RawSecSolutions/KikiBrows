@@ -146,6 +146,30 @@
     color: #fff;
 }
 
+/* Badge de estado del curso */
+.curso-status-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.curso-status-badge.publicado {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.curso-status-badge.borrador {
+    background-color: #6c757d;
+    color: #fff;
+}
+
 /* Info del curso */
 .curso-info {
     padding: 12px 15px;
