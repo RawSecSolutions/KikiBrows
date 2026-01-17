@@ -4,7 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // === ELEMENTOS ===
     const courseForm = document.getElementById('courseCreationForm');
-    
+
+    // Campos del formulario
+    const courseStatus = document.getElementById('courseStatus');
+
     // Imagen
     const imageInput = document.getElementById('courseImage');
     const btnAddImage = document.getElementById('btnAddImage');
@@ -354,11 +357,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
-            
+
+            // Obtener el estado del curso
+            const status = courseStatus.value;
+            console.log('Estado del curso:', status);
+
+            // Aquí se enviaría al backend incluyendo el estado
+            // Ejemplo: { nombre, descripcion, precio, duracion, estado: status, ... }
+
             successAlert.classList.remove('d-none');
-            
+
             setTimeout(() => {
-                alert('Curso creado exitosamente.');
+                alert(`Curso creado exitosamente con estado: ${status === 'publicado' ? 'Publicado' : 'Borrador'}`);
             }, 1000);
         });
     }
