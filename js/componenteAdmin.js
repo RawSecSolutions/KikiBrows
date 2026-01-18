@@ -5,8 +5,11 @@ const renderNavbarAdmin = () => {
 
     const navbarHTML = `
     <div class="top-navbar container-fluid d-flex justify-content-between align-items-center py-3">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="kikibrows-logo">
-            <img src="img/kikibrows-logo.png" alt="KIKIBROWS" style="height: 40px;">
+            <img src="img/kikibrows-logo.png" alt="KIKIBROWS">
         </div>
         <div class="top-icons">
             <a href="#" class="text-secondary position-relative me-2">
@@ -43,6 +46,37 @@ const renderNavbarAdmin = () => {
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 window.location.href = 'landing.html';
+            });
+        }
+
+        // Listener para el botón hamburguesa del sidebar
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+
+                // Crear o toggle el backdrop
+                let backdrop = document.querySelector('.sidebar-backdrop');
+                if (!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.className = 'sidebar-backdrop';
+                    document.body.appendChild(backdrop);
+
+                    // Cerrar sidebar al hacer clic en el backdrop
+                    backdrop.addEventListener('click', () => {
+                        sidebar.classList.remove('open');
+                        backdrop.classList.remove('show');
+                    });
+                }
+
+                // Toggle del backdrop
+                if (sidebar.classList.contains('open')) {
+                    backdrop.classList.add('show');
+                } else {
+                    backdrop.classList.remove('show');
+                }
             });
         }
     }

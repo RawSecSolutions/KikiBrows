@@ -49,15 +49,47 @@ body {
     font-weight: 700;
     text-align: center;
     color: var(--text-dark);
-    flex-grow: 1; 
+    flex-grow: 1;
+}
+
+.kikibrows-logo img {
+    height: 40px;
+}
+
+/* Logo responsive para móviles */
+@media (max-width: 767.98px) {
+    .kikibrows-logo img {
+        height: 28px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .kikibrows-logo img {
+        height: 35px;
+    }
 }
 
 .top-icons {
     display: flex;
-    align-items: center; 
-    gap: 20px; 
+    align-items: center;
+    gap: 20px;
     font-size: 1.2em;
     color: var(--text-grey);
+}
+
+/* Botón hamburguesa para sidebar en móvil */
+.sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: none;
+}
+
+.sidebar-toggle:hover {
+    color: var(--primary-color);
 }
 
 /* --- SIDEBAR (BARRA LATERAL) --- */
@@ -98,11 +130,16 @@ body {
 
 /* --- ESTILOS RESPONSIVE (MÓVIL) --- */
 @media (max-width: 991.98px) {
-    
+
+    /* Mostrar botón hamburguesa en móvil */
+    .sidebar-toggle {
+        display: block;
+    }
+
     /* En móvil, el sidebar se esconde a la izquierda */
     #sidebar {
         transform: translateX(-100%);
-        left: 0; 
+        left: 0;
     }
 
     /* Cuando se activa la clase .open, el sidebar entra */
