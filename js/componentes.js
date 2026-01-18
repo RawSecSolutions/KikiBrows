@@ -12,7 +12,7 @@ const renderNavbar = () => {
             <i class="fas fa-bars text-dark fs-2"></i>
         </button>
         <div class="kikibrows-logo position-absolute start-50 translate-middle-x">
-            <img src="img/kikibrows-logo.png" alt="KIKIBROWS" style="height: 50px; padding-bottom: 7px;">
+            <img src="img/kikibrows-logo.png" alt="KIKIBROWS">
         </div>
         <div class="top-icons">
             <div class="dropdown">
