@@ -255,8 +255,36 @@ body {
     text-decoration: none;
 }
 
+/* Responsivo para tablets */
+@media (max-width: 768px) {
+    #cursos {
+        height: auto !important;
+        min-height: 100vh;
+        overflow: visible !important;
+        padding: 3rem 1.5rem !important;
+    }
+
+    .productos-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .producto-card {
+        min-width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
 /* Responsivo para móviles */
 @media (max-width: 576px) {
+    #cursos {
+        height: auto !important;
+        min-height: 100vh;
+        overflow: visible !important;
+        padding: 2rem 1rem !important;
+    }
+
     .productos-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
@@ -266,7 +294,16 @@ body {
         min-width: 100%;
     }
 
-    #cursos {
-        padding: 2rem 1rem !important;
+    .carousel-caption-custom {
+        padding: 2rem 1.5rem;
+        max-width: 90%;
+    }
+
+    .carousel-caption-custom h1 {
+        font-size: 1.75rem;
+    }
+
+    .carousel-caption-custom .lead {
+        font-size: 1rem;
     }
 }
