@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     console.log("Rol detectado: ALUMNO");
                     localStorage.setItem('userRole', 'student');
-                    destino = 'landing.html'; // El cambio que pediste
+                    destino = 'index.html'; // El cambio que pediste
                 }
 
                 // C. Redirección
