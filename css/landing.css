@@ -3,11 +3,19 @@
    ======================================================================= */
 
 /* 1. CONFIGURACIÓN DE SECCIONES (Sticky / Full Height) */
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 body {
     margin: 0;
     padding: 0;
     perspective: 1500px; /* Necesario para el efecto 3D de empuje */
     overflow-x: hidden;
+    /* Optimización para iOS */
+    -webkit-overflow-scrolling: touch;
 }
 
 .sticky-section {
@@ -49,6 +57,9 @@ body {
 }
 
 .carousel-caption-custom {
+    /* Fallback para navegadores sin soporte de backdrop-filter */
+    background-color: rgb(253, 252, 250);
+    /* Efecto blur para navegadores compatibles */
     background-color: rgba(253, 252, 250, 0.92);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
@@ -58,6 +69,13 @@ body {
     color: var(--text-dark);
     border: 1px solid var(--border-light);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* Fallback para Android sin soporte de backdrop-filter */
+@supports not (backdrop-filter: blur(15px)) {
+    .carousel-caption-custom {
+        background-color: rgba(253, 252, 250, 0.98);
+    }
 }
 
 .carousel-caption-custom h1 {
@@ -86,6 +104,9 @@ body {
 }
 
 .contacto-block {
+    /* Fallback para navegadores sin soporte de backdrop-filter */
+    background-color: rgb(253, 252, 250);
+    /* Efecto blur para navegadores compatibles */
     background-color: rgba(253, 252, 250, 0.95);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
@@ -94,6 +115,12 @@ body {
     border: 1px solid var(--border-light);
     padding: 2.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+@supports not (backdrop-filter: blur(15px)) {
+    .contacto-block {
+        background-color: rgba(253, 252, 250, 0.98);
+    }
 }
 
 .register-button {
@@ -128,19 +155,62 @@ body {
     transform: translateY(0);
 }
 
+/* Optimizaciones de rendimiento para animaciones */
+.sticky-section {
+    will-change: transform, opacity;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+}
+
+/* Desactivar animaciones pesadas en móviles para mejor rendimiento */
+@media (max-width: 767px) {
+    .animate-up {
+        opacity: 0;
+        transform: none;
+        transition: opacity 0.6s ease-out;
+    }
+
+    .animate-up.visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* Desactivar efectos 3D en móviles */
+    .sticky-section {
+        will-change: auto;
+        transform: none !important;
+    }
+
+    body {
+        perspective: none;
+    }
+
+    /* Desactivar hover effects en móviles */
+    .producto-card:hover {
+        transform: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .register-button:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
 /* 5. GRID DE PRODUCTOS */
 #cursos {
     z-index: 25;
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+    padding: 3rem 1.5rem !important;
 }
 
 .productos-grid-container {
     width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
     padding: 1rem 0;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent-color) var(--border-light);
 }
 
 .productos-grid-container::-webkit-scrollbar {
@@ -166,30 +236,30 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
-    min-width: min-content;
     padding: 0.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-/* Cuando hay muchos productos, forzar el scroll horizontal */
-@media (min-width: 1400px) {
+/* Desktop grande - 3 columnas */
+@media (min-width: 1200px) {
     .productos-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-@media (min-width: 992px) and (max-width: 1399px) {
+/* Desktop mediano - 2 columnas */
+@media (min-width: 768px) and (max-width: 1199px) {
     .productos-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 991px) {
-    .productos-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
     }
 }
 
 .producto-card {
+    /* Fallback para navegadores sin soporte de backdrop-filter */
+    background-color: rgb(253, 252, 250);
+    /* Efecto blur para navegadores compatibles */
     background-color: rgba(253, 252, 250, 0.95);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
@@ -202,6 +272,12 @@ body {
     flex-direction: column;
     height: 100%;
     min-width: 280px;
+}
+
+@supports not (backdrop-filter: blur(15px)) {
+    .producto-card {
+        background-color: rgba(253, 252, 250, 0.98);
+    }
 }
 
 .producto-card:hover {
@@ -255,43 +331,22 @@ body {
     text-decoration: none;
 }
 
-/* Responsivo para tablets */
-@media (max-width: 768px) {
+/* Responsivo para tablets y móviles */
+@media (max-width: 767px) {
     #cursos {
-        height: auto !important;
-        min-height: 100vh;
-        overflow: visible !important;
-        padding: 3rem 1.5rem !important;
+        padding: 2.5rem 1.25rem !important;
     }
 
     .productos-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        padding: 0.25rem;
     }
 
     .producto-card {
         min-width: 100%;
         max-width: 500px;
         margin: 0 auto;
-    }
-}
-
-/* Responsivo para móviles */
-@media (max-width: 576px) {
-    #cursos {
-        height: auto !important;
-        min-height: 100vh;
-        overflow: visible !important;
-        padding: 2rem 1rem !important;
-    }
-
-    .productos-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
-    .producto-card {
-        min-width: 100%;
     }
 
     .carousel-caption-custom {
@@ -305,5 +360,24 @@ body {
 
     .carousel-caption-custom .lead {
         font-size: 1rem;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    #cursos {
+        padding: 2rem 1rem !important;
+    }
+
+    .productos-grid {
+        gap: 1.25rem;
+    }
+
+    .carousel-caption-custom {
+        padding: 1.5rem 1rem;
+    }
+
+    .carousel-caption-custom h1 {
+        font-size: 1.5rem;
     }
 }

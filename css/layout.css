@@ -94,6 +94,9 @@ body {
 
 /* 3. MENÚ PRINCIPAL (Main Navbar) */
 .main-navbar {
+    /* Fallback para navegadores sin soporte de backdrop-filter */
+    background-color: rgb(253, 252, 250);
+    /* Efecto blur para navegadores compatibles */
     background-color: rgba(253, 252, 250, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -101,6 +104,12 @@ body {
     padding: 0.5rem 0;
     margin-bottom: 40px;
     border-bottom: 1px solid var(--border-light);
+}
+
+@supports not (backdrop-filter: blur(12px)) {
+    .main-navbar {
+        background-color: rgba(253, 252, 250, 0.98);
+    }
 }
 
 .main-navbar .navbar-nav {
