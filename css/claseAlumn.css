@@ -807,6 +807,56 @@ body {
     }
 }
 
+/* Tablets y pantallas medianas */
+@media (max-width: 768px) {
+    /* Quiz adaptativo */
+    .quiz-info {
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .quiz-info-item .value {
+        font-size: 1.3rem;
+    }
+
+    .question-card {
+        padding: 20px;
+    }
+
+    .question-text {
+        font-size: 1rem;
+    }
+
+    .answer-option {
+        padding: 14px 18px;
+        min-height: 48px; /* Touch target recomendado */
+    }
+
+    .answer-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0; /* Evita que se comprima en móvil */
+    }
+
+    /* Entregas adaptativas */
+    .upload-zone {
+        padding: 30px 20px;
+    }
+
+    .upload-icon {
+        font-size: 2.5rem;
+    }
+
+    .upload-text {
+        font-size: 0.95rem;
+    }
+
+    .upload-hint {
+        font-size: 0.8rem;
+    }
+}
+
+/* Móviles pequeños */
 @media (max-width: 576px) {
     .content-title {
         font-size: 1.2rem;
@@ -819,6 +869,203 @@ body {
 
     .navigation-footer {
         padding: 0 16px;
+    }
+
+    /* Quiz optimizado para móvil */
+    .quiz-container {
+        padding: 16px;
+    }
+
+    .quiz-header {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+    }
+
+    .quiz-header h4 {
+        font-size: 1.1rem;
+    }
+
+    .quiz-info {
+        gap: 12px;
+        justify-content: space-around;
+    }
+
+    .quiz-info-item {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .quiz-info-item .value {
+        font-size: 1.2rem;
+    }
+
+    .quiz-info-item .label {
+        font-size: 0.7rem;
+    }
+
+    .question-card {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 10px;
+    }
+
+    .question-number {
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+    }
+
+    .question-text {
+        font-size: 0.95rem;
+        margin-bottom: 14px;
+        line-height: 1.4;
+    }
+
+    .question-points {
+        padding: 2px 8px;
+        font-size: 0.7rem;
+    }
+
+    .answer-option {
+        padding: 16px 14px;
+        margin-bottom: 10px;
+        min-height: 52px; /* Touch target óptimo para móvil */
+        align-items: flex-start; /* Mejor alineación para texto largo */
+    }
+
+    .answer-option input[type="radio"] {
+        margin-right: 10px;
+        margin-top: 2px; /* Alineación con texto */
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+
+    .answer-option span {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .quiz-submit-btn {
+        padding: 14px;
+        font-size: 1rem;
+        margin-top: 16px;
+    }
+
+    /* Entregas optimizadas para móvil */
+    .entrega-container {
+        padding: 16px;
+    }
+
+    .entrega-section {
+        margin-bottom: 24px;
+    }
+
+    .entrega-section-title {
+        font-size: 1rem;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .entrega-section-title .number {
+        width: 26px;
+        height: 26px;
+        font-size: 0.8rem;
+    }
+
+    .entrega-instructions {
+        padding: 16px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .upload-zone {
+        padding: 24px 16px;
+        border-radius: 10px;
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+        margin-bottom: 12px;
+    }
+
+    .upload-text {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    .upload-hint {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        padding: 0 10px;
+    }
+
+    .upload-btn {
+        margin-top: 12px;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .entrega-status {
+        padding: 16px;
+        font-size: 0.9rem;
+    }
+
+    .entrega-feedback {
+        padding: 12px;
+        font-size: 0.85rem;
+    }
+
+    /* Mejoras generales de texto en móvil */
+    .text-content {
+        padding: 16px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .content-wrapper {
+        padding: 16px;
+    }
+
+    /* Modal de resultados en móvil */
+    .result-score {
+        font-size: 2.5rem;
+        margin: 16px 0;
+    }
+
+    .feedback-item {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Móviles extra pequeños */
+@media (max-width: 375px) {
+    .quiz-info {
+        gap: 8px;
+    }
+
+    .quiz-info-item .value {
+        font-size: 1.1rem;
+    }
+
+    .quiz-info-item .label {
+        font-size: 0.65rem;
+    }
+
+    .question-text {
+        font-size: 0.9rem;
+    }
+
+    .answer-option {
+        padding: 14px 12px;
+    }
+
+    .answer-option span {
+        font-size: 0.85rem;
+    }
+
+    .upload-zone {
+        padding: 20px 12px;
     }
 }
 
