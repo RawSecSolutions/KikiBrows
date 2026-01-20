@@ -303,12 +303,10 @@ function cargarCursoEnModal(cursoId) {
     });
 }
 
-// Event listeners
+// Event listeners - Usando delegación de eventos para mayor robustez
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Course Preview Modal Script Loaded');
-
-    const botonesVer = document.querySelectorAll('.btn-ver-curso');
-    console.log('Botones encontrados:', botonesVer.length);
+    console.log('Bootstrap disponible:', typeof bootstrap !== 'undefined');
 
     const modalElement = document.getElementById('coursePreviewModal');
 
@@ -322,19 +320,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    botonesVer.forEach(boton => {
-        boton.addEventListener('click', (e) => {
-            console.log('Click en botón Ver');
+    // Buscar botones
+    const botonesVer = document.querySelectorAll('.btn-ver-curso');
+    console.log('Botones encontrados:', botonesVer.length);
+
+    if (botonesVer.length === 0) {
+        console.error('No se encontraron botones con clase .btn-ver-curso');
+        return;
+    }
+
+    // Usar delegación de eventos en el document
+    document.addEventListener('click', (e) => {
+        // Verificar si el click fue en un botón o dentro de uno
+        const button = e.target.closest('.btn-ver-curso');
+
+        if (button) {
+            console.log('Click detectado en botón Ver');
             e.preventDefault();
             e.stopPropagation();
 
-            const card = e.target.closest('.producto-card');
-            if (!card) {
-                console.error('No se encontró la card');
-                return;
+            // Buscar el data-curso-id en el botón o en la card padre
+            let cursoId = button.dataset.cursoId;
+
+            if (!cursoId) {
+                const card = button.closest('.producto-card');
+                if (card) {
+                    cursoId = card.dataset.cursoId;
+                }
             }
 
-            const cursoId = parseInt(card.dataset.cursoId);
+            cursoId = parseInt(cursoId);
             console.log('Curso ID:', cursoId);
 
             if (!cursoId) {
@@ -342,11 +357,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            console.log('Cargando curso en modal...');
             cargarCursoEnModal(cursoId);
 
+            console.log('Mostrando modal...');
             // Crear instancia del modal cada vez que se hace click
             const modal = new bootstrap.Modal(modalElement);
             modal.show();
-        });
+        }
     });
+
+    console.log('Event listener global añadido correctamente');
 });
