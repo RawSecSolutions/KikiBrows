@@ -50,6 +50,90 @@ const CursosData = {
                 carrusel: false,
                 carruselPosicion: null,
                 modulos: [6]
+            },
+            4: {
+                id: 4,
+                nombre: 'CURSO CAPPING POLYGEL',
+                descripcion: 'Aprende técnicas avanzadas de capping con polygel. Domina el arte de las uñas profesionales con nuestro curso completo que incluye técnicas de aplicación, diseño y cuidado. Ideal tanto para principiantes como para profesionales que buscan perfeccionar sus habilidades.',
+                precio: 99990,
+                estado: 'publicado',
+                fechaCreacion: '2024-04-01',
+                duracionAcceso: 180,
+                portada: null,
+                video: null,
+                carrusel: true,
+                carruselPosicion: 2,
+                modulos: [7, 8, 9]
+            },
+            5: {
+                id: 5,
+                nombre: 'CURSO MANICURE BÁSICO',
+                descripcion: 'Domina las técnicas fundamentales de manicure desde cero. Este curso te enseñará todo lo necesario para realizar manicures profesionales, desde la preparación hasta el acabado perfecto. Incluye técnicas de esmaltado, cuidado de cutículas y tratamientos básicos.',
+                precio: 79990,
+                estado: 'publicado',
+                fechaCreacion: '2024-04-05',
+                duracionAcceso: 180,
+                portada: null,
+                video: null,
+                carrusel: true,
+                carruselPosicion: 3,
+                modulos: [10, 11, 12]
+            },
+            6: {
+                id: 6,
+                nombre: 'CURSO NAIL ART',
+                descripcion: 'Crea diseños artísticos profesionales en uñas. Desarrolla tu creatividad y aprende las técnicas más populares de nail art, desde diseños simples hasta creaciones complejas. Incluye uso de diferentes materiales, técnicas de pintura y decoración.',
+                precio: 89990,
+                estado: 'publicado',
+                fechaCreacion: '2024-04-10',
+                duracionAcceso: 180,
+                portada: null,
+                video: null,
+                carrusel: true,
+                carruselPosicion: 4,
+                modulos: [13, 14, 15]
+            },
+            7: {
+                id: 7,
+                nombre: 'CURSO PEDICURE PROFESIONAL',
+                descripcion: 'Técnicas completas de pedicure y cuidado de pies. Aprende a realizar tratamientos profesionales de pies, incluyendo limpieza profunda, tratamiento de callosidades, masajes y esmaltado. Perfecto para ofrecer un servicio completo de pedicure.',
+                precio: 84990,
+                estado: 'publicado',
+                fechaCreacion: '2024-04-15',
+                duracionAcceso: 180,
+                portada: null,
+                video: null,
+                carrusel: false,
+                carruselPosicion: null,
+                modulos: [16, 17, 18]
+            },
+            8: {
+                id: 8,
+                nombre: 'CURSO UÑAS ACRÍLICAS',
+                descripcion: 'Especialízate en aplicación de uñas acrílicas. Domina la técnica del acrílico desde lo básico hasta diseños avanzados. Aprende a realizar extensiones, rellenos, diseños con acrílico de colores y mantenimiento profesional.',
+                precio: 94990,
+                estado: 'publicado',
+                fechaCreacion: '2024-04-20',
+                duracionAcceso: 180,
+                portada: null,
+                video: null,
+                carrusel: true,
+                carruselPosicion: 5,
+                modulos: [19, 20, 21]
+            },
+            9: {
+                id: 9,
+                nombre: 'CURSO GEL UV AVANZADO',
+                descripcion: 'Técnicas avanzadas con gel UV profesional. Perfecciona tus habilidades con gel UV y aprende técnicas profesionales de aplicación, extensión y diseño. Incluye trabajo con diferentes tipos de gel y técnicas de esculpido avanzadas.',
+                precio: 92990,
+                estado: 'publicado',
+                fechaCreacion: '2024-04-25',
+                duracionAcceso: 180,
+                portada: null,
+                video: null,
+                carrusel: true,
+                carruselPosicion: 6,
+                modulos: [22, 23, 24]
             }
         },
         modulos: {
@@ -100,6 +184,156 @@ const CursosData = {
                 descripcion: 'Principios de visagismo aplicados al diseño de cejas.',
                 orden: 1,
                 clases: [18, 19, 20]
+            },
+            // Módulos del curso 4: CAPPING POLYGEL
+            7: {
+                id: 7,
+                cursoId: 4,
+                nombre: 'Introducción al Capping Polygel',
+                descripcion: 'Fundamentos y conceptos básicos del capping polygel.',
+                orden: 1,
+                clases: [21, 22, 23, 24]
+            },
+            8: {
+                id: 8,
+                cursoId: 4,
+                nombre: 'Técnicas de Aplicación',
+                descripcion: 'Técnicas profesionales de aplicación de polygel.',
+                orden: 2,
+                clases: [25, 26, 27, 28]
+            },
+            9: {
+                id: 9,
+                cursoId: 4,
+                nombre: 'Diseño y Acabado',
+                descripcion: 'Diseños y acabados profesionales con polygel.',
+                orden: 3,
+                clases: [29, 30, 31, 32]
+            },
+            // Módulos del curso 5: MANICURE BÁSICO
+            10: {
+                id: 10,
+                cursoId: 5,
+                nombre: 'Fundamentos del Manicure',
+                descripcion: 'Conceptos básicos del manicure profesional.',
+                orden: 1,
+                clases: [33, 34, 35, 36]
+            },
+            11: {
+                id: 11,
+                cursoId: 5,
+                nombre: 'Técnicas de Preparación',
+                descripcion: 'Preparación de uñas y técnicas básicas.',
+                orden: 2,
+                clases: [37, 38, 39, 40]
+            },
+            12: {
+                id: 12,
+                cursoId: 5,
+                nombre: 'Esmaltado y Acabado',
+                descripcion: 'Técnicas de esmaltado y acabado perfecto.',
+                orden: 3,
+                clases: [41, 42, 43, 44]
+            },
+            // Módulos del curso 6: NAIL ART
+            13: {
+                id: 13,
+                cursoId: 6,
+                nombre: 'Introducción al Nail Art',
+                descripcion: 'Fundamentos del arte en uñas.',
+                orden: 1,
+                clases: [45, 46, 47, 48]
+            },
+            14: {
+                id: 14,
+                cursoId: 6,
+                nombre: 'Técnicas Básicas',
+                descripcion: 'Técnicas básicas de nail art.',
+                orden: 2,
+                clases: [49, 50, 51, 52]
+            },
+            15: {
+                id: 15,
+                cursoId: 6,
+                nombre: 'Técnicas Avanzadas',
+                descripcion: 'Técnicas avanzadas de nail art.',
+                orden: 3,
+                clases: [53, 54, 55, 56]
+            },
+            // Módulos del curso 7: PEDICURE PROFESIONAL
+            16: {
+                id: 16,
+                cursoId: 7,
+                nombre: 'Fundamentos del Pedicure',
+                descripcion: 'Bases del pedicure profesional.',
+                orden: 1,
+                clases: [57, 58, 59, 60]
+            },
+            17: {
+                id: 17,
+                cursoId: 7,
+                nombre: 'Técnicas de Tratamiento',
+                descripcion: 'Técnicas de tratamiento de pies.',
+                orden: 2,
+                clases: [61, 62, 63, 64]
+            },
+            18: {
+                id: 18,
+                cursoId: 7,
+                nombre: 'Acabado Profesional',
+                descripcion: 'Acabado profesional de pedicure.',
+                orden: 3,
+                clases: [65, 66, 67, 68]
+            },
+            // Módulos del curso 8: UÑAS ACRÍLICAS
+            19: {
+                id: 19,
+                cursoId: 8,
+                nombre: 'Introducción al Acrílico',
+                descripcion: 'Fundamentos del trabajo con acrílico.',
+                orden: 1,
+                clases: [69, 70, 71, 72]
+            },
+            20: {
+                id: 20,
+                cursoId: 8,
+                nombre: 'Técnicas de Aplicación',
+                descripcion: 'Aplicación profesional de acrílico.',
+                orden: 2,
+                clases: [73, 74, 75, 76]
+            },
+            21: {
+                id: 21,
+                cursoId: 8,
+                nombre: 'Mantenimiento y Diseño',
+                descripcion: 'Mantenimiento y diseños con acrílico.',
+                orden: 3,
+                clases: [77, 78, 79, 80]
+            },
+            // Módulos del curso 9: GEL UV AVANZADO
+            22: {
+                id: 22,
+                cursoId: 9,
+                nombre: 'Fundamentos del Gel UV',
+                descripcion: 'Fundamentos del trabajo con gel UV.',
+                orden: 1,
+                clases: [81, 82, 83, 84]
+            },
+            23: {
+                id: 23,
+                cursoId: 9,
+                nombre: 'Técnicas de Aplicación',
+                descripcion: 'Aplicación profesional de gel UV.',
+                orden: 2,
+                clases: [85, 86, 87, 88]
+            },
+            24: {
+                id: 24,
+                cursoId: 9,
+                nombre: 'Diseños Avanzados',
+                descripcion: 'Diseños avanzados con gel UV.',
+                orden: 3,
+                clases: [89, 90, 91, 92]
             }
         },
         clases: {
@@ -133,12 +367,120 @@ const CursosData = {
             // Módulo 6: Visagismo
             18: { id: 18, moduloId: 6, nombre: 'Principios de visagismo', tipo: 'video', duracion: 15, orden: 1 },
             19: { id: 19, moduloId: 6, nombre: 'Formas de rostro', tipo: 'texto', duracion: 10, orden: 2 },
-            20: { id: 20, moduloId: 6, nombre: 'Diseño personalizado', tipo: 'entrega', duracion: 20, orden: 3 }
+            20: { id: 20, moduloId: 6, nombre: 'Diseño personalizado', tipo: 'entrega', duracion: 20, orden: 3 },
+
+            // Módulo 7: Introducción al Capping Polygel
+            21: { id: 21, moduloId: 7, nombre: 'Historia y evolución del polygel', tipo: 'video', duracion: 15, orden: 1 },
+            22: { id: 22, moduloId: 7, nombre: 'Materiales y herramientas necesarias', tipo: 'video', duracion: 20, orden: 2 },
+            23: { id: 23, moduloId: 7, nombre: 'Preparación de uñas naturales', tipo: 'video', duracion: 25, orden: 3 },
+            24: { id: 24, moduloId: 7, nombre: 'Seguridad e higiene', tipo: 'video', duracion: 10, orden: 4 },
+
+            // Módulo 8: Técnicas de Aplicación (Polygel)
+            25: { id: 25, moduloId: 8, nombre: 'Aplicación básica de polygel', tipo: 'video', duracion: 30, orden: 1 },
+            26: { id: 26, moduloId: 8, nombre: 'Técnicas de esculpido', tipo: 'video', duracion: 35, orden: 2 },
+            27: { id: 27, moduloId: 8, nombre: 'Extensiones con moldes', tipo: 'video', duracion: 40, orden: 3 },
+            28: { id: 28, moduloId: 8, nombre: 'Reparación y relleno', tipo: 'video', duracion: 25, orden: 4 },
+
+            // Módulo 9: Diseño y Acabado (Polygel)
+            29: { id: 29, moduloId: 9, nombre: 'Diseños básicos y avanzados', tipo: 'video', duracion: 30, orden: 1 },
+            30: { id: 30, moduloId: 9, nombre: 'Decoración y nail art', tipo: 'video', duracion: 35, orden: 2 },
+            31: { id: 31, moduloId: 9, nombre: 'Acabado perfecto', tipo: 'video', duracion: 20, orden: 3 },
+            32: { id: 32, moduloId: 9, nombre: 'Mantenimiento y cuidados', tipo: 'video', duracion: 15, orden: 4 },
+
+            // Módulo 10: Fundamentos del Manicure
+            33: { id: 33, moduloId: 10, nombre: 'Introducción al manicure profesional', tipo: 'video', duracion: 12, orden: 1 },
+            34: { id: 34, moduloId: 10, nombre: 'Anatomía de las uñas', tipo: 'video', duracion: 18, orden: 2 },
+            35: { id: 35, moduloId: 10, nombre: 'Herramientas esenciales', tipo: 'video', duracion: 15, orden: 3 },
+            36: { id: 36, moduloId: 10, nombre: 'Protocolos de higiene', tipo: 'video', duracion: 10, orden: 4 },
+
+            // Módulo 11: Técnicas de Preparación (Manicure)
+            37: { id: 37, moduloId: 11, nombre: 'Limado y formado de uñas', tipo: 'video', duracion: 25, orden: 1 },
+            38: { id: 38, moduloId: 11, nombre: 'Cuidado de cutículas', tipo: 'video', duracion: 20, orden: 2 },
+            39: { id: 39, moduloId: 11, nombre: 'Preparación de la superficie', tipo: 'video', duracion: 15, orden: 3 },
+            40: { id: 40, moduloId: 11, nombre: 'Baño de parafina', tipo: 'video', duracion: 20, orden: 4 },
+
+            // Módulo 12: Esmaltado y Acabado
+            41: { id: 41, moduloId: 12, nombre: 'Técnicas de esmaltado básico', tipo: 'video', duracion: 25, orden: 1 },
+            42: { id: 42, moduloId: 12, nombre: 'Esmaltado permanente', tipo: 'video', duracion: 30, orden: 2 },
+            43: { id: 43, moduloId: 12, nombre: 'Decoración simple', tipo: 'video', duracion: 20, orden: 3 },
+            44: { id: 44, moduloId: 12, nombre: 'Finalización y secado', tipo: 'video', duracion: 15, orden: 4 },
+
+            // Módulo 13: Introducción al Nail Art
+            45: { id: 45, moduloId: 13, nombre: 'Historia del nail art', tipo: 'video', duracion: 10, orden: 1 },
+            46: { id: 46, moduloId: 13, nombre: 'Teoría del color aplicada', tipo: 'video', duracion: 20, orden: 2 },
+            47: { id: 47, moduloId: 13, nombre: 'Materiales y pinceles', tipo: 'video', duracion: 18, orden: 3 },
+            48: { id: 48, moduloId: 13, nombre: 'Preparación de workspace', tipo: 'video', duracion: 12, orden: 4 },
+
+            // Módulo 14: Técnicas Básicas (Nail Art)
+            49: { id: 49, moduloId: 14, nombre: 'Diseños con puntero', tipo: 'video', duracion: 25, orden: 1 },
+            50: { id: 50, moduloId: 14, nombre: 'Degradados y ombré', tipo: 'video', duracion: 30, orden: 2 },
+            51: { id: 51, moduloId: 14, nombre: 'Estampado y sellos', tipo: 'video', duracion: 25, orden: 3 },
+            52: { id: 52, moduloId: 14, nombre: 'Uso de stickers y calcomanías', tipo: 'video', duracion: 20, orden: 4 },
+
+            // Módulo 15: Técnicas Avanzadas (Nail Art)
+            53: { id: 53, moduloId: 15, nombre: 'Pintura a mano alzada', tipo: 'video', duracion: 40, orden: 1 },
+            54: { id: 54, moduloId: 15, nombre: 'Diseños 3D', tipo: 'video', duracion: 35, orden: 2 },
+            55: { id: 55, moduloId: 15, nombre: 'Aplicación de cristales', tipo: 'video', duracion: 30, orden: 3 },
+            56: { id: 56, moduloId: 15, nombre: 'Diseños temáticos', tipo: 'video', duracion: 35, orden: 4 },
+
+            // Módulo 16: Fundamentos del Pedicure
+            57: { id: 57, moduloId: 16, nombre: 'Anatomía del pie', tipo: 'video', duracion: 20, orden: 1 },
+            58: { id: 58, moduloId: 16, nombre: 'Herramientas profesionales', tipo: 'video', duracion: 18, orden: 2 },
+            59: { id: 59, moduloId: 16, nombre: 'Higiene y desinfección', tipo: 'video', duracion: 15, orden: 3 },
+            60: { id: 60, moduloId: 16, nombre: 'Evaluación del cliente', tipo: 'video', duracion: 12, orden: 4 },
+
+            // Módulo 17: Técnicas de Tratamiento (Pedicure)
+            61: { id: 61, moduloId: 17, nombre: 'Baño y exfoliación de pies', tipo: 'video', duracion: 25, orden: 1 },
+            62: { id: 62, moduloId: 17, nombre: 'Tratamiento de cutículas', tipo: 'video', duracion: 20, orden: 2 },
+            63: { id: 63, moduloId: 17, nombre: 'Eliminación de callosidades', tipo: 'video', duracion: 30, orden: 3 },
+            64: { id: 64, moduloId: 17, nombre: 'Masaje de pies y pantorrillas', tipo: 'video', duracion: 35, orden: 4 },
+
+            // Módulo 18: Acabado Profesional (Pedicure)
+            65: { id: 65, moduloId: 18, nombre: 'Limado y formado de uñas', tipo: 'video', duracion: 20, orden: 1 },
+            66: { id: 66, moduloId: 18, nombre: 'Esmaltado de uñas de pies', tipo: 'video', duracion: 25, orden: 2 },
+            67: { id: 67, moduloId: 18, nombre: 'Hidratación profunda', tipo: 'video', duracion: 20, orden: 3 },
+            68: { id: 68, moduloId: 18, nombre: 'Mantenimiento y consejos', tipo: 'video', duracion: 15, orden: 4 },
+
+            // Módulo 19: Introducción al Acrílico
+            69: { id: 69, moduloId: 19, nombre: 'Química del acrílico', tipo: 'video', duracion: 15, orden: 1 },
+            70: { id: 70, moduloId: 19, nombre: 'Productos y materiales', tipo: 'video', duracion: 20, orden: 2 },
+            71: { id: 71, moduloId: 19, nombre: 'Preparación de uñas', tipo: 'video', duracion: 25, orden: 3 },
+            72: { id: 72, moduloId: 19, nombre: 'Seguridad en el trabajo', tipo: 'video', duracion: 15, orden: 4 },
+
+            // Módulo 20: Técnicas de Aplicación (Acrílico)
+            73: { id: 73, moduloId: 20, nombre: 'Aplicación básica de acrílico', tipo: 'video', duracion: 35, orden: 1 },
+            74: { id: 74, moduloId: 20, nombre: 'Extensiones con tips', tipo: 'video', duracion: 40, orden: 2 },
+            75: { id: 75, moduloId: 20, nombre: 'Esculpido con moldes', tipo: 'video', duracion: 45, orden: 3 },
+            76: { id: 76, moduloId: 20, nombre: 'Creación de apex perfecto', tipo: 'video', duracion: 30, orden: 4 },
+
+            // Módulo 21: Mantenimiento y Diseño (Acrílico)
+            77: { id: 77, moduloId: 21, nombre: 'Rellenos profesionales', tipo: 'video', duracion: 35, orden: 1 },
+            78: { id: 78, moduloId: 21, nombre: 'Reparación de uñas', tipo: 'video', duracion: 25, orden: 2 },
+            79: { id: 79, moduloId: 21, nombre: 'Acrílico de colores', tipo: 'video', duracion: 30, orden: 3 },
+            80: { id: 80, moduloId: 21, nombre: 'Diseños encapsulados', tipo: 'video', duracion: 35, orden: 4 },
+
+            // Módulo 22: Fundamentos del Gel UV
+            81: { id: 81, moduloId: 22, nombre: 'Tipos de gel UV', tipo: 'video', duracion: 18, orden: 1 },
+            82: { id: 82, moduloId: 22, nombre: 'Equipamiento necesario', tipo: 'video', duracion: 15, orden: 2 },
+            83: { id: 83, moduloId: 22, nombre: 'Preparación profesional', tipo: 'video', duracion: 20, orden: 3 },
+            84: { id: 84, moduloId: 22, nombre: 'Seguridad y buenas prácticas', tipo: 'video', duracion: 12, orden: 4 },
+
+            // Módulo 23: Técnicas de Aplicación (Gel UV)
+            85: { id: 85, moduloId: 23, nombre: 'Esmaltado semipermanente', tipo: 'video', duracion: 30, orden: 1 },
+            86: { id: 86, moduloId: 23, nombre: 'Extensiones con gel', tipo: 'video', duracion: 40, orden: 2 },
+            87: { id: 87, moduloId: 23, nombre: 'Esculpido con moldes', tipo: 'video', duracion: 45, orden: 3 },
+            88: { id: 88, moduloId: 23, nombre: 'Overlay y refuerzo', tipo: 'video', duracion: 30, orden: 4 },
+
+            // Módulo 24: Diseños Avanzados (Gel UV)
+            89: { id: 89, moduloId: 24, nombre: 'Gel de construcción', tipo: 'video', duracion: 35, orden: 1 },
+            90: { id: 90, moduloId: 24, nombre: 'French avanzado', tipo: 'video', duracion: 30, orden: 2 },
+            91: { id: 91, moduloId: 24, nombre: 'Encapsulado con gel', tipo: 'video', duracion: 35, orden: 3 },
+            92: { id: 92, moduloId: 24, nombre: 'Efectos especiales', tipo: 'video', duracion: 30, orden: 4 }
         },
         nextIds: {
-            curso: 4,
-            modulo: 7,
-            clase: 21
+            curso: 10,
+            modulo: 25,
+            clase: 93
         }
     },
     
