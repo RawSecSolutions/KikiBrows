@@ -1,14 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // 1. INICIALIZAR NAVBAR (Corrección para que aparezca el menú)
-    // Verificamos si el objeto UI del componente Alumno existe y llamamos al navbar
-    if (typeof UI !== 'undefined' && typeof UI.initNavbar === 'function') {
-        UI.initNavbar();
-    } else {
-        console.error("Error: componentsAlumn.js no se ha cargado correctamente.");
-    }
 
-    // 2. DATOS SIMULADOS
+    // 1. DATOS SIMULADOS
     const certificadosData = [
         {
             id: 1,
