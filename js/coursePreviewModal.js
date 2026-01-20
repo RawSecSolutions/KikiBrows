@@ -306,16 +306,34 @@ function cargarCursoEnModal(cursoId) {
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
     const botonesVer = document.querySelectorAll('.btn-ver-curso');
-    const modal = new bootstrap.Modal(document.getElementById('coursePreviewModal'));
+    const modalElement = document.getElementById('coursePreviewModal');
+
+    if (!modalElement) {
+        console.error('Modal element not found');
+        return;
+    }
 
     botonesVer.forEach(boton => {
         boton.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
+
             const card = e.target.closest('.producto-card');
+            if (!card) {
+                console.error('Producto card not found');
+                return;
+            }
+
             const cursoId = parseInt(card.dataset.cursoId);
 
+            // Cargar el contenido del curso
             cargarCursoEnModal(cursoId);
+
+            // Crear y mostrar el modal
+            const modal = new bootstrap.Modal(modalElement);
             modal.show();
         });
     });
+
+    console.log(`${botonesVer.length} botones "Ver" configurados correctamente`);
 });

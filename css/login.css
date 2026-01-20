@@ -92,3 +92,75 @@
     padding: 12px 32px;
     font-size: 0.9rem;
 }
+
+/* ========================================
+   COMPATIBILIDAD MÓVIL
+   ======================================== */
+@media (max-width: 767px) {
+    .registro-container {
+        padding: 2rem 1.5rem;
+        margin: 1rem 0.75rem;
+    }
+
+    .user-registration-form input.form-control,
+    .user-registration-form select.form-control,
+    .user-registration-form textarea.form-control {
+        padding: 16px 14px; /* Más alto para facilitar el toque */
+        font-size: 16px; /* Previene zoom en iOS */
+    }
+
+    .user-registration-form label {
+        font-size: 0.95rem;
+    }
+
+    .checkbox-group {
+        margin-bottom: 18px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 22px; /* Más grande para touch */
+        height: 22px;
+        margin-right: 14px;
+    }
+
+    .checkbox-group label {
+        font-size: 0.95rem;
+    }
+
+    .register-button {
+        padding: 16px 30px;
+        font-size: 0.95rem;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .register-button-small {
+        padding: 14px 30px;
+        font-size: 0.9rem;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .registro-container {
+        padding: 1.75rem 1.25rem;
+        margin: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .user-registration-form input.form-control,
+    .user-registration-form select.form-control,
+    .user-registration-form textarea.form-control {
+        padding: 14px 12px;
+    }
+}
