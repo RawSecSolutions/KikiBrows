@@ -305,16 +305,47 @@ function cargarCursoEnModal(cursoId) {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Course Preview Modal Script Loaded');
+
     const botonesVer = document.querySelectorAll('.btn-ver-curso');
-    const modal = new bootstrap.Modal(document.getElementById('coursePreviewModal'));
+    console.log('Botones encontrados:', botonesVer.length);
+
+    const modalElement = document.getElementById('coursePreviewModal');
+
+    if (!modalElement) {
+        console.error('Modal element not found');
+        return;
+    }
+
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap is not loaded');
+        return;
+    }
 
     botonesVer.forEach(boton => {
         boton.addEventListener('click', (e) => {
+            console.log('Click en botón Ver');
             e.preventDefault();
+            e.stopPropagation();
+
             const card = e.target.closest('.producto-card');
+            if (!card) {
+                console.error('No se encontró la card');
+                return;
+            }
+
             const cursoId = parseInt(card.dataset.cursoId);
+            console.log('Curso ID:', cursoId);
+
+            if (!cursoId) {
+                console.error('No se encontró el curso ID');
+                return;
+            }
 
             cargarCursoEnModal(cursoId);
+
+            // Crear instancia del modal cada vez que se hace click
+            const modal = new bootstrap.Modal(modalElement);
             modal.show();
         });
     });
