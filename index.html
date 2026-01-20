@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/landing.css">
-    <link rel="stylesheet" href="css/coursePreviewModal.css">
 </head>
 <body>
 
@@ -95,66 +94,12 @@
         </div>
     </section>
 
-    <!-- Modal Preview Curso -->
-    <div class="modal fade" id="coursePreviewModal" tabindex="-1" aria-labelledby="coursePreviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="coursePreviewModalLabel"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="coursePreviewContent">
-                        <div class="course-preview-description mb-4">
-                            <h6 class="text-muted mb-2">Descripción</h6>
-                            <p id="courseDescription"></p>
-                        </div>
-
-                        <div class="course-preview-info mb-4">
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="info-item">
-                                        <i class="fas fa-video me-2"></i>
-                                        <strong>Duración:</strong>
-                                        <span id="courseDuration"></span>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="info-item">
-                                        <i class="fas fa-book me-2"></i>
-                                        <strong>Módulos:</strong>
-                                        <span id="courseModules"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="course-preview-content mb-4">
-                            <h6 class="text-muted mb-3">Contenido del curso</h6>
-                            <div id="courseContentList"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer d-flex justify-content-between align-items-center">
-                    <div class="course-price">
-                        <span class="price-label">Precio:</span>
-                        <span class="price-value" id="coursePrice"></span>
-                    </div>
-                    <a href="login.html" class="btn btn-primary btn-buy-course">
-                        <i class="fas fa-shopping-cart me-2"></i>Comprar Curso
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/componentes.js"></script>
     <script src="js/landing.js"></script>
     <!-- Sistema unificado de cursos -->
     <script src="js/cursosData.js"></script>
     <script src="js/renderCursosLanding.js"></script>
-    <script src="js/coursePreviewModal.js"></script>
 
 </body>
 </html>

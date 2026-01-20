@@ -52,7 +52,7 @@ function crearTarjetaCurso(curso) {
         <div class="producto-content">
             <h3 class="producto-title">${curso.nombre}</h3>
             <p class="producto-description">${descripcionCorta}</p>
-            <button type="button" class="register-button w-100 text-center d-block btn-ver-curso">Ver</button>
+            <a href="course-preview.html?id=${curso.id}" class="register-button w-100 text-center d-block btn-ver-curso">Ver</a>
         </div>
     `;
 
