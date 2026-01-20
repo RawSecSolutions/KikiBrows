@@ -1,0 +1,466 @@
+/* =======================================================================
+   PREVIEW CURSO CLIENTE - Vista de previsualización para clientes
+   ======================================================================= */
+
+:root {
+    --primary-color: #8A835A;
+    --accent-color: #D9CDB8;
+    --text-dark: #2D2D2D;
+    --text-grey: #6B6B6B;
+    --white: #FDFCFA;
+    --border-light: rgba(0, 0, 0, 0.1);
+}
+
+.preview-body {
+    background-color: var(--white);
+    font-family: 'Lato', sans-serif;
+    color: var(--text-dark);
+    padding-top: 80px;
+}
+
+.preview-main {
+    padding: 2rem 0;
+    min-height: calc(100vh - 80px);
+}
+
+/* Hero Section */
+.curso-hero-section {
+    margin-bottom: 2rem;
+}
+
+.hero-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.hero-portada {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #D9CDB8 0%, #8A835A 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+}
+
+.hero-portada img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.curso-titulo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+
+.curso-descripcion {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-grey);
+}
+
+/* Meta Section */
+.curso-meta-section {
+    margin-bottom: 3rem;
+}
+
+.meta-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.meta-info-group {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.meta-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+}
+
+.meta-label i {
+    color: var(--primary-color);
+}
+
+.meta-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* Acciones y Precio */
+.meta-actions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.precio-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.precio-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.precio-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1;
+}
+
+.btn-comprar-curso {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 14px 36px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(138, 131, 90, 0.2);
+}
+
+.btn-comprar-curso:hover {
+    background-color: #6B6848;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.35);
+    color: white;
+}
+
+/* Módulos Section */
+.curso-modulos-section {
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.modulos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.loading-state {
+    background: white;
+    padding: 3rem;
+    border-radius: 12px;
+    text-align: center;
+    color: var(--text-grey);
+    font-size: 1.1rem;
+}
+
+/* Módulo Card */
+.modulo-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.modulo-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.modulo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, rgba(217, 205, 184, 0.15) 0%, rgba(138, 131, 90, 0.1) 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.modulo-header:hover {
+    background: linear-gradient(135deg, rgba(217, 205, 184, 0.25) 0%, rgba(138, 131, 90, 0.15) 100%);
+}
+
+.modulo-header.expanded {
+    background: linear-gradient(135deg, rgba(217, 205, 184, 0.3) 0%, rgba(138, 131, 90, 0.2) 100%);
+    border-bottom-color: var(--border-light);
+}
+
+.modulo-titulo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+}
+
+.modulo-arrow {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.modulo-header.expanded .modulo-arrow {
+    transform: rotate(180deg);
+}
+
+.modulo-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.modulo-body.show {
+    max-height: 3000px;
+}
+
+.modulo-meta {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: rgba(253, 252, 250, 0.8);
+    font-size: 0.95rem;
+    color: var(--text-grey);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.clases-list {
+    padding: 0.5rem 0;
+}
+
+/* Clase Row */
+.clase-row {
+    display: flex;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.clase-row:last-child {
+    border-bottom: none;
+}
+
+.clase-row:hover {
+    background-color: rgba(217, 205, 184, 0.1);
+}
+
+.clase-check {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border-light);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: transparent;
+    background: white;
+}
+
+.clase-nombre {
+    flex: 1;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.clase-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-grey);
+    font-size: 0.9rem;
+}
+
+.clase-meta i {
+    color: var(--primary-color);
+}
+
+/* Footer Section */
+.curso-footer-section {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.footer-card {
+    background: linear-gradient(135deg, rgba(217, 205, 184, 0.2) 0%, rgba(138, 131, 90, 0.15) 100%);
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.footer-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* No módulos state */
+.no-modulos {
+    background: white;
+    padding: 4rem 2rem;
+    border-radius: 12px;
+    text-align: center;
+    color: var(--text-grey);
+}
+
+.no-modulos i {
+    font-size: 4rem;
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+}
+
+.no-modulos h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .hero-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .curso-titulo {
+        font-size: 2rem;
+    }
+
+    .meta-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .meta-info-group {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .meta-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .precio-container {
+        align-items: center;
+        text-align: center;
+    }
+
+    .btn-comprar-curso {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .preview-main {
+        padding: 1rem 0;
+    }
+
+    .hero-wrapper {
+        padding: 1.5rem;
+    }
+
+    .curso-titulo {
+        font-size: 1.75rem;
+    }
+
+    .curso-descripcion {
+        font-size: 1rem;
+    }
+
+    .meta-card {
+        padding: 1.5rem;
+    }
+
+    .modulo-header {
+        padding: 1rem 1.25rem;
+    }
+
+    .modulo-titulo {
+        font-size: 1rem;
+    }
+
+    .clase-row {
+        padding: 0.75rem 1.25rem;
+    }
+
+    .clase-nombre {
+        font-size: 0.95rem;
+    }
+
+    .precio-value {
+        font-size: 2rem;
+    }
+
+    .footer-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .footer-card h3 {
+        font-size: 1.5rem;
+    }
+}
