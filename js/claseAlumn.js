@@ -419,20 +419,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dynamicContent.innerHTML = `
             <div class="pdf-container position-relative">
-                <button class="btn btn-sm btn-light pdf-fullscreen-btn" onclick="window.openPdfFullscreen('${pdfSrc}')">
-                    <i class="fas fa-expand me-1"></i>Pantalla Completa
-                </button>
-                <iframe src="${pdfSrc}#toolbar=1&navpanes=1" allowfullscreen></iframe>
+                <iframe src="${pdfSrc}#toolbar=0&navpanes=0&scrollbar=1" style="pointer-events: auto;"></iframe>
+                <div class="pdf-overlay"></div>
             </div>
         `;
+
+        // Prevenir clic derecho para descargar
+        setTimeout(() => {
+            const pdfContainer = document.querySelector('.pdf-container');
+            if (pdfContainer) {
+                pdfContainer.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    return false;
+                });
+            }
+        }, 100);
 
         // PDF se puede avanzar directamente
         enableNext();
     }
-
-    window.openPdfFullscreen = (src) => {
-        window.open(src, '_blank');
-    };
 
     // ==================== CONTENIDO: QUIZ (H6.4) ====================
 
