@@ -6,30 +6,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let quillEditor = null;
 
     // ==========================================
-    // 1. SISTEMA DRAG AND DROP (Reordenamiento)
+    // 1. SISTEMA DRAG AND DROP (Reordenamiento con soporte táctil)
     // ==========================================
     function initDragAndDrop(container, itemSelector) {
         let draggedItem = null;
-        
+        let touchDraggedItem = null;
+        let touchStartY = 0;
+        let touchCurrentY = 0;
+
+        // === EVENTOS MOUSE (Desktop) ===
         container.addEventListener('dragstart', (e) => {
             const item = e.target.closest(itemSelector);
             if (!item) return;
-            
+
             draggedItem = item;
             item.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
             // Transferir ID para compatibilidad
             e.dataTransfer.setData('text/plain', item.dataset.claseId);
         });
-        
+
         container.addEventListener('dragend', (e) => {
             const item = e.target.closest(itemSelector);
             if (!item) return;
-            
+
             item.classList.remove('dragging');
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             draggedItem = null;
-            
+
             // Log del nuevo orden (Simulación de persistencia de orden)
             const newOrder = Array.from(container.querySelectorAll(itemSelector)).map((item, index) => ({
                 id: item.getAttribute('data-clase-id'),
@@ -37,19 +41,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
             console.log('Nuevo orden guardado:', newOrder);
         });
-        
+
         container.addEventListener('dragover', (e) => {
             e.preventDefault(); // Necesario para permitir el drop
             e.dataTransfer.dropEffect = 'move';
-            
+
             const afterElement = getDragAfterElement(container, e.clientY, itemSelector);
             const dragging = container.querySelector('.dragging');
-            
+
             if (!dragging) return;
-            
+
             // Limpiar clases visuales previas
             container.querySelectorAll(itemSelector).forEach(item => item.classList.remove('drag-over'));
-            
+
             if (afterElement) {
                 afterElement.classList.add('drag-over');
                 container.insertBefore(dragging, afterElement);
@@ -57,15 +61,84 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(dragging);
             }
         });
-        
+
         container.addEventListener('dragleave', (e) => {
             const item = e.target.closest(itemSelector);
             if (item) item.classList.remove('drag-over');
         });
-        
+
         container.addEventListener('drop', (e) => {
             e.preventDefault();
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+
+        // === EVENTOS TÁCTILES (Móviles iOS y Android) ===
+        container.addEventListener('touchstart', (e) => {
+            const handle = e.target.closest('.drag-handle');
+            if (!handle) return;
+
+            const item = handle.closest(itemSelector);
+            if (!item) return;
+
+            touchDraggedItem = item;
+            touchStartY = e.touches[0].clientY;
+            touchCurrentY = touchStartY;
+
+            item.classList.add('dragging');
+            item.style.opacity = '0.5';
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!touchDraggedItem) return;
+
+            e.preventDefault();
+            touchCurrentY = e.touches[0].clientY;
+
+            const afterElement = getDragAfterElement(container, touchCurrentY, itemSelector);
+
+            // Limpiar clases visuales previas
+            container.querySelectorAll(itemSelector).forEach(item => item.classList.remove('drag-over'));
+
+            if (afterElement) {
+                afterElement.classList.add('drag-over');
+                container.insertBefore(touchDraggedItem, afterElement);
+            } else {
+                const lastItem = container.querySelector(`${itemSelector}:last-child`);
+                if (lastItem !== touchDraggedItem) {
+                    container.appendChild(touchDraggedItem);
+                }
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchend', (e) => {
+            if (!touchDraggedItem) return;
+
+            touchDraggedItem.classList.remove('dragging');
+            touchDraggedItem.style.opacity = '';
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            // Log del nuevo orden (Simulación de persistencia de orden)
+            const newOrder = Array.from(container.querySelectorAll(itemSelector)).map((item, index) => ({
+                id: item.getAttribute('data-clase-id'),
+                position: index + 1
+            }));
+            console.log('Nuevo orden guardado (táctil):', newOrder);
+
+            touchDraggedItem = null;
+            touchStartY = 0;
+            touchCurrentY = 0;
+        });
+
+        container.addEventListener('touchcancel', (e) => {
+            if (!touchDraggedItem) return;
+
+            touchDraggedItem.classList.remove('dragging');
+            touchDraggedItem.style.opacity = '';
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            touchDraggedItem = null;
+            touchStartY = 0;
+            touchCurrentY = 0;
         });
     }
     
