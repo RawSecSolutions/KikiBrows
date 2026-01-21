@@ -167,11 +167,87 @@
 .badge-estado.borrador { background: #9E9E9E; color: #fff; }
 .badge-estado.archivado { background: #E57373; color: #fff; }
 
+/* Bot\u00f3n de Comprar en Meta Card */
+.btn-comprar-curso {
+    background: linear-gradient(135deg, #D4AF37, #C19D2D);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    white-space: nowrap;
+}
+
+.btn-comprar-curso:hover {
+    background: linear-gradient(135deg, #C19D2D, #A88A25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+}
+
+.btn-comprar-curso:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   SECCI\u00d3N "INCLUYE"
+   ============================================ */
+.curso-incluye-section {
+    padding: 20px 0;
+}
+
+.incluye-card {
+    background: rgba(253, 252, 250, 0.95);
+    border-radius: 10px;
+    padding: 20px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.incluye-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.incluye-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.incluye-list li {
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+}
+
+.incluye-list li i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
 /* ============================================
    MÓDULOS
    ============================================ */
 .curso-modulos-section {
     padding: 10px 0;
+}
+
+.modulos-titulo {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(217, 205, 184, 0.5);
 }
 
 .modulos-container {
@@ -434,28 +510,50 @@
         align-items: center;
         text-align: center;
     }
-    
+
     .hero-portada {
         width: 160px;
         height: 160px;
     }
-    
+
     .curso-titulo {
         text-align: center;
     }
-    
+
     .meta-card {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
     }
-    
+
     .meta-item {
         border-right: none;
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 12px 15px;
     }
-    
-    .meta-item:nth-child(3),
+
+    .meta-item:nth-child(1),
+    .meta-item:nth-child(2) {
+        border-right: none;
+    }
+
+    .meta-item:nth-child(2) {
+        border-left: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .meta-item:nth-child(3) {
+        border-right: none;
+    }
+
     .meta-item:nth-child(4) {
         border-bottom: none;
+        border-left: 1px solid rgba(0, 0, 0, 0.1);
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
+    .btn-comprar-curso {
+        width: 100%;
+        max-width: 300px;
     }
 }
 
@@ -463,35 +561,52 @@
     .preview-banner {
         height: 45px;
     }
-    
+
     .preview-banner-content {
         font-size: 0.8rem;
     }
-    
+
     .btn-salir-preview {
         padding: 6px 12px;
         font-size: 0.75rem;
         right: 10px;
     }
-    
+
     .preview-body {
         padding-top: 45px;
     }
-    
+
     .meta-card {
         grid-template-columns: 1fr;
     }
-    
+
     .meta-item {
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        border-right: none !important;
+        border-left: none !important;
     }
-    
+
     .meta-item:last-child {
         border-bottom: none;
     }
-    
+
+    .meta-item:nth-child(4) {
+        grid-column: 1;
+    }
+
+    .btn-comprar-curso {
+        width: 100%;
+        max-width: none;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
     .modulo-header {
         padding: 15px 18px;
+    }
+
+    .incluye-list {
+        grid-template-columns: 1fr;
     }
 }
 
