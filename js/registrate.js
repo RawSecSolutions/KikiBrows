@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('tempUserName');
 
                 alert("¡Cuenta verificada con éxito! Bienvenido.");
-                window.location.href = 'landing.html';
+                window.location.href = 'index.html';
             } else {
                 if(msgErrorCodigo) msgErrorCodigo.style.display = 'block';
                 inputCodigo.classList.add('is-invalid');

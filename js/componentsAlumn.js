@@ -56,9 +56,9 @@ const UI = {
             <div class="container">
                 <div class="collapse navbar-collapse" id="navbarContenido">
                     <ul class="navbar-nav mb-2 mb-lg-0 gap-1 gap-lg-3">
-                        <li class="nav-item separator"><a class="nav-link" href="landing.html">INICIO</a></li>
-                        <li class="nav-item separator"><a class="nav-link" href="landing.html#nosotros">NOSOTROS</a></li>
-                        <li class="nav-item separator"><a class="nav-link" href="landing.html">CURSOS</a></li>
+                        <li class="nav-item separator"><a class="nav-link" href="index.html">INICIO</a></li>
+                        <li class="nav-item separator"><a class="nav-link" href="index.html#nosotros">NOSOTROS</a></li>
+                        <li class="nav-item separator"><a class="nav-link" href="index.html">CURSOS</a></li>
                         <li class="nav-item separator"><a class="nav-link" href="cursosAlumn.html">MIS CURSOS</a></li>
                         <li class="nav-item separator"><a class="nav-link" href="consultasAlumn.html">CONSULTAS</a></li>
                     </ul>
@@ -75,7 +75,7 @@ const UI = {
                 e.preventDefault();
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
-                window.location.href = 'landing.html';
+                window.location.href = 'index.html';
             });
         }
     },
