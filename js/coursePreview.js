@@ -18,7 +18,7 @@ function obtenerCursoIdDesdeUrl() {
 // ==================== FUNCIONES AUXILIARES ====================
 
 function formatearPrecio(precio) {
-    return `$${precio.toLocaleString('es-CL')}`;
+    return `$${precio.toLocaleString('es-CL')} CLP`;
 }
 
 function calcularDuracionTotal(cursoId) {
@@ -59,132 +59,108 @@ function cargarInformacionCurso(cursoId) {
     // Actualizar título de la página
     document.title = `${curso.nombre} - KIKIBROWS`;
 
-    // Cargar información en el header
-    cargarHeader(curso, cursoId);
+    // Cargar hero
+    cargarHero(curso);
 
-    // Cargar media (imagen/video)
-    cargarMedia(curso);
+    // Cargar meta info
+    cargarMetaInfo(curso, cursoId);
 
-    // Cargar descripción
-    cargarDescripcion(curso);
-
-    // Cargar módulos y clases
-    cargarContenido(cursoId);
-
-    // Cargar tarjeta de compra
-    cargarTarjetaCompra(curso);
+    // Cargar módulos
+    cargarModulos(cursoId);
 
     // Configurar botón de compra
     configurarBotonCompra(curso);
 }
 
-// ==================== CARGAR HEADER ====================
+// ==================== CARGAR HERO ====================
 
-function cargarHeader(curso, cursoId) {
-    document.getElementById('courseTitle').textContent = curso.nombre;
+function cargarHero(curso) {
+    document.getElementById('cursoNombre').textContent = curso.nombre;
+    document.getElementById('cursoDescripcion').textContent =
+        curso.descripcion || 'Sin descripción disponible.';
 
-    const duracionTotal = calcularDuracionTotal(cursoId);
-    document.getElementById('courseDuration').textContent = duracionTotal;
-
-    const modulos = CursosData.getModulosByCurso(cursoId);
-    const totalClases = contarClasesTotales(modulos);
-    document.getElementById('courseModules').textContent = `${modulos.length} módulos · ${totalClases} clases`;
-}
-
-// ==================== CARGAR MEDIA ====================
-
-function cargarMedia(curso) {
-    const mediaContainer = document.getElementById('courseMediaContainer');
-
-    if (curso.video) {
-        // Si tiene video, mostrar el video
-        mediaContainer.innerHTML = `
-            <video controls class="w-100" poster="${curso.portada || ''}">
-                <source src="${curso.video}" type="video/mp4">
-                Tu navegador no soporta la reproducción de videos.
-            </video>
-        `;
-    } else if (curso.portada) {
-        // Si solo tiene imagen, mostrar la imagen
-        mediaContainer.innerHTML = `
-            <img src="${curso.portada}" alt="${curso.nombre}" class="img-fluid w-100">
-        `;
+    const portadaEl = document.getElementById('heroPortada');
+    if (curso.portada) {
+        portadaEl.innerHTML = `<img src="${curso.portada}" alt="${curso.nombre}">`;
     } else {
-        // Si no tiene nada, dejar el placeholder
-        mediaContainer.innerHTML = `
-            <div class="course-image-placeholder">
-                <i class="fas fa-play-circle fa-4x"></i>
-                <p class="mt-3">Vista previa del curso</p>
-            </div>
-        `;
+        portadaEl.innerHTML = '<i class="fas fa-image"></i>';
     }
 }
 
-// ==================== CARGAR DESCRIPCIÓN ====================
+// ==================== CARGAR META INFO ====================
 
-function cargarDescripcion(curso) {
-    const descripcionElement = document.getElementById('courseDescription');
-    descripcionElement.textContent = curso.descripcion || 'Sin descripción disponible.';
+function cargarMetaInfo(curso, cursoId) {
+    document.getElementById('cursoPrecio').textContent =
+        formatearPrecio(curso.precio || 0);
+
+    const duracion = CursosData.calcularDuracionCurso(cursoId);
+    document.getElementById('cursoDuracion').textContent =
+        CursosData.formatearDuracion(duracion);
+
+    const modulos = CursosData.getModulosByCurso(cursoId);
+    const totalClases = contarClasesTotales(modulos);
+    document.getElementById('cursoModulos').textContent =
+        `${modulos.length} módulos · ${totalClases} clases`;
 }
 
-// ==================== CARGAR CONTENIDO (MÓDULOS Y CLASES) ====================
+// ==================== CARGAR MÓDULOS ====================
 
-function cargarContenido(cursoId) {
-    const contentList = document.getElementById('courseContentList');
+function cargarModulos(cursoId) {
     const modulos = CursosData.getModulosByCurso(cursoId);
+    const container = document.getElementById('modulosList');
+
+    container.innerHTML = '';
 
     if (modulos.length === 0) {
-        contentList.innerHTML = `
-            <div class="text-center text-muted p-4">
-                <i class="fas fa-folder-open fa-3x mb-3"></i>
+        container.innerHTML = `
+            <div class="no-modulos">
+                <i class="fas fa-folder-open"></i>
+                <h3>Sin módulos</h3>
                 <p>Este curso aún no tiene módulos configurados.</p>
             </div>
         `;
         return;
     }
 
-    contentList.innerHTML = '';
-
     modulos.forEach((modulo, index) => {
-        const moduloElement = crearModuloElement(modulo, index);
-        contentList.appendChild(moduloElement);
+        const clases = CursosData.getClasesByModulo(modulo.id);
+        const duracion = CursosData.calcularDuracionModulo(modulo.id);
+        const moduloEl = crearModuloElement(modulo, clases, duracion, index + 1, index === 0);
+        container.appendChild(moduloEl);
     });
 }
 
-function crearModuloElement(modulo, index) {
-    const clases = CursosData.getClasesByModulo(modulo.id);
-    const duracionModulo = CursosData.calcularDuracionModulo(modulo.id);
-    const duracionFormateada = CursosData.formatearDuracion(duracionModulo);
+function crearModuloElement(modulo, clases, duracion, numero, expandido) {
+    const div = document.createElement('div');
+    div.className = 'modulo-card';
 
-    const moduloDiv = document.createElement('div');
-    moduloDiv.className = 'module-item';
-
-    const moduleId = `module${index}`;
-
-    moduloDiv.innerHTML = `
-        <div class="module-header" data-bs-toggle="collapse" data-bs-target="#${moduleId}" aria-expanded="${index === 0 ? 'true' : 'false'}">
-            <div class="module-header-left">
-                <div class="module-number">${index + 1}</div>
-                <h4 class="module-title">${modulo.nombre}</h4>
-            </div>
-            <div class="module-meta">
-                <span>${clases.length} clases · ${duracionFormateada}</span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
+    div.innerHTML = `
+        <div class="modulo-header ${expandido ? 'expanded' : ''}">
+            <span class="modulo-titulo">Módulo ${numero}: ${modulo.nombre}</span>
+            <i class="fas fa-chevron-down modulo-arrow"></i>
         </div>
-        <div class="collapse ${index === 0 ? 'show' : ''}" id="${moduleId}">
-            <div class="module-body">
-                <ul class="class-list">
-                    ${clases.map((clase, claseIndex) => crearClaseHTML(clase, claseIndex)).join('')}
-                </ul>
+        <div class="modulo-body ${expandido ? 'show' : ''}">
+            <div class="modulo-meta">
+                <span>${clases.length} clases</span>
+                <span>${CursosData.formatearDuracion(duracion)}</span>
+            </div>
+            <div class="clases-list">
+                ${clases.map(clase => crearClaseHTML(clase)).join('')}
             </div>
         </div>
     `;
 
-    return moduloDiv;
+    // Toggle
+    const header = div.querySelector('.modulo-header');
+    header.addEventListener('click', () => {
+        header.classList.toggle('expanded');
+        div.querySelector('.modulo-body').classList.toggle('show');
+    });
+
+    return div;
 }
 
-function crearClaseHTML(clase, claseIndex) {
+function crearClaseHTML(clase) {
     const iconos = {
         video: 'fa-play-circle',
         texto: 'fa-file-alt',
@@ -193,42 +169,16 @@ function crearClaseHTML(clase, claseIndex) {
         entrega: 'fa-upload'
     };
 
-    const tipoClase = clase.tipo || 'video';
-    const icono = iconos[tipoClase] || 'fa-play-circle';
-
     return `
-        <li class="class-item">
-            <div class="class-item-left">
-                <div class="class-icon ${tipoClase}">
-                    <i class="fas ${icono}"></i>
-                </div>
-                <span class="class-name">${claseIndex + 1}. ${clase.nombre}</span>
+        <div class="clase-row">
+            <div class="clase-check"><i class="fas fa-check"></i></div>
+            <span class="clase-nombre">${clase.nombre}</span>
+            <div class="clase-meta">
+                <i class="fas ${iconos[clase.tipo] || 'fa-file'}"></i>
+                <span>${clase.duracion} min</span>
             </div>
-            <span class="class-duration">${clase.duracion} min</span>
-        </li>
+        </div>
     `;
-}
-
-// ==================== CARGAR TARJETA DE COMPRA ====================
-
-function cargarTarjetaCompra(curso) {
-    // Cargar imagen
-    const purchaseCardImage = document.getElementById('purchaseCardImage');
-    if (curso.portada) {
-        purchaseCardImage.innerHTML = `
-            <img src="${curso.portada}" alt="${curso.nombre}" class="img-fluid rounded">
-        `;
-    } else {
-        purchaseCardImage.innerHTML = `
-            <div class="course-image-placeholder" style="height: 200px;">
-                <i class="fas fa-image fa-3x"></i>
-            </div>
-        `;
-    }
-
-    // Cargar precio
-    const precioFormateado = formatearPrecio(curso.precio || 0);
-    document.getElementById('coursePrice').textContent = precioFormateado;
 }
 
 // ==================== CONFIGURAR BOTÓN DE COMPRA ====================
@@ -304,9 +254,9 @@ function procesarCompra(curso, usuario) {
 // ==================== MANEJO DE ERRORES ====================
 
 function mostrarError(mensaje) {
-    const container = document.querySelector('.container.my-5');
+    const container = document.querySelector('.preview-main .container');
     container.innerHTML = `
-        <div class="alert alert-danger text-center" role="alert">
+        <div class="alert alert-danger text-center mt-5" role="alert">
             <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
             <h4>${mensaje}</h4>
             <a href="index.html#cursos" class="btn btn-primary mt-3">
