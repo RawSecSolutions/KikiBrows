@@ -453,11 +453,33 @@
     cursor: pointer;
     width: 1.2em;
     height: 1.2em;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    outline: none;
+    transition: all 0.2s ease;
+    position: relative;
+    background-color: white;
 }
 
 .option-item input[type="radio"]:checked {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+}
+
+.option-item input[type="radio"]:checked::before {
+    content: '';
+    display: block;
+    width: 0.6em;
+    height: 0.6em;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 /* Resaltar en verde la opción correcta */
@@ -475,4 +497,64 @@
     border: 2px dashed #ddd;
     border-radius: 8px;
     background-color: #f9f9f9;
+}
+
+/* Optimizaciones para móviles (Android e iOS) */
+@media (max-width: 767.98px) {
+    /* Aumentar tamaño del radio button para mejor interacción táctil */
+    .option-item input[type="radio"] {
+        width: 1.5em;
+        height: 1.5em;
+        border-width: 3px;
+    }
+
+    .option-item input[type="radio"]:checked::before {
+        width: 0.75em;
+        height: 0.75em;
+    }
+
+    /* Más espacio para los campos de texto */
+    .option-item {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .option-item input[type="text"].option-text-input {
+        font-size: 16px; /* Previene zoom en iOS */
+        padding: 12px;
+    }
+
+    /* Mejorar área táctil de botones */
+    .btn-remove-option,
+    .btn-add-option {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+    }
+
+    /* Optimizar tarjetas de preguntas */
+    .quiz-question-card {
+        margin-bottom: 15px;
+    }
+
+    .quiz-question-card .card-body {
+        padding: 15px !important;
+    }
+
+    /* Inputs más grandes para móviles */
+    .question-title-input {
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+
+    .question-points-input {
+        font-size: 16px !important;
+    }
+
+    /* Botones más accesibles en móviles */
+    .btn-add-question {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
 }
