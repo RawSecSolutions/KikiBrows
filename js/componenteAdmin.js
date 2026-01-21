@@ -45,7 +45,7 @@ const renderNavbarAdmin = () => {
                 e.preventDefault();
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
-                window.location.href = 'landing.html';
+                window.location.href = 'index.html';
             });
         }
 
