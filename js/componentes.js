@@ -36,8 +36,8 @@ const renderNavbar = () => {
             <div class="collapse navbar-collapse" id="navbarContenido">
                 <ul class="navbar-nav mb-2 mb-lg-0 gap-1 gap-lg-3">
                     <li class="nav-item separator"><a class="nav-link" href="index.html">INICIO</a></li>
-                    <li class="nav-item separator"><a class="nav-link" href="index.html#nosotros">NOSOTROS</a></li>
-                    <li class="nav-item separator"><a class="nav-link" href="index.html#cursos">CURSOS</a></li>
+                    <li class="nav-item separator"><a class="nav-link" href="#nosotros">NOSOTROS</a></li>
+                    <li class="nav-item separator"><a class="nav-link" href="#cursos">CURSOS</a></li>
                     <li class="nav-item separator"><a class="nav-link" href="${isLoggedIn ? 'cursosAlumn.html' : 'login.html'}">MIS CURSOS</a>
 
                     </li>

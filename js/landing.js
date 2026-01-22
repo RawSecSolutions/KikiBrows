@@ -69,3 +69,44 @@ if (!isMobileDevice()) {
         }
     }, { passive: true });
 }
+
+// Función para scroll suave a secciones con hash (#)
+document.addEventListener('DOMContentLoaded', () => {
+    // Manejar clics en enlaces con hash
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest('a[href^="#"]');
+        if (!target) return;
+
+        const hash = target.getAttribute('href');
+        if (!hash || hash === '#') return;
+
+        const targetElement = document.querySelector(hash);
+        if (targetElement) {
+            e.preventDefault();
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Actualizar URL sin recargar la página
+            history.pushState(null, '', hash);
+        }
+    });
+
+    // Manejar navegación con botones del navegador (back/forward)
+    window.addEventListener('popstate', () => {
+        if (window.location.hash) {
+            const targetElement = document.querySelector(window.location.hash);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    });
+
+    // Scroll inicial si hay hash en la URL
+    if (window.location.hash) {
+        setTimeout(() => {
+            const targetElement = document.querySelector(window.location.hash);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+    }
+});
