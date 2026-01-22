@@ -22,6 +22,8 @@ export const authService = {
     logout: () => {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userName');
+        localStorage.removeItem('usuarioActual');
+        localStorage.removeItem('userRole');
         window.location.href = 'index.html';
     }
 };

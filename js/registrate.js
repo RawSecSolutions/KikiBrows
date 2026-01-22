@@ -115,13 +115,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- SI TODO ESTÁ OK ---
             console.log(`Simulando envío de código a: ${email}`);
-            
+
             // Ocultamos registro y mostramos verificación
             registerForm.style.display = 'none';
             if(tituloPrincipal) tituloPrincipal.style.display = 'none';
             if(seccionVerificacion) seccionVerificacion.style.display = 'block';
-            
+
+            // Guardar datos temporales para después de la verificación
             localStorage.setItem('tempUserName', nombre);
+            localStorage.setItem('tempUserEmail', email);
+            localStorage.setItem('tempUserPassword', pass);
         });
     }
 
@@ -133,8 +136,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (codigo.length === 6) { // Validación simple de longitud
                 localStorage.setItem('isLoggedIn', 'true');
                 const nombreGuardado = localStorage.getItem('tempUserName') || 'Usuario';
+                const emailGuardado = localStorage.getItem('tempUserEmail') || 'usuario@email.com';
+                const passwordGuardado = localStorage.getItem('tempUserPassword') || '';
+
                 localStorage.setItem('userName', nombreGuardado);
+
+                // Guardar objeto usuarioActual
+                const usuarioActual = {
+                    email: emailGuardado,
+                    nombre: nombreGuardado,
+                    password: passwordGuardado
+                };
+                localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+                localStorage.setItem('userRole', 'student');
+
+                // Limpiar datos temporales
                 localStorage.removeItem('tempUserName');
+                localStorage.removeItem('tempUserEmail');
+                localStorage.removeItem('tempUserPassword');
 
                 alert("¡Cuenta verificada con éxito! Bienvenido.");
                 window.location.href = 'index.html';

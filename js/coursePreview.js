@@ -197,7 +197,8 @@ function configurarBotonCompra(curso) {
         const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
 
         if (!usuarioActual) {
-            // Si no está autenticado, redirigir al login
+            // Si no está autenticado, guardar la URL actual para redirigir después del login
+            localStorage.setItem('redirectAfterLogin', window.location.href);
             alert('Debes iniciar sesión para comprar este curso.');
             window.location.href = 'login.html';
             return;
