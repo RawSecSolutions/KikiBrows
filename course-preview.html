@@ -118,6 +118,118 @@
         </div>
     </main>
 
+    <!-- Modal Portal de Pago -->
+    <div id="portalPagoModal" class="portal-pago-modal">
+        <div class="portal-pago-overlay"></div>
+        <div class="portal-pago-container">
+            <button class="portal-pago-close" id="btnCerrarPortal">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="portal-pago-content">
+                <h2 class="portal-titulo">Proceder al pago</h2>
+                <p class="portal-subtitulo">Serás redirigido a Webpay para completar tu compra de forma segura.</p>
+
+                <!-- Información del Curso -->
+                <div class="portal-curso-info">
+                    <h3 id="portalCursoNombre">Nombre del curso</h3>
+                    <div class="portal-precio-section">
+                        <span class="portal-precio-label">Total a pagar</span>
+                        <span class="portal-precio-valor" id="portalCursoPrecio">$0</span>
+                    </div>
+                </div>
+
+                <!-- Selección de Método de Pago -->
+                <div class="portal-metodos-pago">
+                    <h4 class="portal-metodos-titulo">Selecciona tu método de pago</h4>
+
+                    <div class="metodos-grid">
+                        <!-- Webpay (Transbank) -->
+                        <button class="metodo-pago-btn" id="btnWebpay">
+                            <div class="metodo-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="metodo-info">
+                                <h5>Webpay</h5>
+                                <p>Pago seguro procesado por Transbank</p>
+                            </div>
+                        </button>
+
+                        <!-- Mercado Pago -->
+                        <button class="metodo-pago-btn" id="btnMercadoPago">
+                            <div class="metodo-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="metodo-info">
+                                <h5>Mercado Pago</h5>
+                                <p>Tarjetas de crédito y débito</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sección para integración de Webpay (Transbank) -->
+                <div id="seccionWebpay" class="seccion-pago" style="display: none;">
+                    <div class="pago-header">
+                        <i class="fas fa-credit-card"></i>
+                        <h4>Pago con Webpay</h4>
+                    </div>
+
+                    <!-- AQUÍ SE INTEGRARÁ LA API DE TRANSBANK -->
+                    <div class="api-placeholder">
+                        <p class="api-instruccion">
+                            <i class="fas fa-code me-2"></i>
+                            Zona de integración para API de Transbank/Webpay
+                        </p>
+
+                        <!-- Formulario de ejemplo para Transbank -->
+                        <form id="formWebpay" class="form-pago">
+                            <!-- Los campos específicos de Transbank se agregarán aquí -->
+                            <input type="hidden" name="token_ws" id="tokenWebpay">
+
+                            <button type="submit" class="btn-pagar-webpay">
+                                <i class="fas fa-lock me-2"></i>
+                                Pagar con Webpay
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sección para integración de Mercado Pago -->
+                <div id="seccionMercadoPago" class="seccion-pago" style="display: none;">
+                    <div class="pago-header">
+                        <i class="fas fa-wallet"></i>
+                        <h4>Pago con Mercado Pago</h4>
+                    </div>
+
+                    <!-- AQUÍ SE INTEGRARÁ LA API DE MERCADO PAGO -->
+                    <div class="api-placeholder">
+                        <p class="api-instruccion">
+                            <i class="fas fa-code me-2"></i>
+                            Zona de integración para API de Mercado Pago
+                        </p>
+
+                        <!-- Contenedor para el checkout de Mercado Pago -->
+                        <div id="mercadoPagoCheckout" class="mp-checkout-container">
+                            <!-- El widget de Mercado Pago se renderizará aquí -->
+                        </div>
+
+                        <button type="button" class="btn-pagar-mp" id="btnPagarMercadoPago">
+                            <i class="fas fa-lock me-2"></i>
+                            Pagar con Mercado Pago
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botón Volver -->
+                <button class="btn-volver-checkout" id="btnVolverCheckout">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver al curso
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="text-center py-4 mt-5 bg-dark text-white">
         <p class="mb-0">&copy; 2024 KIKIBROWS. Todos los derechos reservados.</p>
