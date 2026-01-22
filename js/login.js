@@ -69,10 +69,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userName', email.split('@')[0]);
 
-                // B. DETECCIÓN DE ROL (Simulada)
+                // Guardar objeto usuarioActual para que lo detecten otras páginas
+                const usuarioActual = {
+                    email: email,
+                    nombre: email.split('@')[0],
+                    password: pass // Nota: en producción, nunca guardar contraseñas en localStorage
+                };
+                localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+
+                // B. VERIFICAR SI HAY UNA REDIRECCIÓN PENDIENTE
+                const redirectUrl = localStorage.getItem('redirectAfterLogin');
+
+                if (redirectUrl) {
+                    // Si existe una URL guardada, limpiarla y redirigir a esa URL
+                    localStorage.removeItem('redirectAfterLogin');
+                    console.log("Redirigiendo a URL guardada:", redirectUrl);
+                    window.location.href = redirectUrl;
+                    return;
+                }
+
+                // C. DETECCIÓN DE ROL (Simulada)
                 // Si el email incluye 'admin', lo tratamos como Admin.
                 let destino = '';
-                
+
                 if (email.includes('admin')) {
                     console.log("Rol detectado: ADMIN");
                     localStorage.setItem('userRole', 'admin'); // Guardamos rol para usarlo después
@@ -83,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     destino = 'index.html'; // El cambio que pediste
                 }
 
-                // C. Redirección
+                // D. Redirección
                 window.location.href = destino;
 
             }, 1000);

@@ -75,6 +75,8 @@ const UI = {
                 e.preventDefault();
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
+                localStorage.removeItem('usuarioActual');
+                localStorage.removeItem('userRole');
                 window.location.href = 'index.html';
             });
         }

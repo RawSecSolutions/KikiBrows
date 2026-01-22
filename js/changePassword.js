@@ -377,6 +377,7 @@ function logoutAndRedirect() {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userName');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('usuarioActual');
 
     // Redirigir al login
     setTimeout(() => {
