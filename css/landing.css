@@ -199,7 +199,7 @@ body {
     }
 }
 
-/* 5. GRID DE PRODUCTOS */
+/* 5. CARRUSEL DE CURSOS */
 #cursos {
     z-index: 25;
     height: auto !important;
@@ -208,52 +208,74 @@ body {
     padding: 3rem 1.5rem !important;
 }
 
-.productos-grid-container {
-    width: 100%;
+/* Carrusel de cursos */
+.cursos-carousel {
+    position: relative;
+    padding: 2rem 0;
+}
+
+.cursos-carousel .carousel-inner {
     padding: 1rem 0;
 }
 
-.productos-grid-container::-webkit-scrollbar {
-    height: 8px;
+.cursos-carousel .carousel-item {
+    transition: transform 0.6s ease-in-out;
+    height: auto;
 }
 
-.productos-grid-container::-webkit-scrollbar-track {
-    background: var(--border-light);
-    border-radius: 10px;
+/* Controles del carrusel (flechas) */
+.cursos-carousel .carousel-control-prev,
+.cursos-carousel .carousel-control-next {
+    width: 5%;
+    opacity: 1;
+    z-index: 10;
 }
 
-.productos-grid-container::-webkit-scrollbar-thumb {
-    background: var(--accent-color);
-    border-radius: 10px;
-    transition: background 0.3s ease;
+.cursos-carousel .carousel-control-prev-icon,
+.cursos-carousel .carousel-control-next-icon {
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    background-size: 20px 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.productos-grid-container::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
+.cursos-carousel .carousel-control-prev-icon:hover,
+.cursos-carousel .carousel-control-next-icon:hover {
+    background-color: var(--accent-color);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
-.productos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 0.5rem;
+/* Ajustes responsivos para controles */
+@media (max-width: 767px) {
+    .cursos-carousel .carousel-control-prev,
+    .cursos-carousel .carousel-control-next {
+        width: 10%;
+    }
+
+    .cursos-carousel .carousel-control-prev-icon,
+    .cursos-carousel .carousel-control-next-icon {
+        width: 40px;
+        height: 40px;
+        background-size: 16px 16px;
+    }
+}
+
+.productos-grid-container {
+    width: 100%;
+    padding: 1rem 0;
     max-width: 1400px;
     margin: 0 auto;
 }
 
-/* Desktop grande - 3 columnas */
-@media (min-width: 1200px) {
-    .productos-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Desktop mediano - 2 columnas */
-@media (min-width: 768px) and (max-width: 1199px) {
-    .productos-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-    }
+/* Contenedor del carrusel */
+.productos-grid {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
 .producto-card {
@@ -271,7 +293,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-width: 280px;
+    min-height: 450px;
 }
 
 @supports not (backdrop-filter: blur(15px)) {
@@ -334,19 +356,11 @@ body {
 /* Responsivo para tablets y móviles */
 @media (max-width: 767px) {
     #cursos {
-        padding: 2.5rem 1.25rem !important;
-    }
-
-    .productos-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding: 0.25rem;
+        padding: 2.5rem 1rem !important;
     }
 
     .producto-card {
-        min-width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
+        min-height: 400px;
     }
 
     .carousel-caption-custom {
@@ -361,16 +375,16 @@ body {
     .carousel-caption-custom .lead {
         font-size: 1rem;
     }
+
+    .cursos-carousel {
+        padding: 1rem 0;
+    }
 }
 
 /* Móviles pequeños */
 @media (max-width: 480px) {
     #cursos {
-        padding: 2rem 1rem !important;
-    }
-
-    .productos-grid {
-        gap: 1.25rem;
+        padding: 2rem 0.75rem !important;
     }
 
     .carousel-caption-custom {
@@ -379,5 +393,9 @@ body {
 
     .carousel-caption-custom h1 {
         font-size: 1.5rem;
+    }
+
+    .producto-card {
+        min-height: 420px;
     }
 }
