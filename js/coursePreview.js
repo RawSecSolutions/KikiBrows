@@ -203,58 +203,244 @@ function configurarBotonCompra(curso) {
             return;
         }
 
-        // Si está autenticado, proceder con la compra
-        procesarCompra(curso, usuarioActual);
+        // Verificar si ya tiene el curso
+        const usuariosData = JSON.parse(localStorage.getItem('kikibrows_usuarios')) || {};
+        const datosUsuario = usuariosData[usuarioActual.email] || {};
+        const cursosAdquiridos = datosUsuario.cursosAdquiridos || [];
+
+        if (cursosAdquiridos.includes(curso.id)) {
+            alert('Ya has adquirido este curso. Puedes acceder desde tu panel de estudiante.');
+            window.location.href = 'Alumno.html';
+            return;
+        }
+
+        // Si está autenticado y no tiene el curso, abrir portal de pago
+        abrirPortalPago(curso, usuarioActual);
     });
 }
 
-function procesarCompra(curso, usuario) {
-    // Verificar si ya tiene el curso
+// ==================== PORTAL DE PAGO ====================
+
+function abrirPortalPago(curso, usuario) {
+    const modal = document.getElementById('portalPagoModal');
+
+    // Cargar información del curso en el modal
+    document.getElementById('portalCursoNombre').textContent = curso.nombre;
+    document.getElementById('portalCursoPrecio').textContent = formatearPrecio(curso.precio || 0);
+
+    // Mostrar modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Configurar eventos del modal
+    configurarEventosPortalPago(curso, usuario);
+}
+
+function cerrarPortalPago() {
+    const modal = document.getElementById('portalPagoModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+
+    // Resetear secciones de pago
+    document.getElementById('seccionWebpay').style.display = 'none';
+    document.getElementById('seccionMercadoPago').style.display = 'none';
+
+    // Resetear botones de método de pago
+    document.querySelectorAll('.metodo-pago-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+}
+
+function configurarEventosPortalPago(curso, usuario) {
+    // Botón cerrar
+    const btnCerrar = document.getElementById('btnCerrarPortal');
+    btnCerrar.onclick = cerrarPortalPago;
+
+    // Botón volver
+    const btnVolver = document.getElementById('btnVolverCheckout');
+    btnVolver.onclick = cerrarPortalPago;
+
+    // Cerrar al hacer click en overlay
+    const overlay = document.querySelector('.portal-pago-overlay');
+    overlay.onclick = cerrarPortalPago;
+
+    // Botón Webpay
+    const btnWebpay = document.getElementById('btnWebpay');
+    btnWebpay.onclick = () => {
+        // Marcar como seleccionado
+        document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
+        btnWebpay.classList.add('selected');
+
+        // Mostrar sección de Webpay
+        document.getElementById('seccionWebpay').style.display = 'block';
+        document.getElementById('seccionMercadoPago').style.display = 'none';
+
+        // Scroll hacia la sección
+        document.getElementById('seccionWebpay').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    // Botón Mercado Pago
+    const btnMercadoPago = document.getElementById('btnMercadoPago');
+    btnMercadoPago.onclick = () => {
+        // Marcar como seleccionado
+        document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
+        btnMercadoPago.classList.add('selected');
+
+        // Mostrar sección de Mercado Pago
+        document.getElementById('seccionWebpay').style.display = 'none';
+        document.getElementById('seccionMercadoPago').style.display = 'block';
+
+        // Scroll hacia la sección
+        document.getElementById('seccionMercadoPago').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    // Configurar evento de pago con Webpay
+    const formWebpay = document.getElementById('formWebpay');
+    formWebpay.onsubmit = (e) => {
+        e.preventDefault();
+        iniciarPagoWebpay(curso, usuario);
+    };
+
+    // Configurar evento de pago con Mercado Pago
+    const btnPagarMP = document.getElementById('btnPagarMercadoPago');
+    btnPagarMP.onclick = () => {
+        iniciarPagoMercadoPago(curso, usuario);
+    };
+}
+
+// ==================== INTEGRACIÓN DE PASARELAS DE PAGO ====================
+
+function iniciarPagoWebpay(curso, usuario) {
+    console.log('Iniciando pago con Webpay para curso:', curso.nombre);
+
+    // AQUÍ SE INTEGRARÁ LA LÓGICA DE TRANSBANK/WEBPAY
+    // Ejemplo de flujo:
+    // 1. Crear transacción en el backend
+    // 2. Obtener token de Webpay
+    // 3. Redirigir a la página de pago de Webpay
+
+    /*
+    // Ejemplo de integración (descomentar cuando se configure el backend):
+    fetch('/api/transbank/crear-transaccion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            cursoId: curso.id,
+            monto: curso.precio,
+            usuarioEmail: usuario.email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Redirigir a Webpay con el token
+        document.getElementById('tokenWebpay').value = data.token;
+        document.getElementById('formWebpay').action = data.url;
+        document.getElementById('formWebpay').submit();
+    })
+    .catch(error => {
+        console.error('Error al crear transacción:', error);
+        alert('Hubo un error al procesar el pago. Por favor intenta nuevamente.');
+    });
+    */
+
+    // SIMULACIÓN TEMPORAL (eliminar cuando se integre la API real)
+    alert('Portal de pago de Webpay/Transbank.\n\nAquí se redirigirá a la pasarela de pago de Transbank.\n\nPor ahora es una simulación.');
+
+    // Simulación de compra exitosa (eliminar en producción)
+    procesarCompraExitosa(curso, usuario);
+}
+
+function iniciarPagoMercadoPago(curso, usuario) {
+    console.log('Iniciando pago con Mercado Pago para curso:', curso.nombre);
+
+    // AQUÍ SE INTEGRARÁ LA LÓGICA DE MERCADO PAGO
+    // Ejemplo de flujo:
+    // 1. Crear preferencia de pago en el backend
+    // 2. Inicializar el checkout de Mercado Pago
+    // 3. Redirigir o mostrar el checkout
+
+    /*
+    // Ejemplo de integración (descomentar cuando se configure el backend):
+    fetch('/api/mercadopago/crear-preferencia', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            cursoId: curso.id,
+            titulo: curso.nombre,
+            precio: curso.precio,
+            usuarioEmail: usuario.email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Inicializar Mercado Pago Checkout
+        const mp = new MercadoPago('TU_PUBLIC_KEY');
+        mp.checkout({
+            preference: {
+                id: data.preferenceId
+            },
+            render: {
+                container: '#mercadoPagoCheckout',
+                label: 'Pagar con Mercado Pago',
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error al crear preferencia:', error);
+        alert('Hubo un error al procesar el pago. Por favor intenta nuevamente.');
+    });
+    */
+
+    // SIMULACIÓN TEMPORAL (eliminar cuando se integre la API real)
+    alert('Portal de pago de Mercado Pago.\n\nAquí se mostrará el checkout de Mercado Pago.\n\nPor ahora es una simulación.');
+
+    // Simulación de compra exitosa (eliminar en producción)
+    procesarCompraExitosa(curso, usuario);
+}
+
+function procesarCompraExitosa(curso, usuario) {
+    // Esta función se llamará cuando el pago sea confirmado
+    // En producción, esto debería ser llamado desde el callback/webhook de la pasarela
+
     const usuariosData = JSON.parse(localStorage.getItem('kikibrows_usuarios')) || {};
     const datosUsuario = usuariosData[usuario.email] || {};
 
+    // Agregar curso a cursosAdquiridos
     const cursosAdquiridos = datosUsuario.cursosAdquiridos || [];
+    cursosAdquiridos.push(curso.id);
 
-    if (cursosAdquiridos.includes(curso.id)) {
-        alert('Ya has adquirido este curso. Puedes acceder desde tu panel de estudiante.');
-        window.location.href = 'Alumno.html';
-        return;
+    // Calcular fecha de expiración
+    const fechaCompra = new Date();
+    const diasAcceso = curso.duracionAcceso || 180;
+    const fechaExpiracion = new Date(fechaCompra);
+    fechaExpiracion.setDate(fechaExpiracion.getDate() + diasAcceso);
+
+    // Actualizar accesoCursos
+    if (!datosUsuario.accesoCursos) {
+        datosUsuario.accesoCursos = {};
     }
 
-    // Simular proceso de compra
-    const confirmar = confirm(`¿Deseas comprar el curso "${curso.nombre}" por ${formatearPrecio(curso.precio)}?`);
+    datosUsuario.accesoCursos[curso.id] = {
+        fechaCompra: fechaCompra.toISOString().split('T')[0],
+        fechaExpiracion: fechaExpiracion.toISOString().split('T')[0],
+        diasAcceso: diasAcceso
+    };
 
-    if (confirmar) {
-        // Agregar curso a cursosAdquiridos
-        cursosAdquiridos.push(curso.id);
+    // Actualizar datos del usuario
+    datosUsuario.cursosAdquiridos = cursosAdquiridos;
+    usuariosData[usuario.email] = datosUsuario;
 
-        // Calcular fecha de expiración
-        const fechaCompra = new Date();
-        const diasAcceso = curso.duracionAcceso || 180;
-        const fechaExpiracion = new Date(fechaCompra);
-        fechaExpiracion.setDate(fechaExpiracion.getDate() + diasAcceso);
+    // Guardar en localStorage
+    localStorage.setItem('kikibrows_usuarios', JSON.stringify(usuariosData));
 
-        // Actualizar accesoCursos
-        if (!datosUsuario.accesoCursos) {
-            datosUsuario.accesoCursos = {};
-        }
-
-        datosUsuario.accesoCursos[curso.id] = {
-            fechaCompra: fechaCompra.toISOString().split('T')[0],
-            fechaExpiracion: fechaExpiracion.toISOString().split('T')[0],
-            diasAcceso: diasAcceso
-        };
-
-        // Actualizar datos del usuario
-        datosUsuario.cursosAdquiridos = cursosAdquiridos;
-        usuariosData[usuario.email] = datosUsuario;
-
-        // Guardar en localStorage
-        localStorage.setItem('kikibrows_usuarios', JSON.stringify(usuariosData));
-
-        alert('¡Compra exitosa! Ya puedes acceder al curso desde tu panel de estudiante.');
-        window.location.href = 'Alumno.html';
-    }
+    // Cerrar portal y redirigir
+    cerrarPortalPago();
+    alert('¡Compra exitosa! Ya puedes acceder al curso desde tu panel de estudiante.');
+    window.location.href = 'Alumno.html';
 }
 
 // ==================== MANEJO DE ERRORES ====================
