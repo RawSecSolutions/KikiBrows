@@ -15,6 +15,11 @@ function obtenerCursoIdDesdeUrl() {
     return parseInt(cursoId);
 }
 
+function esModoPreview() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('preview') === 'true';
+}
+
 // ==================== FUNCIONES AUXILIARES ====================
 
 function formatearPrecio(precio) {
@@ -48,8 +53,9 @@ function cargarInformacionCurso(cursoId) {
         return;
     }
 
-    // Verificar que el curso esté publicado
-    if (curso.estado !== 'publicado') {
+    // Verificar que el curso esté publicado (salvo que sea modo preview de admin)
+    const modoPreview = esModoPreview();
+    if (!modoPreview && curso.estado !== 'publicado') {
         mostrarError('Este curso no está disponible en este momento.');
         return;
     }
@@ -276,6 +282,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!cursoId) {
         mostrarError('No se especificó un ID de curso válido en la URL.');
         return;
+    }
+
+    // Mostrar banner de previsualización si está en modo admin preview
+    if (esModoPreview()) {
+        const previewBanner = document.getElementById('previewBanner');
+        if (previewBanner) {
+            previewBanner.style.display = 'flex';
+            // Ajustar padding del body para que no tape el contenido
+            document.body.style.paddingTop = '50px';
+        }
     }
 
     cargarInformacionCurso(cursoId);
