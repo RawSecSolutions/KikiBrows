@@ -646,6 +646,24 @@ document.addEventListener('DOMContentLoaded', () => {
     window.retryQuiz = () => {
         const modal = bootstrap.Modal.getInstance(document.getElementById('quizResultsModal'));
         if (modal) modal.hide();
+
+        // Limpiar el formulario existente si existe
+        const existingForm = document.getElementById('quizForm');
+        if (existingForm) {
+            existingForm.reset();
+        }
+
+        // Limpiar todas las selecciones visuales
+        document.querySelectorAll('.answer-option.selected').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+
+        // Limpiar estado global
+        if (window.currentQuizData) {
+            delete window.currentQuizData;
+        }
+
+        // Renderizar el quiz de nuevo
         renderQuizContent();
 
         // Scroll suave al inicio del contenido dinámico
