@@ -647,6 +647,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = bootstrap.Modal.getInstance(document.getElementById('quizResultsModal'));
         if (modal) modal.hide();
         renderQuizContent();
+
+        // Scroll suave al inicio del contenido dinámico
+        setTimeout(() => {
+            const dynamicContent = document.getElementById('dynamicContent');
+            if (dynamicContent) {
+                dynamicContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
     };
 
     // ==================== CONTENIDO: ENTREGA (H6.5) ====================
