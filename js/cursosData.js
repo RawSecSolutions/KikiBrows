@@ -842,6 +842,11 @@ const CursosData = {
         return stored ? JSON.parse(stored) : this.defaultStudentData;
     },
 
+    // Alias para compatibilidad
+    getStudentData() {
+        return this.getStudent();
+    },
+
     saveStudent(data) {
         localStorage.setItem(this.STUDENT_STORAGE_KEY, JSON.stringify(data));
     },
