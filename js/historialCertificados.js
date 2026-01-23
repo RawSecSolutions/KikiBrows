@@ -1,36 +1,48 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    // 1. DATOS SIMULADOS
-    const certificadosData = [
-        {
-            id: 1,
-            curso: "Curso Microblading 1",
-            instructor: "Daniela Candi",
-            fecha: "15 Oct, 2023",
-            codigo: "KB-2023-001"
-        },
-        {
-            id: 2,
-            curso: "Lifting de Pestañas Pro",
-            instructor: "Equipo KikiBrows",
-            fecha: "22 Nov, 2023",
-            codigo: "KB-2023-045"
-        },
-        {
-            id: 3,
-            curso: "Diseño de Cejas con Henna",
-            instructor: "Daniela Candi",
-            fecha: "10 Ene, 2024",
-            codigo: "KB-2024-012"
-        }
-    ];
-
     const container = document.getElementById('certificados-container');
     const noCertsMsg = document.getElementById('no-certs-message');
 
-    // 3. FUNCIÓN PARA RENDERIZAR TARJETAS
+    // 1. FUNCIÓN PARA OBTENER CERTIFICADOS REALES
+    function obtenerCertificadosReales() {
+        const student = CursosData.getStudentData();
+        const certificadosData = [];
+
+        // Iterar sobre los certificados del estudiante
+        if (student.certificados && Object.keys(student.certificados).length > 0) {
+            Object.keys(student.certificados).forEach(cursoId => {
+                const certInfo = student.certificados[cursoId];
+                const curso = CursosData.getCurso(parseInt(cursoId));
+
+                if (curso) {
+                    // Generar código de certificado
+                    const codigo = window.CertificateGenerator.generarCodigoCertificado(
+                        parseInt(cursoId),
+                        student.id
+                    );
+
+                    // Formatear fecha
+                    const fechaFormateada = window.CertificateGenerator.formatearFecha(certInfo.fecha);
+
+                    certificadosData.push({
+                        id: parseInt(cursoId),
+                        curso: curso.nombre,
+                        instructor: curso.instructor || 'Equipo KikiBrows',
+                        fecha: fechaFormateada,
+                        codigo: codigo
+                    });
+                }
+            });
+        }
+
+        return certificadosData;
+    }
+
+    // 2. FUNCIÓN PARA RENDERIZAR TARJETAS
     function cargarCertificados() {
         if (!container) return; // Seguridad por si el ID cambia
+
+        const certificadosData = obtenerCertificadosReales();
 
         if (certificadosData.length === 0) {
             if(noCertsMsg) noCertsMsg.classList.remove('d-none');
@@ -42,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-12 col-lg-8">
                     <div class="cert-card p-4">
                         <div class="d-flex justify-content-between align-items-center cert-body-flex">
-                            
+
                             <div class="cert-info">
                                 <h3 class="cert-title">${cert.curso}</h3>
                                 <p class="cert-detail"><i class="fa-solid fa-user-tie me-2"></i>Instructor: <strong>${cert.instructor}</strong></p>
@@ -73,9 +85,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Funciones globales (fuera del DOMContentLoaded para que el HTML las encuentre en el onclick)
 function verCertificado(id) {
-    alert("Abriendo vista previa del certificado ID: " + id);
+    // Redirigir a la página del curso con el modal de certificado abierto
+    window.location.href = `claseAlumn.html?curso=${id}&showCertificate=true`;
 }
 
-function descargarCertificado(id) {
-    alert("Iniciando descarga del certificado ID: " + id);
+async function descargarCertificado(cursoId) {
+    try {
+        // Obtener datos del estudiante y curso
+        const student = CursosData.getStudentData();
+        const curso = CursosData.getCurso(cursoId);
+
+        if (!curso) {
+            alert('No se encontró el curso.');
+            return;
+        }
+
+        // Obtener datos del usuario actual (con apellido)
+        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+
+        // Generar código de certificado
+        const codigoCertificado = window.CertificateGenerator.generarCodigoCertificado(
+            cursoId,
+            student.id
+        );
+
+        // Obtener fecha de completación
+        const certificadoData = student.certificados[cursoId];
+        const fechaCompletado = certificadoData
+            ? window.CertificateGenerator.formatearFecha(certificadoData.fecha)
+            : window.CertificateGenerator.formatearFecha(new Date());
+
+        // Datos para el certificado
+        const datosCertificado = {
+            nombreAlumno: usuarioActual.nombre || student.nombre || 'Estudiante',
+            apellidoAlumno: usuarioActual.apellido || '',
+            nombreCurso: curso.nombre || 'Curso',
+            fechaCompletado: fechaCompletado,
+            codigoCertificado: codigoCertificado,
+            nombreInstructor: curso.instructor || 'Equipo KikiBrows'
+        };
+
+        // Generar el PDF
+        const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
+
+        if (!resultado.success) {
+            alert('Error al generar el certificado. Por favor, intenta nuevamente.');
+        }
+    } catch (error) {
+        console.error('Error al descargar certificado:', error);
+        alert('Error al generar el certificado. Por favor, intenta nuevamente.');
+    }
 }

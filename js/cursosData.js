@@ -17,6 +17,7 @@ const CursosData = {
                 estado: 'publicado',
                 fechaCreacion: '2024-01-15',
                 duracionAcceso: 180, // días de acceso desde la compra
+                instructor: 'Daniela Candi',
                 portada: null,
                 video: null,
                 carrusel: true,
@@ -31,6 +32,7 @@ const CursosData = {
                 estado: 'publicado',
                 fechaCreacion: '2024-02-20',
                 duracionAcceso: 180, // días de acceso desde la compra
+                instructor: 'Equipo KikiBrows',
                 portada: null,
                 video: null,
                 carrusel: false,
@@ -45,6 +47,7 @@ const CursosData = {
                 estado: 'borrador',
                 fechaCreacion: '2024-03-10',
                 duracionAcceso: 90, // días de acceso desde la compra
+                instructor: 'Daniela Candi',
                 portada: null,
                 video: null,
                 carrusel: false,
@@ -59,6 +62,7 @@ const CursosData = {
                 estado: 'publicado',
                 fechaCreacion: '2024-04-01',
                 duracionAcceso: 180,
+                instructor: 'Equipo KikiBrows',
                 portada: null,
                 video: null,
                 carrusel: true,
@@ -73,6 +77,7 @@ const CursosData = {
                 estado: 'publicado',
                 fechaCreacion: '2024-04-05',
                 duracionAcceso: 180,
+                instructor: 'Equipo KikiBrows',
                 portada: null,
                 video: null,
                 carrusel: true,
@@ -87,6 +92,7 @@ const CursosData = {
                 estado: 'publicado',
                 fechaCreacion: '2024-04-10',
                 duracionAcceso: 180,
+                instructor: 'Equipo KikiBrows',
                 portada: null,
                 video: null,
                 carrusel: true,
@@ -98,6 +104,7 @@ const CursosData = {
                 nombre: 'CURSO PEDICURE PROFESIONAL',
                 descripcion: 'Técnicas completas de pedicure y cuidado de pies. Aprende a realizar tratamientos profesionales de pies, incluyendo limpieza profunda, tratamiento de callosidades, masajes y esmaltado. Perfecto para ofrecer un servicio completo de pedicure.',
                 precio: 84990,
+                instructor: 'Equipo KikiBrows',
                 estado: 'publicado',
                 fechaCreacion: '2024-04-15',
                 duracionAcceso: 180,
@@ -115,6 +122,7 @@ const CursosData = {
                 estado: 'publicado',
                 fechaCreacion: '2024-04-20',
                 duracionAcceso: 180,
+                instructor: 'Equipo KikiBrows',
                 portada: null,
                 video: null,
                 carrusel: true,
@@ -738,7 +746,8 @@ const CursosData = {
     // Datos por defecto de alumna (simulación)
     defaultStudentData: {
         id: 1,
-        nombre: 'María García',
+        nombre: 'María',
+        apellido: 'García',
         email: 'maria@example.com',
         cursosAdquiridos: [1, 2], // IDs de cursos comprados
         accesoCursos: {

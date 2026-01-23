@@ -70,11 +70,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('userName', email.split('@')[0]);
 
                 // Guardar objeto usuarioActual para que lo detecten otras páginas
-                const usuarioActual = {
-                    email: email,
-                    nombre: email.split('@')[0],
-                    password: pass // Nota: en producción, nunca guardar contraseñas en localStorage
-                };
+                // Intentamos recuperar datos del registro previo si existe
+                const registeredUser = localStorage.getItem('registeredUser');
+                let usuarioActual;
+
+                if (registeredUser) {
+                    const userData = JSON.parse(registeredUser);
+                    usuarioActual = {
+                        email: email,
+                        nombre: userData.nombre || email.split('@')[0],
+                        apellido: userData.apellido || '',
+                        password: pass // Nota: en producción, nunca guardar contraseñas en localStorage
+                    };
+                } else {
+                    usuarioActual = {
+                        email: email,
+                        nombre: email.split('@')[0],
+                        apellido: '',
+                        password: pass
+                    };
+                }
                 localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
                 // B. VERIFICAR SI HAY UNA REDIRECCIÓN PENDIENTE

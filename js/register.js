@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault(); // Evita el POST real
 
             const nombre = document.getElementById('nombre').value;
+            const apellido = document.getElementById('apellido').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Esto permite que el login sepa quién se registró
             const newUser = {
                 nombre: nombre,
+                apellido: apellido,
                 email: email,
                 password: password // En un MVP esto es aceptable, en producción nunca.
             };

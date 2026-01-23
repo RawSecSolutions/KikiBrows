@@ -49,11 +49,11 @@
                 <div class="col-lg-6">
                     <div class="account-card p-4 h-100 d-flex flex-column text-start">
                         <h2>Mis Certificados</h2>
-                        
+
                         <div class="info-content flex-grow-1">
                             <p class="mb-2">Accede a los diplomas de tus cursos completados.</p>
-                            
-                            <div class="d-flex align-items-center text-muted mt-3">
+
+                            <div class="d-flex align-items-center text-muted mt-3" id="certificados-status">
                                 <i class="fa-solid fa-graduation-cap me-2 fs-5"></i>
                                 <span class="fst-italic">Aún no tienes certificados disponibles.</span>
                             </div>
@@ -358,6 +358,20 @@
                     </div>
                 `;
             }).join('');
+
+            // Cargar certificados en la tarjeta de Mis Certificados
+            const certificadosStatus = document.getElementById('certificados-status');
+            if (certificadosStatus) {
+                const student = CursosData.getStudentData();
+                const certificadosCount = student.certificados ? Object.keys(student.certificados).length : 0;
+
+                if (certificadosCount > 0) {
+                    certificadosStatus.innerHTML = `
+                        <i class="fa-solid fa-graduation-cap me-2 fs-5 text-success"></i>
+                        <span class="fw-semibold">${certificadosCount} certificado${certificadosCount > 1 ? 's' : ''} disponible${certificadosCount > 1 ? 's' : ''}</span>
+                    `;
+                }
+            }
         });
     </script>
 </body>

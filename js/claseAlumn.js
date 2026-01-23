@@ -984,12 +984,58 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.show();
     };
 
-    window.downloadCertificate = () => {
-        // Registrar descarga
-        CursosData.generarCertificado(currentCursoId);
+    window.downloadCertificate = async () => {
+        try {
+            // Obtener datos del estudiante
+            const student = CursosData.getStudentData();
+            const curso = CursosData.getCurso(currentCursoId);
 
-        // Simular descarga de PDF
-        alert('¡Certificado descargado! (En producción esto generaría un PDF real)');
+            // Obtener datos del usuario actual (con apellido)
+            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+
+            // Generar código de certificado
+            const codigoCertificado = window.CertificateGenerator.generarCodigoCertificado(
+                currentCursoId,
+                student.id
+            );
+
+            // Obtener fecha de completación
+            const certificadoData = student.certificados[currentCursoId];
+            const fechaCompletado = certificadoData
+                ? window.CertificateGenerator.formatearFecha(certificadoData.fecha)
+                : window.CertificateGenerator.formatearFecha(new Date());
+
+            // Datos para el certificado
+            const datosCertificado = {
+                nombreAlumno: usuarioActual.nombre || student.nombre || 'Estudiante',
+                apellidoAlumno: usuarioActual.apellido || '',
+                nombreCurso: curso.nombre || 'Curso',
+                fechaCompletado: fechaCompletado,
+                codigoCertificado: codigoCertificado,
+                nombreInstructor: curso.instructor || 'Equipo KikiBrows'
+            };
+
+            // Generar el PDF
+            const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
+
+            if (resultado.success) {
+                // Registrar descarga en los datos del estudiante
+                CursosData.generarCertificado(currentCursoId);
+
+                // Actualizar el modal para mostrar que se descargó
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('certificateModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                }, 500);
+            } else {
+                alert('Error al generar el certificado. Por favor, intenta nuevamente.');
+            }
+        } catch (error) {
+            console.error('Error al descargar certificado:', error);
+            alert('Error al generar el certificado. Por favor, intenta nuevamente.');
+        }
     };
 
     // ==================== NAVEGACIÓN ====================
