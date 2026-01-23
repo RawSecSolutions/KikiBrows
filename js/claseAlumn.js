@@ -478,6 +478,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             enableNext();
+
+            // Scroll al inicio del content-wrapper para Android
+            setTimeout(() => {
+                const contentWrapper = document.querySelector('.content-wrapper');
+                if (contentWrapper) {
+                    contentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }, 100);
+
             return;
         }
 
@@ -666,11 +675,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Renderizar el quiz de nuevo con forceRetry = true
         renderQuizContent(true);
 
-        // Scroll suave al inicio del contenido dinámico
+        // Scroll al inicio del content-wrapper (más compatible con Android)
         setTimeout(() => {
-            const dynamicContent = document.getElementById('dynamicContent');
-            if (dynamicContent) {
-                dynamicContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const contentWrapper = document.querySelector('.content-wrapper');
+            if (contentWrapper) {
+                contentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }, 100);
     };
