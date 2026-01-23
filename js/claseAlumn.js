@@ -714,6 +714,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         </button>
                         <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden>
                     </div>
+
+                    <!-- Controles de Simulación MVP -->
+                    <div class="mvp-controls mt-4">
+                        <div class="alert alert-info mb-3">
+                            <strong><i class="fas fa-flask me-2"></i>Controles de Simulación (MVP)</strong>
+                            <p class="mb-0 small mt-1">Usa estos botones para probar la funcionalidad sin subir videos reales.</p>
+                        </div>
+                        <button class="btn btn-outline-primary w-100 mb-2" onclick="window.simularSubidaVideo()">
+                            <i class="fas fa-video me-2"></i>Simular Subida de Video
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -752,6 +763,23 @@ document.addEventListener('DOMContentLoaded', () => {
                    </div>`
                 : '';
 
+            // Controles MVP para simular calificación (solo si está pendiente)
+            const mvpCalificacionHTML = ultimaEntrega.estado === 'pendiente'
+                ? `<div class="mvp-controls mt-3">
+                       <div class="alert alert-warning mb-2">
+                           <strong><i class="fas fa-flask me-2"></i>Simulación de Calificación (MVP)</strong>
+                       </div>
+                       <div class="d-flex gap-2">
+                           <button class="btn btn-success flex-fill" onclick="window.simularCalificacionAprobada()">
+                               <i class="fas fa-check me-2"></i>Aprobar
+                           </button>
+                           <button class="btn btn-danger flex-fill" onclick="window.simularCalificacionRechazada()">
+                               <i class="fas fa-times me-2"></i>Rechazar
+                           </button>
+                       </div>
+                   </div>`
+                : '';
+
             statusSection = `
                 <div class="entrega-status ${statusClass}">
                     <div class="d-flex align-items-center">
@@ -762,6 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     ${feedbackHTML}
+                    ${mvpCalificacionHTML}
                 </div>
             `;
 
@@ -1167,6 +1196,87 @@ document.addEventListener('DOMContentLoaded', () => {
             completionStatus.querySelector('i').className = 'fas fa-check-circle me-1';
         }
     }
+
+    // ==================== FUNCIONES MVP DE SIMULACIÓN ====================
+    // Funciones accesibles desde los botones de la interfaz para simulación
+
+    window.simularSubidaVideo = () => {
+        console.log('🎬 Simulando subida de video...');
+
+        // Guardar entrega simulada con nombre de archivo ficticio
+        CursosData.guardarEntrega(currentClaseId, 'video_practica_simulado.mp4');
+
+        // Actualizar estado en el progreso (NO completado, solo pendiente)
+        const student = CursosData.getStudent();
+        if (!student.progreso[currentCursoId].modulos[currentModuloId]) {
+            student.progreso[currentCursoId].modulos[currentModuloId] = { clases: {} };
+        }
+        student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] = {
+            completado: false,
+            estado: 'pendiente',
+            fecha: new Date().toISOString()
+        };
+        CursosData.saveStudent(student);
+
+        // Recargar contenido para mostrar el estado pendiente
+        renderEntregaContent();
+        renderSidebar();
+
+        // Habilitar el botón siguiente y mostrar estado
+        enableNext();
+        showCompletionStatus('Pendiente de Revisión', 'warning');
+
+        console.log('✅ Video simulado subido exitosamente');
+        console.log('⏳ Ahora espera a que el profesor revise y califique tu trabajo');
+    };
+
+    window.simularCalificacionAprobada = () => {
+        console.log('✅ Simulando calificación aprobada...');
+
+        const entregas = CursosData.getEntregas(currentClaseId);
+        if (entregas.length === 0) {
+            alert('Error: No hay entregas para aprobar');
+            console.error('No hay entregas para aprobar en esta clase');
+            return;
+        }
+
+        const indice = entregas.length - 1; // Última entrega
+        CursosData.actualizarEstadoEntrega(
+            currentClaseId,
+            indice,
+            'aprobada',
+            '¡Excelente trabajo! Tu práctica demuestra dominio de la técnica.'
+        );
+
+        console.log('✅ Entrega aprobada exitosamente');
+
+        // Recargar la clase actual
+        loadClase(currentModuloId, currentClaseId);
+    };
+
+    window.simularCalificacionRechazada = () => {
+        console.log('❌ Simulando calificación rechazada...');
+
+        const entregas = CursosData.getEntregas(currentClaseId);
+        if (entregas.length === 0) {
+            alert('Error: No hay entregas para rechazar');
+            console.error('No hay entregas para rechazar en esta clase');
+            return;
+        }
+
+        const indice = entregas.length - 1; // Última entrega
+        CursosData.actualizarEstadoEntrega(
+            currentClaseId,
+            indice,
+            'rechazada',
+            'Tu entrega necesita mejoras. Por favor revisa la técnica de trazado y asegúrate de seguir la dirección correcta del vello natural.'
+        );
+
+        console.log('❌ Entrega rechazada');
+
+        // Recargar la clase actual
+        loadClase(currentModuloId, currentClaseId);
+    };
 
     // ==================== FUNCIONES DE SIMULACIÓN (PARA PRUEBAS) ====================
     // Estas funciones están disponibles en la consola del navegador para simular
