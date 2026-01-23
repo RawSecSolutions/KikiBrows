@@ -6,7 +6,13 @@ document.addEventListener('DOMContentLoaded', () => {
     CursosData.initStudent();
 
     // Estado global
-    let currentCursoId = parseInt(localStorage.getItem('activeCourseId')) || 1;
+    // Verificar si hay un parámetro de curso en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const cursoIdFromUrl = urlParams.get('curso');
+    let currentCursoId = cursoIdFromUrl
+        ? parseInt(cursoIdFromUrl)
+        : parseInt(localStorage.getItem('activeCourseId')) || 1;
+
     let currentModuloId = parseInt(localStorage.getItem('activeModuloId')) || null;
     let currentClaseId = parseInt(localStorage.getItem('activeClaseId')) || null;
     let currentClase = null;
@@ -104,6 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Actualizar localStorage con el curso actual
+        localStorage.setItem('activeCourseId', currentCursoId);
+
         // Mostrar nombre del curso
         courseName.textContent = curso.nombre;
         document.title = `${curso.nombre} | KIKIBROWS`;
@@ -130,6 +139,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Event listeners
         setupEventListeners();
+
+        // Verificar si se debe mostrar el certificado automáticamente
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('showCertificate') === 'true') {
+            setTimeout(() => {
+                showCertificate();
+            }, 500);
+        }
     }
 
     function setupEventListeners() {
@@ -1057,12 +1074,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.downloadCertificate = async () => {
         try {
+            console.log('Iniciando descarga de certificado...');
+
+            // Verificar que pdfMake esté disponible
+            if (typeof pdfMake === 'undefined') {
+                console.error('pdfMake no está disponible');
+                alert('Error: El generador de PDF no está disponible. Por favor, recarga la página.');
+                return;
+            }
+
+            // Verificar que CertificateGenerator esté disponible
+            if (!window.CertificateGenerator) {
+                console.error('CertificateGenerator no está disponible');
+                alert('Error: El generador de certificados no está disponible. Por favor, recarga la página.');
+                return;
+            }
+
             // Obtener datos del estudiante
             const student = CursosData.getStudentData();
+            if (!student) {
+                console.error('No se pudo obtener los datos del estudiante');
+                alert('Error: No se pudieron obtener tus datos. Por favor, recarga la página.');
+                return;
+            }
+
             const curso = CursosData.getCurso(currentCursoId);
+            if (!curso) {
+                console.error('No se encontró el curso con ID:', currentCursoId);
+                alert('Error: No se encontró el curso.');
+                return;
+            }
+
+            console.log('Datos del curso obtenidos:', curso.nombre);
 
             // Obtener datos del usuario actual (con apellido)
             const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+            console.log('Datos del usuario:', usuarioActual);
 
             // Generar código de certificado
             const codigoCertificado = window.CertificateGenerator.generarCodigoCertificado(
@@ -1086,10 +1133,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 nombreInstructor: curso.instructor || 'Equipo KikiBrows'
             };
 
+            console.log('Generando certificado con datos:', datosCertificado);
+
             // Generar el PDF
             const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
 
             if (resultado.success) {
+                console.log('Certificado generado exitosamente:', resultado.fileName);
+
                 // Registrar descarga en los datos del estudiante
                 CursosData.generarCertificado(currentCursoId);
 
@@ -1101,11 +1152,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }, 500);
             } else {
-                alert('Error al generar el certificado. Por favor, intenta nuevamente.');
+                console.error('Error al generar certificado:', resultado.error);
+                alert('Error al generar el certificado: ' + (resultado.error || 'Error desconocido'));
             }
         } catch (error) {
             console.error('Error al descargar certificado:', error);
-            alert('Error al generar el certificado. Por favor, intenta nuevamente.');
+            alert('Error al generar el certificado: ' + error.message);
         }
     };
 

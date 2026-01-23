@@ -21,6 +21,13 @@ class CertificateGenerator {
      */
     async generarCertificado(data) {
         try {
+            console.log('CertificateGenerator.generarCertificado llamado con datos:', data);
+
+            // Verificar que pdfMake esté disponible
+            if (typeof pdfMake === 'undefined') {
+                throw new Error('pdfMake no está cargado. Verifica que las librerías estén incluidas en el HTML.');
+            }
+
             const {
                 nombreAlumno,
                 apellidoAlumno,
@@ -30,8 +37,15 @@ class CertificateGenerator {
                 nombreInstructor = 'Equipo KikiBrows'
             } = data;
 
-            // Nombre completo del alumno
-            const nombreCompleto = `${nombreAlumno} ${apellidoAlumno}`;
+            // Validar datos requeridos
+            if (!nombreAlumno || !nombreCurso) {
+                throw new Error('Faltan datos requeridos para generar el certificado');
+            }
+
+            // Nombre completo del alumno (manejar apellido vacío)
+            const nombreCompleto = apellidoAlumno
+                ? `${nombreAlumno} ${apellidoAlumno}`
+                : nombreAlumno;
 
             // Definición del documento PDF
             const documentDefinition = {
@@ -283,10 +297,19 @@ class CertificateGenerator {
             };
 
             // Generar y descargar el PDF
+            console.log('Creando documento PDF con pdfMake...');
             const pdfDocGenerator = pdfMake.createPdf(documentDefinition);
-            const fileName = `Certificado_${nombreCurso.replace(/\s+/g, '_')}_${nombreAlumno}_${apellidoAlumno}.pdf`;
 
+            // Generar nombre de archivo (manejar apellido vacío)
+            const apellidoPart = apellidoAlumno ? `_${apellidoAlumno}` : '';
+            const fileName = `Certificado_${nombreCurso.replace(/\s+/g, '_')}_${nombreAlumno}${apellidoPart}.pdf`;
+
+            console.log('Descargando PDF con nombre:', fileName);
+
+            // Descargar el PDF
             pdfDocGenerator.download(fileName);
+
+            console.log('Descarga iniciada exitosamente');
 
             return {
                 success: true,
@@ -295,6 +318,7 @@ class CertificateGenerator {
 
         } catch (error) {
             console.error('Error al generar certificado:', error);
+            console.error('Stack trace:', error.stack);
             return {
                 success: false,
                 error: error.message
