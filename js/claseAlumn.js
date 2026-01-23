@@ -703,16 +703,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="number">2</span>
                         ${ultimaEntrega?.estado === 'rechazada' ? 'Reenviar Tu Entrega' : 'Sube Tu Práctica'}
                     </h5>
-                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('videoInput').click()">
+                    <div class="upload-zone" id="uploadZone">
                         <div class="upload-icon">
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
                         <div class="upload-text">Arrastra aquí tu video o haz clic para seleccionar</div>
                         <div class="upload-hint">Formatos: MP4, WEBM | Máximo: 500MB</div>
-                        <button class="btn btn-primary upload-btn" type="button">
+                        <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
                             <i class="fas fa-upload me-2"></i>Seleccionar Video
                         </button>
-                        <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden onchange="window.handleFileUpload(event)">
+                        <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden>
                     </div>
                 </div>
             `;
@@ -806,14 +806,51 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Setup drag and drop
+        // Setup drag and drop y event listeners
         setTimeout(setupDragAndDrop, 100);
     }
 
     function setupDragAndDrop() {
         const uploadZone = document.getElementById('uploadZone');
-        if (!uploadZone) return;
+        const videoInput = document.getElementById('videoInput');
+        const selectVideoBtn = document.getElementById('selectVideoBtn');
 
+        if (!uploadZone || !videoInput) {
+            console.error('No se encontraron los elementos de upload');
+            return;
+        }
+
+        console.log('Configurando zona de upload...');
+
+        // Click en la zona de upload
+        uploadZone.addEventListener('click', (e) => {
+            // Solo abrir el selector si no se hace clic en el botón
+            if (e.target !== selectVideoBtn && !selectVideoBtn.contains(e.target)) {
+                console.log('Click en zona de upload');
+                videoInput.click();
+            }
+        });
+
+        // Click en el botón de seleccionar
+        if (selectVideoBtn) {
+            selectVideoBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que se propague al uploadZone
+                console.log('Click en botón seleccionar video');
+                videoInput.click();
+            });
+        }
+
+        // Cambio en el input file
+        videoInput.addEventListener('change', (event) => {
+            console.log('Archivo seleccionado');
+            const file = event.target.files[0];
+            if (file) {
+                console.log('Procesando archivo:', file.name);
+                processFile(file);
+            }
+        });
+
+        // Drag and drop
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadZone.classList.add('dragover');
@@ -826,15 +863,14 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('dragover');
+            console.log('Archivo soltado');
             const file = e.dataTransfer.files[0];
-            if (file) processFile(file);
+            if (file) {
+                console.log('Procesando archivo:', file.name);
+                processFile(file);
+            }
         });
     }
-
-    window.handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) processFile(file);
-    };
 
     function processFile(file) {
         // Validar formato
