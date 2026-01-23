@@ -294,7 +294,7 @@ function generarBoleta(transaccion) {
     doc.setFont('helvetica', 'bold');
     doc.text('Código de Autorización:', 20, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(transaccion.codigoAutorizacion || transaccion.transaccionId || 'N/A', 60, y);
+    doc.text(transaccion.codigoAutorizacion || transaccion.transaccionId || 'N/A', 80, y);
 
     y += 10;
     doc.setFont('helvetica', 'bold');
