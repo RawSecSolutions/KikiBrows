@@ -124,14 +124,24 @@ function saveProfileChanges(event, formType) {
     // Mostrar mensaje de éxito
     alert('Cambios guardados exitosamente');
 
-    // Recargar datos en la vista
-    loadUserData();
+    // Verificar si hay una redirección pendiente (ej: desde compra de curso)
+    const redirectUrl = localStorage.getItem('redirectAfterLogin');
 
-    // Volver al dashboard
-    cancelEdit(event);
+    if (redirectUrl) {
+        // Limpiar la redirección
+        localStorage.removeItem('redirectAfterLogin');
+        // Redirigir a la URL guardada
+        window.location.href = redirectUrl;
+    } else {
+        // Recargar datos en la vista
+        loadUserData();
 
-    // Recargar la página para actualizar el navbar
-    window.location.reload();
+        // Volver al dashboard
+        cancelEdit(event);
+
+        // Recargar la página para actualizar el navbar
+        window.location.reload();
+    }
 }
 
 // --- INICIALIZACIÓN AUTOMÁTICA ---

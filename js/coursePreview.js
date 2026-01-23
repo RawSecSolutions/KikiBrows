@@ -38,6 +38,23 @@ function contarClasesTotales(modulos) {
     }, 0);
 }
 
+/**
+ * Valida que el perfil del usuario esté completo (nombre y apellido)
+ * @param {Object} usuario - Objeto usuario de localStorage
+ * @returns {boolean} - true si el perfil está completo, false en caso contrario
+ */
+function validarPerfilCompleto(usuario) {
+    if (!usuario) {
+        return false;
+    }
+
+    // Verificar que nombre y apellido existan y no estén vacíos
+    const nombreCompleto = usuario.nombre && usuario.nombre.trim() !== '';
+    const apellidoCompleto = usuario.apellido && usuario.apellido.trim() !== '';
+
+    return nombreCompleto && apellidoCompleto;
+}
+
 // ==================== CARGAR INFORMACIÓN DEL CURSO ====================
 
 function cargarInformacionCurso(cursoId) {
@@ -204,6 +221,23 @@ function configurarBotonCompra(curso) {
             return;
         }
 
+        // Verificar que el perfil esté completo (nombre y apellido)
+        if (!validarPerfilCompleto(usuarioActual)) {
+            const confirmar = confirm(
+                '⚠️ Completa tu perfil antes de comprar\n\n' +
+                'Para poder generar tu certificado al finalizar el curso, necesitamos que completes tu perfil con tu nombre y apellido.\n\n' +
+                'Estos datos se capturarán en tu certificado y no podrán modificarse después.\n\n' +
+                '¿Deseas completar tu perfil ahora?'
+            );
+
+            if (confirmar) {
+                // Guardar la URL actual para redirigir después de completar el perfil
+                localStorage.setItem('redirectAfterLogin', window.location.href);
+                window.location.href = 'account.html';
+            }
+            return;
+        }
+
         // Verificar si ya tiene el curso
         const usuariosData = JSON.parse(localStorage.getItem('kikibrows_usuarios')) || {};
         const datosUsuario = usuariosData[usuarioActual.email] || {};
@@ -215,7 +249,7 @@ function configurarBotonCompra(curso) {
             return;
         }
 
-        // Si está autenticado y no tiene el curso, abrir portal de pago
+        // Si está autenticado, tiene perfil completo y no tiene el curso, abrir portal de pago
         abrirPortalPago(curso, usuarioActual);
     });
 }
