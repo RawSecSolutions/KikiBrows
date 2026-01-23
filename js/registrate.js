@@ -53,12 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Captura de inputs
             const nombreInput = document.getElementById('nombre');
+            const apellidoInput = document.getElementById('apellido');
             const emailInput = document.getElementById('email');
             const passInput = document.getElementById('password');
             const confirmPassInput = document.getElementById('confirm-password');
             const terminosInput = document.getElementById('terminos');
 
             const nombre = nombreInput.value.trim();
+            const apellido = apellidoInput.value.trim();
             const email = emailInput.value.trim();
             const pass = passInput.value;
             const confirmPass = confirmPassInput.value;
@@ -68,6 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Verificamos uno por uno para resaltar todos los que falten
             if (!nombre) {
                 mostrarError(nombreInput, "Debe completar este campo");
+                hayErrores = true;
+            }
+            if (!apellido) {
+                mostrarError(apellidoInput, "Debe completar este campo");
                 hayErrores = true;
             }
             if (!email) {
@@ -123,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Guardar datos temporales para después de la verificación
             localStorage.setItem('tempUserName', nombre);
+            localStorage.setItem('tempUserApellido', apellido);
             localStorage.setItem('tempUserEmail', email);
             localStorage.setItem('tempUserPassword', pass);
         });
@@ -136,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (codigo.length === 6) { // Validación simple de longitud
                 localStorage.setItem('isLoggedIn', 'true');
                 const nombreGuardado = localStorage.getItem('tempUserName') || 'Usuario';
+                const apellidoGuardado = localStorage.getItem('tempUserApellido') || '';
                 const emailGuardado = localStorage.getItem('tempUserEmail') || 'usuario@email.com';
                 const passwordGuardado = localStorage.getItem('tempUserPassword') || '';
 
@@ -145,13 +153,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const usuarioActual = {
                     email: emailGuardado,
                     nombre: nombreGuardado,
+                    apellido: apellidoGuardado,
                     password: passwordGuardado
                 };
                 localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
                 localStorage.setItem('userRole', 'student');
 
+                // Guardar también registeredUser para que login.js pueda recuperar los datos
+                const registeredUser = {
+                    nombre: nombreGuardado,
+                    apellido: apellidoGuardado
+                };
+                localStorage.setItem('registeredUser', JSON.stringify(registeredUser));
+
                 // Limpiar datos temporales
                 localStorage.removeItem('tempUserName');
+                localStorage.removeItem('tempUserApellido');
                 localStorage.removeItem('tempUserEmail');
                 localStorage.removeItem('tempUserPassword');
 

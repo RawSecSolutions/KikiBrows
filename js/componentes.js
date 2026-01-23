@@ -3,7 +3,22 @@
 const renderNavbar = () => {
     // Verificamos el estado "booleano" de forma segura
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const userName = localStorage.getItem('userName') || 'Usuario';
+
+    // Obtener el nombre completo del usuario (nombre + apellido)
+    const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+    let nombreCompleto = 'Usuario';
+
+    if (usuarioActual.nombre) {
+        nombreCompleto = usuarioActual.nombre;
+        if (usuarioActual.apellido) {
+            nombreCompleto += ' ' + usuarioActual.apellido;
+        }
+    } else {
+        // Fallback al userName antiguo si no hay usuarioActual
+        nombreCompleto = localStorage.getItem('userName') || 'Usuario';
+    }
+
+    const userName = nombreCompleto;
 
     const navbarHTML = `
     <div class="top-navbar container-fluid d-flex justify-content-between align-items-center position-relative py-2">
