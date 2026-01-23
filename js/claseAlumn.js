@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== CONTENIDO: QUIZ (H6.4) ====================
 
-    function renderQuizContent() {
+    function renderQuizContent(forceRetry = false) {
         const questions = quizQuestions[currentClaseId] || quizQuestions[4];
         const passingScore = currentClase.passingScore || 70;
         const totalPoints = questions.reduce((sum, q) => sum + q.puntos, 0);
@@ -461,8 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
-        // Si ya está aprobado, mostrar vista de completado
-        if (estado.completado) {
+        // Si ya está aprobado y no es un reintento forzado, mostrar vista de completado
+        if (estado.completado && !forceRetry) {
             dynamicContent.innerHTML = `
                 <div class="quiz-container">
                     <div class="quiz-header">
@@ -663,8 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
             delete window.currentQuizData;
         }
 
-        // Renderizar el quiz de nuevo
-        renderQuizContent();
+        // Renderizar el quiz de nuevo con forceRetry = true
+        renderQuizContent(true);
 
         // Scroll suave al inicio del contenido dinámico
         setTimeout(() => {
@@ -760,6 +760,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ultimaEntrega.estado === 'pendiente' || ultimaEntrega.estado === 'aprobada') {
                 enableNext();
                 if (ultimaEntrega.estado === 'aprobada') {
+                    // Marcar como completada automáticamente cuando está aprobada
+                    if (!isClaseCompleted()) {
+                        markAsCompleted();
+                    }
                     showCompletionStatus('Entrega Aprobada');
                 } else {
                     showCompletionStatus('Pendiente de Revisión', 'warning');
@@ -1066,4 +1070,80 @@ document.addEventListener('DOMContentLoaded', () => {
             completionStatus.querySelector('i').className = 'fas fa-check-circle me-1';
         }
     }
+
+    // ==================== FUNCIONES DE SIMULACIÓN (PARA PRUEBAS) ====================
+    // Estas funciones están disponibles en la consola del navegador para simular
+    // aprobaciones/rechazos de entregas prácticas
+
+    window.simularAprobarEntrega = (claseId) => {
+        const entregas = CursosData.getEntregas(claseId || currentClaseId);
+        if (entregas.length === 0) {
+            console.error('No hay entregas para aprobar en esta clase');
+            return;
+        }
+        const indice = entregas.length - 1; // Última entrega
+        CursosData.actualizarEstadoEntrega(
+            claseId || currentClaseId,
+            indice,
+            'aprobada',
+            '¡Excelente trabajo! Tu entrega ha sido aprobada.'
+        );
+        console.log('✅ Entrega aprobada exitosamente');
+        // Recargar la clase actual
+        if (currentClase && currentClase.tipo === 'entrega') {
+            loadClase(currentModuloId, currentClaseId);
+        }
+    };
+
+    window.simularRechazarEntrega = (claseId, feedback) => {
+        const entregas = CursosData.getEntregas(claseId || currentClaseId);
+        if (entregas.length === 0) {
+            console.error('No hay entregas para rechazar en esta clase');
+            return;
+        }
+        const indice = entregas.length - 1; // Última entrega
+        CursosData.actualizarEstadoEntrega(
+            claseId || currentClaseId,
+            indice,
+            'rechazada',
+            feedback || 'Tu entrega necesita mejoras. Por favor revisa las instrucciones y vuelve a intentarlo.'
+        );
+        console.log('❌ Entrega rechazada');
+        // Recargar la clase actual
+        if (currentClase && currentClase.tipo === 'entrega') {
+            loadClase(currentModuloId, currentClaseId);
+        }
+    };
+
+    window.verEstadoEntregas = (claseId) => {
+        const entregas = CursosData.getEntregas(claseId || currentClaseId);
+        console.log('📋 Entregas para clase ID', claseId || currentClaseId, ':', entregas);
+        return entregas;
+    };
+
+    window.resetearQuiz = (claseId) => {
+        const student = CursosData.getStudent();
+        if (student.quizAttempts[claseId || currentClaseId]) {
+            delete student.quizAttempts[claseId || currentClaseId];
+        }
+        if (student.progreso[currentCursoId]?.modulos?.[currentModuloId]?.clases?.[claseId || currentClaseId]) {
+            student.progreso[currentCursoId].modulos[currentModuloId].clases[claseId || currentClaseId].completado = false;
+        }
+        CursosData.saveStudent(student);
+        console.log('🔄 Quiz reseteado');
+        if (currentClase && currentClase.tipo === 'quiz') {
+            loadClase(currentModuloId, currentClaseId);
+        }
+    };
+
+    console.log(`
+    🎓 FUNCIONES DE SIMULACIÓN DISPONIBLES:
+
+    - simularAprobarEntrega(claseId?) - Aprobar la última entrega de una clase
+    - simularRechazarEntrega(claseId?, feedback?) - Rechazar la última entrega
+    - verEstadoEntregas(claseId?) - Ver todas las entregas de una clase
+    - resetearQuiz(claseId?) - Resetear un quiz para poder volverlo a tomar
+
+    Nota: Si no se proporciona claseId, se usa la clase actual.
+    `);
 });
