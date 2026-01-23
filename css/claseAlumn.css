@@ -694,6 +694,30 @@ body {
     margin-top: 12px;
 }
 
+/* MVP Controls */
+.mvp-controls {
+    border: 2px dashed #0dcaf0;
+    border-radius: 8px;
+    padding: 16px;
+    background: rgba(13, 202, 240, 0.05);
+}
+
+.mvp-controls .alert {
+    border-left: 4px solid #0dcaf0;
+    background: rgba(13, 202, 240, 0.1);
+    border-color: #0dcaf0;
+}
+
+.mvp-controls .btn {
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.mvp-controls .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
 /* Content Description */
 .content-description {
     color: var(--text-grey);
