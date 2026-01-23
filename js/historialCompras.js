@@ -77,8 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         <div class="col-12 col-md-auto mt-3 mt-md-0 text-end">
                             <div class="d-flex flex-column gap-2">
-                                <a href="${item.url}" class="btn-kiki">Ir al curso</a>
-                                <a href="#" class="btn-kiki-outline">Ver detalle</a>
+                                <a href="${item.url}" class="btn-kiki-outline">Ir al curso</a>
                                 <button class="btn-kiki-outline btn-descargar-boleta" data-transaction-id="${item.transaccionId}">
                                     <i class="fa-solid fa-download me-2"></i>Descargar Boleta
                                 </button>
