@@ -3,6 +3,60 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('certificados-container');
     const noCertsMsg = document.getElementById('no-certs-message');
 
+    // AGREGAR CERTIFICADOS DE DEMO si no existen
+    function agregarCertificadosDemo() {
+        const student = CursosData.getStudentData();
+
+        // Si ya tiene certificados, no hacer nada
+        if (student.certificados && Object.keys(student.certificados).length > 0) {
+            return;
+        }
+
+        // Agregar certificados de demo para cursos 1, 2, 4 y 5
+        if (!student.certificados) {
+            student.certificados = {};
+        }
+
+        // Curso 1: Microblading Básico (completado hace 2 meses)
+        const fecha1 = new Date();
+        fecha1.setMonth(fecha1.getMonth() - 2);
+        student.certificados[1] = {
+            fecha: fecha1.toISOString(),
+            descargado: false
+        };
+
+        // Curso 2: Lash Lifting Profesional (completado hace 1 mes)
+        const fecha2 = new Date();
+        fecha2.setMonth(fecha2.getMonth() - 1);
+        student.certificados[2] = {
+            fecha: fecha2.toISOString(),
+            descargado: false
+        };
+
+        // Curso 4: CURSO CAPPING POLYGEL (completado hace 3 semanas)
+        const fecha4 = new Date();
+        fecha4.setDate(fecha4.getDate() - 21);
+        student.certificados[4] = {
+            fecha: fecha4.toISOString(),
+            descargado: false
+        };
+
+        // Curso 5: CURSO MANICURE BÁSICO (completado hace 1 semana)
+        const fecha5 = new Date();
+        fecha5.setDate(fecha5.getDate() - 7);
+        student.certificados[5] = {
+            fecha: fecha5.toISOString(),
+            descargado: false
+        };
+
+        // Guardar los cambios
+        CursosData.saveStudent(student);
+        console.log('Certificados de demo agregados correctamente');
+    }
+
+    // Agregar certificados de demo al cargar la página
+    agregarCertificadosDemo();
+
     // 1. FUNCIÓN PARA OBTENER CERTIFICADOS REALES
     function obtenerCertificadosReales() {
         const student = CursosData.getStudentData();
