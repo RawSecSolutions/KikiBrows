@@ -350,7 +350,7 @@ function iniciarPagoWebpay(curso, usuario) {
     alert('Portal de pago de Webpay/Transbank.\n\nAquí se redirigirá a la pasarela de pago de Transbank.\n\nPor ahora es una simulación.');
 
     // Simulación de compra exitosa (eliminar en producción)
-    procesarCompraExitosa(curso, usuario);
+    procesarCompraExitosa(curso, usuario, 'Webpay Plus');
 }
 
 function iniciarPagoMercadoPago(curso, usuario) {
@@ -400,10 +400,10 @@ function iniciarPagoMercadoPago(curso, usuario) {
     alert('Portal de pago de Mercado Pago.\n\nAquí se mostrará el checkout de Mercado Pago.\n\nPor ahora es una simulación.');
 
     // Simulación de compra exitosa (eliminar en producción)
-    procesarCompraExitosa(curso, usuario);
+    procesarCompraExitosa(curso, usuario, 'Mercado Pago');
 }
 
-function procesarCompraExitosa(curso, usuario) {
+function procesarCompraExitosa(curso, usuario, metodoPago = 'Webpay Plus') {
     // Esta función se llamará cuando el pago sea confirmado
     // En producción, esto debería ser llamado desde el callback/webhook de la pasarela
 
@@ -438,10 +438,72 @@ function procesarCompraExitosa(curso, usuario) {
     // Guardar en localStorage
     localStorage.setItem('kikibrows_usuarios', JSON.stringify(usuariosData));
 
-    // Cerrar portal y redirigir
+    // Crear objeto de transacción
+    const transaccionId = generarTransaccionId();
+    const codigoAutorizacion = generarCodigoAutorizacion();
+
+    const transaccion = {
+        estado: 'PAGADO',
+        cursoId: curso.id,
+        cursoNombre: curso.nombre,
+        monto: curso.precio,
+        metodoPago: metodoPago,
+        fecha: fechaCompra.toISOString(),
+        codigoAutorizacion: codigoAutorizacion,
+        transaccionId: transaccionId,
+        usuarioEmail: usuario.email,
+        usuarioNombre: usuario.nombre
+    };
+
+    // Guardar transacción en localStorage para la página de confirmación
+    localStorage.setItem('ultimaTransaccion', JSON.stringify(transaccion));
+
+    // Guardar en historial de transacciones
+    guardarTransaccionEnHistorial(transaccion);
+
+    // Cerrar portal y redirigir a página de confirmación
     cerrarPortalPago();
-    alert('¡Compra exitosa! Ya puedes acceder al curso desde tu panel de estudiante.');
-    window.location.href = 'Alumno.html';
+    window.location.href = 'payment-confirmation.html';
+}
+
+// ==================== FUNCIONES AUXILIARES DE TRANSACCIONES ====================
+
+function generarTransaccionId() {
+    // Generar un ID único para la transacción
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    return `TXN-${timestamp}-${random}`;
+}
+
+function generarCodigoAutorizacion() {
+    // Generar un código de autorización de 6 dígitos
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function guardarTransaccionEnHistorial(transaccion) {
+    // Obtener historial existente
+    const historial = JSON.parse(localStorage.getItem('kikibrows_transacciones')) || [];
+
+    // Agregar nueva transacción
+    historial.push({
+        id: transaccion.transaccionId,
+        producto: transaccion.cursoNombre,
+        valor: transaccion.monto,
+        usuario: transaccion.usuarioNombre || 'Usuario',
+        fecha: transaccion.fecha,
+        email: transaccion.usuarioEmail,
+        estado: transaccion.estado,
+        paymentStatus: transaccion.estado,
+        bank: transaccion.metodoPago,
+        paymentMethod: 'Débito/Crédito',
+        authCode: transaccion.codigoAutorizacion,
+        gatewayToken: transaccion.transaccionId
+    });
+
+    // Guardar historial actualizado
+    localStorage.setItem('kikibrows_transacciones', JSON.stringify(historial));
+
+    console.log('Transacción guardada en historial:', transaccion.transaccionId);
 }
 
 // ==================== MANEJO DE ERRORES ====================

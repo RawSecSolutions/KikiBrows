@@ -1,0 +1,458 @@
+/* ============================================================================
+   css/paymentConfirmation.css - PÁGINA DE CONFIRMACIÓN DE PAGO
+   Diseño Minimalista Elegante con Paleta KIKIBROWS
+   ============================================================================ */
+
+/* ============================================
+   VARIABLES Y COLORES
+   ============================================ */
+:root {
+    --primary-color: #8A835A;         /* Verde oliva elegante */
+    --secondary-color: #D8B6B1;       /* Rosa empolvado suave */
+    --accent-color: #6B664A;          /* Verde oliva oscuro */
+    --light-bg: #F0EAE0;              /* Beige claro cálido */
+    --card-bg: #FDFCFA;               /* Crema muy claro */
+    --text-dark: #2C2A25;             /* Gris carbón suave */
+    --text-grey: #6B6862;             /* Gris medio cálido */
+    --white: #FFFFFF;
+    --success-color: #6B8F71;         /* Verde suave para éxito */
+    --error-color: #B67676;           /* Rojo suave para error */
+    --pending-color: #B89968;         /* Dorado suave para pendiente */
+}
+
+/* ============================================
+   LAYOUT PRINCIPAL
+   ============================================ */
+.confirmation-main {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--light-bg) 0%, #F8F5F0 100%);
+    padding: 60px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmation-container {
+    max-width: 700px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.confirmation-content {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 50px 40px;
+    box-shadow: 0 10px 40px rgba(44, 42, 37, 0.08);
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   ICONOS DE ESTADO
+   ============================================ */
+.confirmation-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    animation: scaleIn 0.4s ease 0.2s both;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.confirmation-icon i {
+    font-size: 3.5rem;
+}
+
+.confirmation-icon.success {
+    background: linear-gradient(135deg, rgba(107, 143, 113, 0.15), rgba(107, 143, 113, 0.05));
+    border: 3px solid var(--success-color);
+}
+
+.confirmation-icon.success i {
+    color: var(--success-color);
+}
+
+.confirmation-icon.error {
+    background: linear-gradient(135deg, rgba(182, 118, 118, 0.15), rgba(182, 118, 118, 0.05));
+    border: 3px solid var(--error-color);
+}
+
+.confirmation-icon.error i {
+    color: var(--error-color);
+}
+
+.confirmation-icon.pending {
+    background: linear-gradient(135deg, rgba(184, 153, 104, 0.15), rgba(184, 153, 104, 0.05));
+    border: 3px solid var(--pending-color);
+}
+
+.confirmation-icon.pending i {
+    color: var(--pending-color);
+}
+
+/* ============================================
+   TEXTOS PRINCIPALES
+   ============================================ */
+.confirmation-title {
+    font-family: 'Cormorant Garamond', 'Teachers', serif;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 600;
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+}
+
+.confirmation-message {
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-size: clamp(1rem, 2.5vw, 1.1rem);
+    color: var(--text-grey);
+    text-align: center;
+    margin-bottom: 35px;
+    line-height: 1.7;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ============================================
+   TARJETA DE INFORMACIÓN DEL CURSO
+   ============================================ */
+.course-info-card {
+    background: var(--light-bg);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(138, 131, 90, 0.2);
+}
+
+.course-name {
+    font-family: 'Cormorant Garamond', 'Teachers', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.course-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+.detail-item i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.course-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 2px solid rgba(138, 131, 90, 0.2);
+    margin-top: 20px;
+}
+
+.price-label {
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-size: 1rem;
+    color: var(--text-grey);
+    font-weight: 400;
+}
+
+.price-amount {
+    font-family: 'Cormorant Garamond', 'Teachers', serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* ============================================
+   RAZONES DE ERROR
+   ============================================ */
+.error-reasons {
+    background: var(--light-bg);
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    border-left: 4px solid var(--error-color);
+}
+
+.error-reasons h4 {
+    font-family: 'Cormorant Garamond', 'Teachers', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.error-reasons ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.error-reasons li {
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-grey);
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.error-reasons li::before {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    color: var(--error-color);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* ============================================
+   BOTONES DE ACCIÓN
+   ============================================ */
+.confirmation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.btn-primary-custom,
+.btn-secondary-custom {
+    width: 100%;
+    padding: 16px 30px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-primary-custom {
+    background: var(--primary-color);
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(138, 131, 90, 0.25);
+}
+
+.btn-primary-custom:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.35);
+}
+
+.btn-primary-custom:active {
+    transform: translateY(0);
+}
+
+.btn-secondary-custom {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn-secondary-custom:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.btn-secondary-custom:active {
+    transform: translateY(0);
+}
+
+.btn-primary-custom i,
+.btn-secondary-custom i {
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   INFORMACIÓN ADICIONAL
+   ============================================ */
+.additional-info {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(138, 131, 90, 0.15);
+}
+
+.additional-info p {
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-grey);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.additional-info i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.additional-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.additional-info a:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer-minimal {
+    background: var(--text-dark);
+    padding: 30px 20px;
+    text-align: center;
+    margin-top: 60px;
+}
+
+.footer-minimal p {
+    font-family: 'Lato', 'Teachers', sans-serif;
+    font-size: 0.9rem;
+    color: var(--light-bg);
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .confirmation-main {
+        padding: 40px 15px;
+    }
+
+    .confirmation-content {
+        padding: 35px 25px;
+        border-radius: 15px;
+    }
+
+    .confirmation-icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 25px;
+    }
+
+    .confirmation-icon i {
+        font-size: 2.8rem;
+    }
+
+    .course-info-card {
+        padding: 20px;
+    }
+
+    .course-price {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .confirmation-actions {
+        gap: 12px;
+    }
+
+    .btn-primary-custom,
+    .btn-secondary-custom {
+        padding: 14px 25px;
+        font-size: 0.95rem;
+    }
+
+    .additional-info p {
+        font-size: 0.85rem;
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .confirmation-content {
+        padding: 30px 20px;
+    }
+
+    .confirmation-title {
+        font-size: 1.5rem;
+    }
+
+    .confirmation-message {
+        font-size: 0.95rem;
+    }
+
+    .course-name {
+        font-size: 1.25rem;
+    }
+
+    .price-amount {
+        font-size: 1.5rem;
+    }
+}
+
+/* ============================================
+   ANIMACIONES ADICIONALES
+   ============================================ */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.confirmation-icon.pending {
+    animation: scaleIn 0.4s ease 0.2s both, pulse 2s ease-in-out 0.6s infinite;
+}
