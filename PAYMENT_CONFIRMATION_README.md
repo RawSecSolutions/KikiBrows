@@ -123,9 +123,6 @@ Luego abre la consola del navegador y ejecuta:
 // Simular pago exitoso
 simularPagoExitoso(1, 'Webpay Plus');
 
-// Simular pago pendiente
-simularPagoPendiente(1, 'Mercado Pago');
-
 // Simular pago rechazado
 simularPagoRechazado(1, 'Webpay Plus');
 ```
