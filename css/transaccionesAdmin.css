@@ -129,3 +129,72 @@
     background-color: var(--accent-color);
     color: #FFFFFF;
 }
+
+/* Buscador Inteligente */
+.search-box input {
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(138, 131, 90, 0.25);
+    border-color: #8A835A !important;
+}
+
+.search-box .input-group-text {
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus + .input-group-text,
+.search-box input:focus ~ .input-group-text {
+    border-color: #8A835A;
+}
+
+/* Sección Datos del Banco */
+.bank-details-section {
+    transition: all 0.3s ease;
+}
+
+.bank-details-section:hover {
+    background-color: rgba(138, 131, 90, 0.12) !important;
+}
+
+.bank-details-section .fas.fa-copy {
+    opacity: 0.6;
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.bank-details-section .fas.fa-copy:hover {
+    opacity: 1;
+    color: var(--primary-color) !important;
+}
+
+.bank-details-section code {
+    word-break: break-all;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* Badge Status personalizado */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+    font-weight: 600;
+}
+
+/* Mensaje de "No hay resultados" */
+#transaction-list tr td[colspan] {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive para el buscador */
+@media (max-width: 768px) {
+    .search-box {
+        max-width: 100% !important;
+        width: 100%;
+    }
+
+    .mb-3.d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+}
