@@ -931,6 +931,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Recargar contenido
         renderEntregaContent();
         renderSidebar();
+
+        // Habilitar el botón siguiente y mostrar estado
+        enableNext();
+        showCompletionStatus('Pendiente de Revisión', 'warning');
+
+        console.log('Entrega completada. Botón Siguiente habilitado.');
     }
 
     // ==================== CERTIFICADO (H6.6) ====================
