@@ -288,12 +288,10 @@ class CertificateGenerator {
                         fontSize: 10,
                         color: '#333333'
                     }
-                },
-
-                // Fuentes por defecto
-                defaultStyle: {
-                    font: 'Helvetica'
                 }
+
+                // defaultStyle se omite para usar las fuentes predeterminadas de pdfMake
+                // que incluyen todas las variantes (normal, bold, italic, bolditalic)
             };
 
             // Generar y descargar el PDF
