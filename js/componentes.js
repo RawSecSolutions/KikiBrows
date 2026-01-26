@@ -1,41 +1,61 @@
 // js/componentes.js
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+let supabase = null;
+
+// Intentar cargar la configuración de Supabase
+const initSupabase = async () => {
+    try {
+        const { SUPABASE_URL, SUPABASE_KEY } = await import('./config.js');
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+        supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        return true;
+    } catch (error) {
+        console.warn('Supabase config not available, running in offline mode');
+        return false;
+    }
+};
 
 const renderNavbar = async () => {
-    // Verificar sesión de Supabase
-    const { data: { session } } = await supabase.auth.getSession();
-    const isLoggedIn = !!session;
+    // Intentar inicializar Supabase
+    const supabaseAvailable = await initSupabase();
 
-    // Obtener datos del usuario
+    let isLoggedIn = false;
     let userName = 'Usuario';
     let userRole = 'student';
 
-    if (session) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, role')
-            .eq('id', session.user.id)
-            .single();
+    // Solo verificar sesión si Supabase está disponible
+    if (supabaseAvailable && supabase) {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            isLoggedIn = !!session;
 
-        if (profile) {
-            userName = profile.first_name || session.user.email.split('@')[0];
-            if (profile.last_name) userName += ' ' + profile.last_name;
-            userRole = profile.role || 'student';
+            if (session) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('first_name, last_name, role')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile) {
+                    userName = profile.first_name || session.user.email.split('@')[0];
+                    if (profile.last_name) userName += ' ' + profile.last_name;
+                    userRole = profile.role || 'student';
+                }
+
+                // Actualizar localStorage para compatibilidad
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
+                localStorage.setItem('userRole', userRole);
+            } else {
+                // Limpiar localStorage si no hay sesión
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('usuarioActual');
+                localStorage.removeItem('userRole');
+            }
+        } catch (error) {
+            console.warn('Error checking session:', error);
         }
-
-        // Actualizar localStorage para compatibilidad
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
-        localStorage.setItem('userRole', userRole);
-    } else {
-        // Limpiar localStorage si no hay sesión
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('usuarioActual');
-        localStorage.removeItem('userRole');
     }
 
     const navbarHTML = `
@@ -89,10 +109,12 @@ const renderNavbar = async () => {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
 
-                // Cerrar sesión en Supabase
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error('Error cerrando sesión:', error);
+                // Cerrar sesión en Supabase si está disponible
+                if (supabase) {
+                    const { error } = await supabase.auth.signOut();
+                    if (error) {
+                        console.error('Error cerrando sesión:', error);
+                    }
                 }
 
                 // Limpiar localStorage
