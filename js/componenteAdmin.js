@@ -1,7 +1,40 @@
 // js/componenteAdmin.js
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const renderNavbarAdmin = () => {
-    const adminName = localStorage.getItem('userName') || 'Admin';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const renderNavbarAdmin = async () => {
+    // Verificar sesión de Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Obtener perfil del usuario
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, role')
+        .eq('id', session.user.id)
+        .single();
+
+    // Verificar que sea admin
+    if (profile?.role !== 'admin' && profile?.role !== 'superadmin') {
+        alert('No tienes permisos para acceder a esta página.');
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const adminName = profile?.first_name || session.user.email.split('@')[0];
+    const roleLabel = profile?.role === 'superadmin' ? 'Super Admin' : 'Admin';
+
+    // Actualizar localStorage
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userName', adminName);
+    localStorage.setItem('userRole', profile?.role || 'admin');
 
     const navbarHTML = `
     <div class="top-navbar container-fluid d-flex align-items-center py-3">
@@ -24,9 +57,10 @@ const renderNavbarAdmin = () => {
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><h6 class="dropdown-header">Hola, ${adminName}</h6></li>
-                    <li><span class="dropdown-item-text text-muted small">Super Admin</span></li>
+                    <li><span class="dropdown-item-text text-muted small">${roleLabel}</span></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="adminPanel.html">Panel Admin</a></li>
+                    <li><a class="dropdown-item" href="index.html">Ir al Sitio</a></li>
                     <li><a class="dropdown-item" href="#" id="btn-logout-admin">Cerrar Sesión</a></li>
                 </ul>
             </div>
@@ -41,12 +75,21 @@ const renderNavbarAdmin = () => {
         // Listener para el botón de cerrar sesión
         const logoutBtn = document.getElementById('btn-logout-admin');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
+            logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+
+                // Cerrar sesión en Supabase
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Error cerrando sesión:', error);
+                }
+
+                // Limpiar localStorage
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
+
                 window.location.href = 'index.html';
             });
         }
