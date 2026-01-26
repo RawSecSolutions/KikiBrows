@@ -1,0 +1,25 @@
+# --- Dependencias ---
+# Nunca subas node_modules, pesan mucho y se instalan con 'npm install'
+node_modules/
+
+# --- Seguridad y Entorno ---
+# Archivos que contienen claves secretas
+.env
+.env.local
+.env.*.local
+
+# Si decidiste usar la solución de config.js para tus claves:
+js/config.js
+
+# --- Archivos de Sistema ---
+.DS_Store
+Thumbs.db
+
+# --- Logs de errores de NPM ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Carpetas de Build (si usas empaquetadores en el futuro) ---
+dist/
+build/
