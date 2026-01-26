@@ -4,6 +4,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// --- AGREGADO: Función para identificar el dispositivo a borrar ---
+function getDeviceFingerprint() {
+    return navigator.userAgent + "::" + screen.width + "x" + screen.height;
+}
+
 const renderNavbarAdmin = async () => {
     // Verificar sesión de Supabase
     const { data: { session } } = await supabase.auth.getSession();
@@ -72,19 +77,42 @@ const renderNavbarAdmin = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // Listener para el botón de cerrar sesión
+        // --- CAMBIO: Listener MEJORADO para Admin ---
         const logoutBtn = document.getElementById('btn-logout-admin');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                
+                // Feedback visual (opcional)
+                logoutBtn.innerText = "Saliendo...";
 
-                // Cerrar sesión en Supabase
-                const { error } = await supabase.auth.signOut();
-                if (error) {
+                try {
+                    // 1. Obtener usuario admin actual
+                    const { data: { user } } = await supabase.auth.getUser();
+
+                    if (user) {
+                        // 2. Borrar dispositivo admin de la BD
+                        const huella = getDeviceFingerprint();
+                        const { error: deleteError } = await supabase
+                            .from('authorized_devices')
+                            .delete()
+                            .match({ 
+                                user_id: user.id,
+                                device_fingerprint: huella 
+                            });
+                        
+                        if (deleteError) console.error("Error borrando dispositivo admin:", deleteError);
+                    }
+
+                    // 3. Cerrar sesión Auth
+                    await supabase.auth.signOut();
+
+                } catch (error) {
                     console.error('Error cerrando sesión:', error);
+                    await supabase.auth.signOut();
                 }
 
-                // Limpiar localStorage
+                // 4. Limpiar localStorage
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
@@ -94,7 +122,7 @@ const renderNavbarAdmin = async () => {
             });
         }
 
-        // Listener para el botón hamburguesa del sidebar
+        // Listener para el botón hamburguesa del sidebar (INTACTO)
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebar = document.getElementById('sidebar');
 

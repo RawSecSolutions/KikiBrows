@@ -4,7 +4,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Simulación de Base de Datos Interactiva
+// --- AGREGADO: Función para identificar el dispositivo a borrar ---
+function getDeviceFingerprint() {
+    return navigator.userAgent + "::" + screen.width + "x" + screen.height;
+}
+
+// Simulación de Base de Datos Interactiva (INTACTO)
 const COURSES_DATA = [
     {
         id: "microblading-expert",
@@ -100,19 +105,43 @@ const UI = {
         <hr class="navbar-divider">
         `;
 
-        // Listener para el botón de cerrar sesión
+        // --- CAMBIO: Listener MEJORADO para liberar cupo de dispositivo ---
         const logoutBtn = document.getElementById('btn-logout-alumn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                
+                // Feedback visual
+                const originalText = logoutBtn.innerText;
+                logoutBtn.innerText = "Cerrando...";
 
-                // Cerrar sesión en Supabase
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error('Error cerrando sesión:', error);
+                try {
+                    // 1. Obtener usuario
+                    const { data: { user } } = await supabase.auth.getUser();
+
+                    if (user) {
+                        // 2. Borrar dispositivo específico de la BD
+                        const huella = getDeviceFingerprint();
+                        const { error: deleteError } = await supabase
+                            .from('authorized_devices')
+                            .delete()
+                            .match({ 
+                                user_id: user.id,
+                                device_fingerprint: huella 
+                            });
+                        
+                        if (deleteError) console.error("Error borrando dispositivo:", deleteError);
+                    }
+
+                    // 3. Cerrar sesión Auth
+                    await supabase.auth.signOut();
+
+                } catch (error) {
+                    console.error('Error al salir:', error);
+                    await supabase.auth.signOut(); // Salir de todas formas
                 }
 
-                // Limpiar localStorage
+                // 4. Limpieza final
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
@@ -123,7 +152,7 @@ const UI = {
         }
     },
 
-    // Renderiza la lista de cursos en cursosAlumn.html
+    // Renderiza la lista de cursos en cursosAlumn.html (INTACTO)
     renderLibrary: () => {
         const container = document.querySelector('#content-area .row');
         if (!container) return;
@@ -153,6 +182,9 @@ const UI = {
 
         const sidebar = document.getElementById('sidebar-component');
         if (!sidebar) return;
+
+        // Validación simple por si el curso no existe
+        if (!course) return; 
 
         sidebar.innerHTML = `
         <aside id="sidebar" class="ms-3 p-2 shadow-sm" style="width: var(--sidebar-width); height: calc(100vh - 160px); overflow-y: auto;">
@@ -187,7 +219,9 @@ const UI = {
 
         // Actualizar clase activa en UI
         document.querySelectorAll('.lesson-list-item').forEach(el => el.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+        if (event && event.currentTarget) {
+             event.currentTarget.classList.add('active');
+        }
     }
 };
 

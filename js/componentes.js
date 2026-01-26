@@ -2,6 +2,11 @@
 
 let supabase = null;
 
+// 1. Función auxiliar para identificar el dispositivo (Igual que en el Login)
+function getDeviceFingerprint() {
+    return navigator.userAgent + "::" + screen.width + "x" + screen.height;
+}
+
 // Intentar cargar la configuración de Supabase
 const initSupabase = async () => {
     try {
@@ -103,27 +108,56 @@ const renderNavbar = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // Listener para el botón de cerrar sesión
+        // --- AQUÍ ESTÁ LA NUEVA LÓGICA DE CIERRE DE SESIÓN ---
         const logoutBtn = document.getElementById('btn-logout');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
 
-                // Cerrar sesión en Supabase si está disponible
+                // 1. Feedback visual
+                logoutBtn.innerText = "Cerrando...";
+                
                 if (supabase) {
-                    const { error } = await supabase.auth.signOut();
-                    if (error) {
-                        console.error('Error cerrando sesión:', error);
+                    try {
+                        // 2. Obtener usuario actual
+                        const { data: { user } } = await supabase.auth.getUser();
+
+                        if (user) {
+                            // 3. BORRAR DISPOSITIVO DE LA BD
+                            // Usamos match para borrar solo el dispositivo actual de este usuario
+                            const huella = getDeviceFingerprint();
+                            
+                            const { error: deleteError } = await supabase
+                                .from('authorized_devices')
+                                .delete()
+                                .match({ 
+                                    user_id: user.id,
+                                    device_fingerprint: huella 
+                                });
+                            
+                            if (deleteError) {
+                                console.error("Error al liberar cupo de dispositivo:", deleteError);
+                            }
+                        }
+
+                        // 4. Cerrar sesión en Supabase
+                        await supabase.auth.signOut();
+
+                    } catch (err) {
+                        console.error("Error en el proceso de salida:", err);
+                        // Forzamos el cierre local por si acaso
+                        await supabase.auth.signOut();
                     }
                 }
 
-                // Limpiar localStorage
+                // 5. Limpiar localStorage
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
 
-                window.location.href = 'index.html';
+                // 6. Redirigir al login
+                window.location.href = 'login.html';
             });
         }
     }
