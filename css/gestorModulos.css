@@ -1,14 +1,14 @@
 /* css/gestorModulos.css - Estilos para Edición de Módulo */
 
 :root {
-    --primary-color: var(--primary-color);
-    --secondary-color: var(--secondary-color);
-    --accent-color: #6B7C54;
-    --card-bg: #FFFFFF;
-    --text-dark: #333333;
-    --text-grey: #666666;
-    --border-color: #e0e0e0;
-    --input-bg: #f8f8f8;
+    --primary-color: #8A835A;
+    --secondary-color: #D8B6B1;
+    --accent-color: #6B664A;
+    --card-bg: #FDFCFA;
+    --text-dark: #2C2A25;
+    --text-grey: #6B6862;
+    --border-color: rgba(138, 131, 90, 0.15);
+    --input-bg: #FFFFFF;
 }
 
 /* Layout */
@@ -465,8 +465,8 @@
 }
 
 .option-item input[type="radio"]:checked {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: #1a1a1a;
+    border-color: #1a1a1a;
 }
 
 .option-item input[type="radio"]:checked::before {
