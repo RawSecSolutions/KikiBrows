@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnValidar.addEventListener('click', function() {
             const codigo = inputCodigo.value;
 
-            if (codigo.length === 6) {
+            if (codigo.length === 8) {
                 // En producción, Supabase valida via email link.
                 // Aquí solo mostramos feedback y redirigimos al login.
                 alert("Por favor revisa tu correo y haz clic en el enlace de confirmación para activar tu cuenta.");
