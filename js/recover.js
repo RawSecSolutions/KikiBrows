@@ -1,14 +1,20 @@
+// js/recover.js
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 document.addEventListener('DOMContentLoaded', () => {
     const recoverForm = document.getElementById('recover-form');
     const step1Div = document.getElementById('recover-step-1');
     const step2Div = document.getElementById('recover-step-2');
     const sentEmailSpan = document.getElementById('sent-email-span');
 
-    // --- FUNCIONES VISUALES (Reutilizamos la lógica limpia) ---
+    // --- FUNCIONES VISUALES ---
     const mostrarErrorCampo = (input, mensaje) => {
         const formGroup = input.closest('.form-group') || input.parentElement;
         input.classList.add('is-invalid');
-        
+
         let errorText = formGroup.querySelector('.invalid-feedback');
         if (!errorText) {
             errorText = document.createElement('div');
@@ -31,12 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // MANEJO DEL SUBMIT
     if (recoverForm) {
-        recoverForm.addEventListener('submit', function(e) {
+        recoverForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             limpiarErrores();
 
             const emailInput = document.getElementById('email');
-            const email = emailInput.value.trim();
+            const email = emailInput.value.trim().toLowerCase();
 
             // 1. Validaciones
             if (!email) {
@@ -50,19 +56,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 2. Simulación de Envío (Supabase resetPasswordForEmail)
+            // UI: Estado de carga
             const btnSubmit = recoverForm.querySelector('button[type="submit"]');
             btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
             btnSubmit.disabled = true;
 
-            console.log(`Simulando envío de token a: ${email}`);
+            try {
+                // RECUPERACIÓN CON SUPABASE
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/changePassword.html`
+                });
 
-            setTimeout(() => {
-                // 3. Cambio de Estado Visual
-                sentEmailSpan.innerText = email; // Mostramos el email para feedback visual
-                step1Div.style.display = 'none'; // Ocultamos formulario
-                step2Div.style.display = 'block'; // Mostramos éxito
-            }, 1500);
+                if (error) throw error;
+
+                // Cambio de Estado Visual
+                sentEmailSpan.innerText = email;
+                step1Div.style.display = 'none';
+                step2Div.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error enviando recuperación:', error);
+                mostrarErrorCampo(emailInput, "Error al enviar el correo. Intenta de nuevo.");
+                btnSubmit.innerHTML = 'Enviar enlace';
+                btnSubmit.disabled = false;
+            }
         });
     }
 

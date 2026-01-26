@@ -1,3 +1,9 @@
+// js/login.js
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.querySelector('.user-registration-form');
     const mostrarPassCheckbox = document.getElementById('mostrar-password');
@@ -16,6 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
         input.classList.add('is-invalid');
     };
 
+    const mostrarError = (mensaje) => {
+        if (loginErrorMsg) {
+            loginErrorMsg.textContent = mensaje;
+            loginErrorMsg.style.display = 'block';
+        }
+    };
+
     const limpiarErrores = () => {
         const inputs = loginForm.querySelectorAll('.form-control');
         inputs.forEach(input => input.classList.remove('is-invalid'));
@@ -24,14 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. MANEJO DEL LOGIN
     if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             limpiarErrores();
 
             const emailInput = document.getElementById('email');
             const passInput = document.getElementById('password');
-            
-            const email = emailInput.value.trim().toLowerCase(); // Normalizamos a minúsculas
+
+            const email = emailInput.value.trim().toLowerCase();
             const pass = passInput.value;
             let camposVacios = false;
 
@@ -50,77 +63,83 @@ document.addEventListener('DOMContentLoaded', () => {
             // VALIDACIÓN 2: Formato Email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                if (loginErrorMsg) loginErrorMsg.style.display = 'block';
+                mostrarError('Ingresa un correo válido');
                 return;
             }
 
-            // SIMULACIÓN Y LÓGICA DE ROLES (HISTORIA 3)
-            // ----------------------------------------------------------------
-            console.log("Procesando login para:", email);
-            
-            // Simulación visual de carga
+            // UI: Estado de carga
             const btnSubmit = loginForm.querySelector('button[type="submit"]');
             const textoOriginal = btnSubmit.innerText;
             btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
             btnSubmit.disabled = true;
 
-            setTimeout(() => {
-                // A. Guardamos sesión
+            try {
+                // AUTENTICACIÓN CON SUPABASE
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password: pass
+                });
+
+                if (error) throw error;
+
+                const user = data.user;
+
+                // Obtener perfil del usuario
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profileError) console.warn('Error obteniendo perfil:', profileError);
+
+                // Guardar datos en localStorage para compatibilidad
                 localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', email.split('@')[0]);
+                localStorage.setItem('userName', profile?.first_name || email.split('@')[0]);
+                localStorage.setItem('userRole', profile?.role || 'student');
 
-                // Guardar objeto usuarioActual para que lo detecten otras páginas
-                // Intentamos recuperar datos del registro previo si existe
-                const registeredUser = localStorage.getItem('registeredUser');
-                let usuarioActual;
-
-                if (registeredUser) {
-                    const userData = JSON.parse(registeredUser);
-                    usuarioActual = {
-                        email: email,
-                        nombre: userData.nombre || email.split('@')[0],
-                        apellido: userData.apellido || '',
-                        password: pass // Nota: en producción, nunca guardar contraseñas en localStorage
-                    };
-                } else {
-                    usuarioActual = {
-                        email: email,
-                        nombre: email.split('@')[0],
-                        apellido: '',
-                        password: pass
-                    };
-                }
+                const usuarioActual = {
+                    id: user.id,
+                    email: user.email,
+                    nombre: profile?.first_name || '',
+                    apellido: profile?.last_name || '',
+                    role: profile?.role || 'student'
+                };
                 localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
-                // B. VERIFICAR SI HAY UNA REDIRECCIÓN PENDIENTE
+                // VERIFICAR SI HAY UNA REDIRECCIÓN PENDIENTE
                 const redirectUrl = localStorage.getItem('redirectAfterLogin');
 
                 if (redirectUrl) {
-                    // Si existe una URL guardada, limpiarla y redirigir a esa URL
                     localStorage.removeItem('redirectAfterLogin');
-                    console.log("Redirigiendo a URL guardada:", redirectUrl);
                     window.location.href = redirectUrl;
                     return;
                 }
 
-                // C. DETECCIÓN DE ROL (Simulada)
-                // Si el email incluye 'admin', lo tratamos como Admin.
+                // REDIRECCIÓN SEGÚN ROL
                 let destino = '';
-
-                if (email.includes('admin')) {
-                    console.log("Rol detectado: ADMIN");
-                    localStorage.setItem('userRole', 'admin'); // Guardamos rol para usarlo después
-                    destino = 'adminPanel.html'; // Según tu lista de archivos
+                if (profile?.role === 'admin' || profile?.role === 'superadmin') {
+                    destino = 'adminPanel.html';
                 } else {
-                    console.log("Rol detectado: ALUMNO");
-                    localStorage.setItem('userRole', 'student');
-                    destino = 'index.html'; // El cambio que pediste
+                    destino = 'index.html';
                 }
 
-                // D. Redirección
                 window.location.href = destino;
 
-            }, 1000);
+            } catch (error) {
+                console.error('Error de login:', error);
+
+                let mensaje = 'Error al iniciar sesión';
+                if (error.message.includes('Invalid login credentials')) {
+                    mensaje = 'Correo o contraseña incorrectos';
+                } else if (error.message.includes('Email not confirmed')) {
+                    mensaje = 'Por favor confirma tu correo antes de iniciar sesión';
+                }
+
+                mostrarError(mensaje);
+                btnSubmit.innerHTML = textoOriginal;
+                btnSubmit.disabled = false;
+            }
         });
     }
 
