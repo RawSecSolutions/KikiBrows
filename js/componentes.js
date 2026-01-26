@@ -2,9 +2,27 @@
 
 let supabase = null;
 
-// 1. Función auxiliar para identificar el dispositivo (Igual que en el Login)
-function getDeviceFingerprint() {
-    return navigator.userAgent + "::" + screen.width + "x" + screen.height;
+// --- FUNCIÓN IDÉNTICA AL LOGIN PARA GENERAR LA HUELLA ---
+function generateDeviceFingerprint() {
+    const nav = window.navigator;
+    const screen = window.screen;
+
+    const fingerprint = [
+        nav.userAgent,
+        nav.language,
+        screen.width + 'x' + screen.height,
+        screen.colorDepth,
+        new Date().getTimezoneOffset()
+    ].join('|');
+
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+
+    return 'device_' + Math.abs(hash).toString(16);
 }
 
 // Intentar cargar la configuración de Supabase
@@ -47,12 +65,10 @@ const renderNavbar = async () => {
                     userRole = profile.role || 'student';
                 }
 
-                // Actualizar localStorage para compatibilidad
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
                 localStorage.setItem('userRole', userRole);
             } else {
-                // Limpiar localStorage si no hay sesión
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
@@ -108,60 +124,45 @@ const renderNavbar = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // --- AQUÍ ESTÁ LA NUEVA LÓGICA DE CIERRE DE SESIÓN ---
+        // --- LÓGICA DE CIERRE DE SESIÓN CORREGIDA ---
         const logoutBtn = document.getElementById('btn-logout');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-
-                // 1. Feedback visual
                 logoutBtn.innerText = "Cerrando...";
                 
                 if (supabase) {
                     try {
-                        // 2. Obtener usuario actual
                         const { data: { user } } = await supabase.auth.getUser();
 
                         if (user) {
-                            // 3. BORRAR DISPOSITIVO DE LA BD
-                            // Usamos match para borrar solo el dispositivo actual de este usuario
-                            const huella = getDeviceFingerprint();
+                            // Usamos la misma función que el Login
+                            const huella = generateDeviceFingerprint();
                             
-                            const { error: deleteError } = await supabase
+                            await supabase
                                 .from('authorized_devices')
                                 .delete()
                                 .match({ 
                                     user_id: user.id,
                                     device_fingerprint: huella 
                                 });
-                            
-                            if (deleteError) {
-                                console.error("Error al liberar cupo de dispositivo:", deleteError);
-                            }
                         }
-
-                        // 4. Cerrar sesión en Supabase
                         await supabase.auth.signOut();
-
                     } catch (err) {
-                        console.error("Error en el proceso de salida:", err);
-                        // Forzamos el cierre local por si acaso
+                        console.error("Error logout:", err);
                         await supabase.auth.signOut();
                     }
                 }
 
-                // 5. Limpiar localStorage
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
 
-                // 6. Redirigir al login
-                window.location.href = 'login.html';
+                window.location.href = 'login.html'; // Cambiado a login para que se vea claro
             });
         }
     }
 };
 
-// Ejecutamos la función
 renderNavbar();

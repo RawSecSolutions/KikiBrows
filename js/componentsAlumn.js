@@ -4,12 +4,20 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- AGREGADO: Función para identificar el dispositivo a borrar ---
-function getDeviceFingerprint() {
-    return navigator.userAgent + "::" + screen.width + "x" + screen.height;
+// --- FUNCIÓN IDÉNTICA AL LOGIN ---
+function generateDeviceFingerprint() {
+    const nav = window.navigator;
+    const screen = window.screen;
+    const fingerprint = [nav.userAgent, nav.language, screen.width + 'x' + screen.height, screen.colorDepth, new Date().getTimezoneOffset()].join('|');
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return 'device_' + Math.abs(hash).toString(16);
 }
 
-// Simulación de Base de Datos Interactiva (INTACTO)
 const COURSES_DATA = [
     {
         id: "microblading-expert",
@@ -37,30 +45,27 @@ const COURSES_DATA = [
 
 const UI = {
     initNavbar: async () => {
-        // Verificar sesión de Supabase
         const { data: { session } } = await supabase.auth.getSession();
 
         if (!session) {
-            // Redirigir al login si no hay sesión
             localStorage.setItem('redirectAfterLogin', window.location.href);
             window.location.href = 'login.html';
             return;
         }
 
-        // Obtener perfil del usuario
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, role')
-            .eq('id', session.user.id)
-            .single();
+        let userName = session.user.email.split('@')[0];
+        try {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('first_name, last_name, role')
+                .eq('id', session.user.id)
+                .single();
 
-        let userName = profile?.first_name || session.user.email.split('@')[0];
-        if (profile?.last_name) userName += ' ' + profile.last_name;
-
-        // Actualizar localStorage
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
-        localStorage.setItem('userRole', profile?.role || 'student');
+            if (profile) {
+                userName = profile.first_name || userName;
+                if (profile.last_name) userName += ' ' + profile.last_name;
+            }
+        } catch (error) { console.warn(error); }
 
         const header = document.getElementById('header-component');
         if (!header) return;
@@ -105,54 +110,42 @@ const UI = {
         <hr class="navbar-divider">
         `;
 
-        // --- CAMBIO: Listener MEJORADO para liberar cupo de dispositivo ---
+        // --- LISTENER CORREGIDO ---
         const logoutBtn = document.getElementById('btn-logout-alumn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                
-                // Feedback visual
-                const originalText = logoutBtn.innerText;
-                logoutBtn.innerText = "Cerrando...";
+                logoutBtn.innerText = "Saliendo...";
 
                 try {
-                    // 1. Obtener usuario
                     const { data: { user } } = await supabase.auth.getUser();
 
                     if (user) {
-                        // 2. Borrar dispositivo específico de la BD
-                        const huella = getDeviceFingerprint();
-                        const { error: deleteError } = await supabase
+                        const huella = generateDeviceFingerprint();
+                        await supabase
                             .from('authorized_devices')
                             .delete()
                             .match({ 
                                 user_id: user.id,
                                 device_fingerprint: huella 
                             });
-                        
-                        if (deleteError) console.error("Error borrando dispositivo:", deleteError);
                     }
-
-                    // 3. Cerrar sesión Auth
                     await supabase.auth.signOut();
-
                 } catch (error) {
                     console.error('Error al salir:', error);
-                    await supabase.auth.signOut(); // Salir de todas formas
+                    await supabase.auth.signOut();
                 }
 
-                // 4. Limpieza final
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
 
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             });
         }
     },
 
-    // Renderiza la lista de cursos en cursosAlumn.html (INTACTO)
     renderLibrary: () => {
         const container = document.querySelector('#content-area .row');
         if (!container) return;
@@ -179,12 +172,8 @@ const UI = {
     initSidebar: () => {
         const activeCourseId = localStorage.getItem('activeCourse') || 'microblading-expert';
         const course = COURSES_DATA.find(c => c.id === activeCourseId);
-
         const sidebar = document.getElementById('sidebar-component');
-        if (!sidebar) return;
-
-        // Validación simple por si el curso no existe
-        if (!course) return; 
+        if (!sidebar || !course) return;
 
         sidebar.innerHTML = `
         <aside id="sidebar" class="ms-3 p-2 shadow-sm" style="width: var(--sidebar-width); height: calc(100vh - 160px); overflow-y: auto;">
@@ -207,23 +196,17 @@ const UI = {
     changeLesson: (courseId, lessonId) => {
         const course = COURSES_DATA.find(c => c.id === courseId);
         const lesson = course.lessons.find(l => l.id === lessonId);
+        if (!lesson || lesson.status === 'locked') return;
 
-        if (lesson.status === 'locked') return;
-
-        // Actualizar Video e Interfaz
         const iframe = document.querySelector('.video-container iframe');
         const title = document.querySelector('#content-area h3');
 
         if (iframe) iframe.src = `https://www.youtube.com/embed/${lesson.video}?autoplay=1`;
         if (title) title.innerText = lesson.title;
 
-        // Actualizar clase activa en UI
         document.querySelectorAll('.lesson-list-item').forEach(el => el.classList.remove('active'));
-        if (event && event.currentTarget) {
-             event.currentTarget.classList.add('active');
-        }
+        if (event && event.currentTarget) event.currentTarget.classList.add('active');
     }
 };
 
-// Exponer UI globalmente para los onclick en HTML
 window.UI = UI;

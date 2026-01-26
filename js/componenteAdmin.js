@@ -4,13 +4,21 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- AGREGADO: Función para identificar el dispositivo a borrar ---
-function getDeviceFingerprint() {
-    return navigator.userAgent + "::" + screen.width + "x" + screen.height;
+// --- FUNCIÓN IDÉNTICA AL LOGIN ---
+function generateDeviceFingerprint() {
+    const nav = window.navigator;
+    const screen = window.screen;
+    const fingerprint = [nav.userAgent, nav.language, screen.width + 'x' + screen.height, screen.colorDepth, new Date().getTimezoneOffset()].join('|');
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return 'device_' + Math.abs(hash).toString(16);
 }
 
 const renderNavbarAdmin = async () => {
-    // Verificar sesión de Supabase
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
@@ -19,14 +27,12 @@ const renderNavbarAdmin = async () => {
         return;
     }
 
-    // Obtener perfil del usuario
     const { data: profile } = await supabase
         .from('profiles')
         .select('first_name, last_name, role')
         .eq('id', session.user.id)
         .single();
 
-    // Verificar que sea admin
     if (profile?.role !== 'admin' && profile?.role !== 'superadmin') {
         alert('No tienes permisos para acceder a esta página.');
         window.location.href = 'index.html';
@@ -36,7 +42,6 @@ const renderNavbarAdmin = async () => {
     const adminName = profile?.first_name || session.user.email.split('@')[0];
     const roleLabel = profile?.role === 'superadmin' ? 'Super Admin' : 'Admin';
 
-    // Actualizar localStorage
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userName', adminName);
     localStorage.setItem('userRole', profile?.role || 'admin');
@@ -77,22 +82,18 @@ const renderNavbarAdmin = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // --- CAMBIO: Listener MEJORADO para Admin ---
+        // --- LISTENER CORREGIDO ---
         const logoutBtn = document.getElementById('btn-logout-admin');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                
-                // Feedback visual (opcional)
                 logoutBtn.innerText = "Saliendo...";
 
                 try {
-                    // 1. Obtener usuario admin actual
                     const { data: { user } } = await supabase.auth.getUser();
 
                     if (user) {
-                        // 2. Borrar dispositivo admin de la BD
-                        const huella = getDeviceFingerprint();
+                        const huella = generateDeviceFingerprint();
                         const { error: deleteError } = await supabase
                             .from('authorized_devices')
                             .delete()
@@ -103,48 +104,37 @@ const renderNavbarAdmin = async () => {
                         
                         if (deleteError) console.error("Error borrando dispositivo admin:", deleteError);
                     }
-
-                    // 3. Cerrar sesión Auth
                     await supabase.auth.signOut();
-
                 } catch (error) {
                     console.error('Error cerrando sesión:', error);
                     await supabase.auth.signOut();
                 }
 
-                // 4. Limpiar localStorage
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
 
-                window.location.href = 'index.html';
+                window.location.href = 'index.html'; // O login.html
             });
         }
 
-        // Listener para el botón hamburguesa del sidebar (INTACTO)
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebar = document.getElementById('sidebar');
 
         if (sidebarToggle && sidebar) {
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('open');
-
-                // Crear o toggle el backdrop
                 let backdrop = document.querySelector('.sidebar-backdrop');
                 if (!backdrop) {
                     backdrop = document.createElement('div');
                     backdrop.className = 'sidebar-backdrop';
                     document.body.appendChild(backdrop);
-
-                    // Cerrar sidebar al hacer clic en el backdrop
                     backdrop.addEventListener('click', () => {
                         sidebar.classList.remove('open');
                         backdrop.classList.remove('show');
                     });
                 }
-
-                // Toggle del backdrop
                 if (sidebar.classList.contains('open')) {
                     backdrop.classList.add('show');
                 } else {
@@ -155,5 +145,4 @@ const renderNavbarAdmin = async () => {
     }
 };
 
-// Ejecutamos la función
 renderNavbarAdmin();
