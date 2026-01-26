@@ -188,8 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (codigo.length !== 6 || !/^\d{6}$/.test(codigo)) {
-                mostrarErrorCodigo('Ingresa un código válido de 6 dígitos');
+            if (codigo.length !== 8 || !/^\d{8}$/.test(codigo)) {
+                mostrarErrorCodigo('Ingresa un código válido de 8 dígitos');
                 return;
             }
 
