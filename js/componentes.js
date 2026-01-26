@@ -1,24 +1,42 @@
 // js/componentes.js
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const renderNavbar = () => {
-    // Verificamos el estado "booleano" de forma segura
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Obtener el nombre completo del usuario (nombre + apellido)
-    const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
-    let nombreCompleto = 'Usuario';
+const renderNavbar = async () => {
+    // Verificar sesión de Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    const isLoggedIn = !!session;
 
-    if (usuarioActual.nombre) {
-        nombreCompleto = usuarioActual.nombre;
-        if (usuarioActual.apellido) {
-            nombreCompleto += ' ' + usuarioActual.apellido;
+    // Obtener datos del usuario
+    let userName = 'Usuario';
+    let userRole = 'student';
+
+    if (session) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, role')
+            .eq('id', session.user.id)
+            .single();
+
+        if (profile) {
+            userName = profile.first_name || session.user.email.split('@')[0];
+            if (profile.last_name) userName += ' ' + profile.last_name;
+            userRole = profile.role || 'student';
         }
-    } else {
-        // Fallback al userName antiguo si no hay usuarioActual
-        nombreCompleto = localStorage.getItem('userName') || 'Usuario';
-    }
 
-    const userName = nombreCompleto;
+        // Actualizar localStorage para compatibilidad
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
+        localStorage.setItem('userRole', userRole);
+    } else {
+        // Limpiar localStorage si no hay sesión
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('usuarioActual');
+        localStorage.removeItem('userRole');
+    }
 
     const navbarHTML = `
     <div class="top-navbar container-fluid d-flex justify-content-between align-items-center position-relative py-2">
@@ -36,7 +54,7 @@ const renderNavbar = () => {
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><h6 class="dropdown-header">Hola, ${userName}</h6></li>
-                    ${isLoggedIn 
+                    ${isLoggedIn
                         ? `<li><a class="dropdown-item" href="account.html">Mi Cuenta</a></li>
                            <li><a class="dropdown-item" href="#" id="btn-logout">Cerrar Sesión</a></li>`
                         : `<li><a class="dropdown-item" href="login.html">Iniciar Sesión</a></li>`
@@ -53,11 +71,9 @@ const renderNavbar = () => {
                     <li class="nav-item separator"><a class="nav-link" href="index.html">INICIO</a></li>
                     <li class="nav-item separator"><a class="nav-link" href="#nosotros">NOSOTROS</a></li>
                     <li class="nav-item separator"><a class="nav-link" href="#cursos">CURSOS</a></li>
-                    <li class="nav-item separator"><a class="nav-link" href="${isLoggedIn ? 'cursosAlumn.html' : 'login.html'}">MIS CURSOS</a>
-
-                    </li>
+                    <li class="nav-item separator"><a class="nav-link" href="${isLoggedIn ? 'cursosAlumn.html' : 'login.html'}">MIS CURSOS</a></li>
                 </ul>
-            </div> 
+            </div>
         </div>
     </nav>
     <hr class="navbar-divider">
@@ -70,13 +86,22 @@ const renderNavbar = () => {
         // Listener para el botón de cerrar sesión
         const logoutBtn = document.getElementById('btn-logout');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
+            logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+
+                // Cerrar sesión en Supabase
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Error cerrando sesión:', error);
+                }
+
+                // Limpiar localStorage
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
-                window.location.href = 'index.html'; // Redirigir y limpiar UI
+
+                window.location.href = 'index.html';
             });
         }
     }

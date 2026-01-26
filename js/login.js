@@ -4,6 +4,75 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// --- FUNCIONES DE DISPOSITIVOS ---
+function generateDeviceFingerprint() {
+    const nav = window.navigator;
+    const screen = window.screen;
+
+    const fingerprint = [
+        nav.userAgent,
+        nav.language,
+        screen.width + 'x' + screen.height,
+        screen.colorDepth,
+        new Date().getTimezoneOffset()
+    ].join('|');
+
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+
+    return 'device_' + Math.abs(hash).toString(16);
+}
+
+function getDeviceName() {
+    const ua = navigator.userAgent;
+    let browser = 'Navegador';
+    let os = 'desconocido';
+
+    if (ua.includes('Chrome')) browser = 'Chrome';
+    else if (ua.includes('Firefox')) browser = 'Firefox';
+    else if (ua.includes('Safari')) browser = 'Safari';
+    else if (ua.includes('Edge')) browser = 'Edge';
+
+    if (ua.includes('Windows')) os = 'Windows';
+    else if (ua.includes('Mac')) os = 'macOS';
+    else if (ua.includes('Linux')) os = 'Linux';
+    else if (ua.includes('Android')) os = 'Android';
+    else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
+    return `${browser} en ${os}`;
+}
+
+async function registerDevice(userId) {
+    const fingerprint = generateDeviceFingerprint();
+    const deviceName = getDeviceName();
+
+    const { data, error } = await supabase
+        .from('authorized_devices')
+        .upsert({
+            user_id: userId,
+            device_fingerprint: fingerprint,
+            device_name: deviceName,
+            last_accessed_at: new Date().toISOString()
+        }, {
+            onConflict: 'user_id,device_fingerprint'
+        })
+        .select()
+        .single();
+
+    if (error) {
+        if (error.message.includes('Límite de dispositivos')) {
+            throw new Error(error.message);
+        }
+        throw error;
+    }
+
+    return data;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.querySelector('.user-registration-form');
     const mostrarPassCheckbox = document.getElementById('mostrar-password');
@@ -92,6 +161,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     .single();
 
                 if (profileError) console.warn('Error obteniendo perfil:', profileError);
+
+                // Verificar si el usuario está bloqueado
+                if (profile?.is_blocked) {
+                    await supabase.auth.signOut();
+                    mostrarError('Tu cuenta ha sido bloqueada. Contacta soporte.');
+                    btnSubmit.innerHTML = textoOriginal;
+                    btnSubmit.disabled = false;
+                    return;
+                }
+
+                // REGISTRAR DISPOSITIVO (Control de límite de sesiones)
+                try {
+                    await registerDevice(user.id);
+                } catch (deviceError) {
+                    if (deviceError.message.includes('Límite de dispositivos')) {
+                        await supabase.auth.signOut();
+                        mostrarError(deviceError.message);
+                        btnSubmit.innerHTML = textoOriginal;
+                        btnSubmit.disabled = false;
+                        return;
+                    }
+                    console.warn('Error registrando dispositivo:', deviceError);
+                }
 
                 // Guardar datos en localStorage para compatibilidad
                 localStorage.setItem('isLoggedIn', 'true');

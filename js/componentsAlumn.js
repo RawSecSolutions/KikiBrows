@@ -1,3 +1,9 @@
+// js/componentsAlumn.js
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // Simulación de Base de Datos Interactiva
 const COURSES_DATA = [
     {
@@ -25,8 +31,32 @@ const COURSES_DATA = [
 ];
 
 const UI = {
-    initNavbar: () => {
-        const userName = localStorage.getItem('userName') || 'Alumna';
+    initNavbar: async () => {
+        // Verificar sesión de Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session) {
+            // Redirigir al login si no hay sesión
+            localStorage.setItem('redirectAfterLogin', window.location.href);
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Obtener perfil del usuario
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, role')
+            .eq('id', session.user.id)
+            .single();
+
+        let userName = profile?.first_name || session.user.email.split('@')[0];
+        if (profile?.last_name) userName += ' ' + profile.last_name;
+
+        // Actualizar localStorage
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
+        localStorage.setItem('userRole', profile?.role || 'student');
+
         const header = document.getElementById('header-component');
         if (!header) return;
 
@@ -36,7 +66,9 @@ const UI = {
             <button class="navbar-toggler custom-toggler d-lg-none border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fas fa-bars text-dark fs-2"></i>
             </button>
-            <div class="kikibrows-logo position-absolute start-50 translate-middle-x" style="cursor:pointer" onclick="window.location.href='cursosAlumn.html'">KIKIBROWS</div>
+            <div class="kikibrows-logo position-absolute start-50 translate-middle-x" style="cursor:pointer" onclick="window.location.href='cursosAlumn.html'">
+                <img src="img/kikibrows-logo.png" alt="KIKIBROWS">
+            </div>
             <div class="top-icons">
                 <div class="dropdown">
                     <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -58,7 +90,7 @@ const UI = {
                     <ul class="navbar-nav mb-2 mb-lg-0 gap-1 gap-lg-3">
                         <li class="nav-item separator"><a class="nav-link" href="index.html">INICIO</a></li>
                         <li class="nav-item separator"><a class="nav-link" href="index.html#nosotros">NOSOTROS</a></li>
-                        <li class="nav-item separator"><a class="nav-link" href="index.html">CURSOS</a></li>
+                        <li class="nav-item separator"><a class="nav-link" href="index.html#cursos">CURSOS</a></li>
                         <li class="nav-item separator"><a class="nav-link" href="cursosAlumn.html">MIS CURSOS</a></li>
                         <li class="nav-item separator"><a class="nav-link" href="consultasAlumn.html">CONSULTAS</a></li>
                     </ul>
@@ -71,12 +103,21 @@ const UI = {
         // Listener para el botón de cerrar sesión
         const logoutBtn = document.getElementById('btn-logout-alumn');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
+            logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+
+                // Cerrar sesión en Supabase
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Error cerrando sesión:', error);
+                }
+
+                // Limpiar localStorage
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
+
                 window.location.href = 'index.html';
             });
         }
@@ -86,7 +127,7 @@ const UI = {
     renderLibrary: () => {
         const container = document.querySelector('#content-area .row');
         if (!container) return;
-        
+
         container.innerHTML = COURSES_DATA.map(course => `
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card course-card border-0 shadow-sm h-100">
@@ -109,7 +150,7 @@ const UI = {
     initSidebar: () => {
         const activeCourseId = localStorage.getItem('activeCourse') || 'microblading-expert';
         const course = COURSES_DATA.find(c => c.id === activeCourseId);
-        
+
         const sidebar = document.getElementById('sidebar-component');
         if (!sidebar) return;
 
@@ -122,7 +163,7 @@ const UI = {
             </div>
             <div class="list-group list-group-flush bg-transparent">
                 ${course.lessons.map(lesson => `
-                    <div class="lesson-list-item ${lesson.status === 'active' ? 'active' : ''} ${lesson.status === 'locked' ? 'text-muted' : ''}" 
+                    <div class="lesson-list-item ${lesson.status === 'active' ? 'active' : ''} ${lesson.status === 'locked' ? 'text-muted' : ''}"
                          onclick="UI.changeLesson('${course.id}', '${lesson.id}')">
                         <i class="fas ${lesson.status === 'completed' ? 'fa-check-circle text-success' : (lesson.status === 'locked' ? 'fa-lock' : 'fa-play-circle')} me-3"></i>
                         ${lesson.title}
@@ -134,13 +175,13 @@ const UI = {
     changeLesson: (courseId, lessonId) => {
         const course = COURSES_DATA.find(c => c.id === courseId);
         const lesson = course.lessons.find(l => l.id === lessonId);
-        
+
         if (lesson.status === 'locked') return;
 
         // Actualizar Video e Interfaz
         const iframe = document.querySelector('.video-container iframe');
         const title = document.querySelector('#content-area h3');
-        
+
         if (iframe) iframe.src = `https://www.youtube.com/embed/${lesson.video}?autoplay=1`;
         if (title) title.innerText = lesson.title;
 
@@ -149,3 +190,6 @@ const UI = {
         event.currentTarget.classList.add('active');
     }
 };
+
+// Exponer UI globalmente para los onclick en HTML
+window.UI = UI;
