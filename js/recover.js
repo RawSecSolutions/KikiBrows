@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // RECUPERACIÓN CON SUPABASE
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/changePassword.html`
+                    redirectTo: `${window.location.origin}/resetPassword.html`
                 });
 
                 if (error) throw error;
