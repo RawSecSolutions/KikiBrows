@@ -8,9 +8,6 @@ node_modules/
 .env.local
 .env.*.local
 
-# Si decidiste usar la solución de config.js para tus claves:
-js/config.js
-
 # --- Archivos de Sistema ---
 .DS_Store
 Thumbs.db
