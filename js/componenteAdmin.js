@@ -70,6 +70,7 @@ const renderNavbarAdmin = async () => {
                     <li><span class="dropdown-item-text text-muted small">${roleLabel}</span></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="adminPanel.html">Panel Admin</a></li>
+                    <li><a class="dropdown-item" href="adminProfilePassword.html"><i class="fas fa-key me-2"></i>Cambiar Contraseña</a></li>
                     <li><a class="dropdown-item" href="index.html">Ir al Sitio</a></li>
                     <li><a class="dropdown-item" href="#" id="btn-logout-admin">Cerrar Sesión</a></li>
                 </ul>
