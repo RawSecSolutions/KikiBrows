@@ -18,6 +18,47 @@ function generateDeviceFingerprint() {
     return 'device_' + Math.abs(hash).toString(16);
 }
 
+// --- FUNCIÓN PARA RENDERIZAR SIDEBAR ---
+function renderSidebar(adminName, roleLabel) {
+    const sidebarContainer = document.getElementById('sidebar');
+    if (!sidebarContainer) return;
+
+    // Detectar página actual para marcar el item activo
+    const currentPage = window.location.pathname.split('/').pop() || 'adminPanel.html';
+
+    const menuItems = [
+        { href: 'adminPanel.html', icon: 'fa-home', label: 'Dashboard' },
+        { href: 'usersGest.html', icon: 'fa-users', label: 'Usuarios' },
+        { href: 'gestionCursos.html', icon: 'fa-book', label: 'Gestion Cursos' },
+        { href: 'adminTransa.html', icon: 'fa-exchange-alt', label: 'Transacciones' },
+        { href: 'adminCalendar.html', icon: 'fa-calendar-alt', label: 'Calendario' },
+        { href: 'revYFeedback.html', icon: 'fa-search', label: 'Revisiones' },
+        { href: 'index.html', icon: 'fa-globe', label: 'Volver al Sitio' }
+    ];
+
+    const navItemsHTML = menuItems.map(item => {
+        const isActive = currentPage === item.href ? ' active' : '';
+        return `<a href="${item.href}" class="nav-item${isActive}"><i class="fas ${item.icon}"></i> ${item.label}</a>`;
+    }).join('\n                ');
+
+    sidebarContainer.innerHTML = `
+        <div class="sidebar-header">
+            <div class="profile-section">
+                <div class="profile-pic">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="profile-info">
+                    <div class="user-name" id="sidebar-user-name">${adminName}</div>
+                    <small class="text-success fw-bold" id="sidebar-role-label">${roleLabel}</small>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            ${navItemsHTML}
+        </nav>
+    `;
+}
+
 const renderNavbarAdmin = async () => {
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -45,6 +86,13 @@ const renderNavbarAdmin = async () => {
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userName', adminName);
     localStorage.setItem('userRole', profile?.role || 'admin');
+
+    // Renderizar sidebar dinámicamente
+    renderSidebar(adminName, roleLabel);
+
+    // Actualizar saludo del dashboard si existe
+    const dashboardGreeting = document.getElementById('dashboard-greeting');
+    if (dashboardGreeting) dashboardGreeting.textContent = `Hola, ${adminName}`;
 
     const navbarHTML = `
     <div class="top-navbar container-fluid d-flex align-items-center py-3">
