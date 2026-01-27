@@ -46,6 +46,17 @@ const renderNavbarAdmin = async () => {
     localStorage.setItem('userName', adminName);
     localStorage.setItem('userRole', profile?.role || 'admin');
 
+    // Actualizar sidebar con datos del usuario
+    const sidebarName = document.getElementById('sidebar-user-name');
+    const sidebarRole = document.getElementById('sidebar-role-label');
+
+    if (sidebarName) sidebarName.textContent = adminName;
+    if (sidebarRole) sidebarRole.textContent = roleLabel;
+
+    // Actualizar saludo del dashboard si existe
+    const dashboardGreeting = document.getElementById('dashboard-greeting');
+    if (dashboardGreeting) dashboardGreeting.textContent = `Hola, ${adminName}`;
+
     const navbarHTML = `
     <div class="top-navbar container-fluid d-flex align-items-center py-3">
         <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
