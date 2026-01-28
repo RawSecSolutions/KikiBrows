@@ -127,7 +127,7 @@ async function loadAdminData() {
 
         const { data: profile, error } = await supabase
             .from('profiles')
-            .select('first_name, last_name, email, role')
+            .select('first_name, last_name, role')
             .eq('id', session.user.id)
             .single();
 
@@ -189,6 +189,7 @@ function setupEventListeners() {
         confirmPasswordInput.addEventListener('input', () => {
             validatePasswordMatch();
             clearFieldError(confirmPasswordInput);
+            updateSubmitButtonState();
         });
     }
 
@@ -196,7 +197,13 @@ function setupEventListeners() {
     if (currentPasswordInput) {
         currentPasswordInput.addEventListener('input', () => {
             clearFieldError(currentPasswordInput);
+            updateSubmitButtonState();
         });
+    }
+
+    // Inicializar boton como deshabilitado
+    if (submitBtn) {
+        submitBtn.disabled = true;
     }
 
     // Envio del formulario
@@ -484,6 +491,37 @@ function updateRequirements(password) {
             }
         }
     });
+
+    // Verificar si todos los requisitos se cumplen para habilitar/deshabilitar el boton
+    updateSubmitButtonState();
+}
+
+/**
+ * Actualiza el estado del boton de submit segun los requisitos cumplidos
+ */
+function updateSubmitButtonState() {
+    if (!submitBtn || !newPasswordInput || !confirmPasswordInput || !currentPasswordInput) return;
+
+    const currentPassword = currentPasswordInput.value;
+    const newPassword = newPasswordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    // Verificar todos los requisitos
+    const hasMinLength = newPassword.length >= 8;
+    const hasUppercase = /[A-Z]/.test(newPassword);
+    const hasLowercase = /[a-z]/.test(newPassword);
+    const hasNumber = /\d/.test(newPassword);
+    const hasSpecialChar = /[\W_]/.test(newPassword);
+    const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
+    const hasCurrentPassword = currentPassword.length > 0;
+    const isDifferent = currentPassword !== newPassword;
+
+    // Todos los requisitos deben cumplirse para habilitar el boton
+    const allRequirementsMet = hasMinLength && hasUppercase && hasLowercase &&
+                               hasNumber && hasSpecialChar && passwordsMatch &&
+                               hasCurrentPassword && isDifferent;
+
+    submitBtn.disabled = !allRequirementsMet;
 }
 
 function validatePasswordMatch() {
