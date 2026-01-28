@@ -16,7 +16,7 @@ const PASSWORD_CONFIG = {
     requireUppercase: true,
     requireLowercase: true,
     requireNumbers: true,
-    requireSpecialChars: true,
+    requireSpecialChars: false,
     maxAttempts: 5,
     lockoutDuration: 15 * 60 * 1000 // 15 minutos
 };

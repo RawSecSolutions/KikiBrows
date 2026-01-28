@@ -16,7 +16,7 @@ const PASSWORD_CONFIG = {
     requireUppercase: true,
     requireLowercase: true,
     requireNumbers: true,
-    requireSpecialChars: true
+    requireSpecialChars: false
 };
 
 // Lista de contraseñas comunes a evitar
