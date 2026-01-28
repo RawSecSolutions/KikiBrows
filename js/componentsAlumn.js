@@ -37,6 +37,7 @@ const UI = {
         }
 
         let userName = session.user.email.split('@')[0];
+        let userRole = 'student';
         try {
             const { data: profile } = await supabase
                 .from('profiles')
@@ -47,6 +48,7 @@ const UI = {
             if (profile) {
                 userName = profile.first_name || userName;
                 if (profile.last_name) userName += ' ' + profile.last_name;
+                userRole = profile.role || 'student';
             }
         } catch (error) { console.warn(error); }
 
@@ -69,7 +71,7 @@ const UI = {
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><h6 class="dropdown-header">Hola, ${userName}</h6></li>
-                        <li><a class="dropdown-item" href="account.html">Mi Cuenta</a></li>
+                        <li><a class="dropdown-item" href="${(userRole === 'admin' || userRole === 'superadmin') ? 'adminPanel.html' : 'account.html'}">Mi Cuenta</a></li>
                         <li><a class="dropdown-item" href="cursosAlumn.html">Mis Cursos</a></li>
                         <li><a class="dropdown-item" href="#" id="btn-logout-alumn">Cerrar Sesión</a></li>
                     </ul>

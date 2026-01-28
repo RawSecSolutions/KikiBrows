@@ -6,31 +6,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- FINGERPRINTJS INTEGRATION ---
+// --- DEVICE FINGERPRINT ---
 // Cache del fingerprint para no recalcularlo en cada llamada
 let cachedFingerprint = null;
-let fingerprintPromise = null;
 
-// Cargar FingerprintJS dinámicamente con timeout
-async function loadFingerprintJS() {
-    try {
-        // Usar Promise.race con timeout para evitar bloqueos indefinidos
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout')), 3000)
-        );
-
-        const importPromise = import('https://openfpcdn.io/fingerprintjs/v4')
-            .then(FingerprintJS => FingerprintJS.default);
-
-        return await Promise.race([importPromise, timeoutPromise]);
-    } catch (error) {
-        // Silenciar errores - el fallback se encargará
-        return null;
-    }
-}
-
-// Función fallback básica (por si FingerprintJS falla)
-function generateBasicFingerprint() {
+// Genera un fingerprint basado en características del dispositivo
+function generateDeviceFingerprint() {
     const nav = window.navigator;
     const screen = window.screen;
 
@@ -53,44 +34,15 @@ function generateBasicFingerprint() {
         hash = hash & hash;
     }
 
-    return 'basic_' + Math.abs(hash).toString(16);
+    return 'fp_' + Math.abs(hash).toString(16);
 }
 
-// Obtener fingerprint con FingerprintJS (con cache y fallback)
-async function getDeviceFingerprint() {
-    // Si ya tenemos el fingerprint en cache, devolverlo
-    if (cachedFingerprint) {
-        return cachedFingerprint;
+// Obtener fingerprint del dispositivo (con cache)
+function getDeviceFingerprint() {
+    if (!cachedFingerprint) {
+        cachedFingerprint = generateDeviceFingerprint();
     }
-
-    // Si ya hay una promesa en progreso, esperar a que termine
-    if (fingerprintPromise) {
-        return fingerprintPromise;
-    }
-
-    // Crear nueva promesa para obtener el fingerprint
-    fingerprintPromise = (async () => {
-        try {
-            const FingerprintJS = await loadFingerprintJS();
-
-            if (FingerprintJS) {
-                const fp = await FingerprintJS.load();
-                const result = await fp.get();
-                cachedFingerprint = result.visitorId;
-                console.log('Fingerprint obtenido correctamente');
-                return cachedFingerprint;
-            }
-        } catch (error) {
-            // Silenciar - el fallback manejará esto
-        }
-
-        // Fallback a fingerprint básico (funciona siempre)
-        cachedFingerprint = generateBasicFingerprint();
-        console.log('Fingerprint generado (fallback)');
-        return cachedFingerprint;
-    })();
-
-    return fingerprintPromise;
+    return cachedFingerprint;
 }
 
 // --- FUNCIONES DE DISPOSITIVOS ---
@@ -139,8 +91,7 @@ function extractSessionIdFromToken(accessToken) {
 
 // --- REGISTRO/ACTUALIZACION DE DISPOSITIVO CON SESSION_ID ---
 async function registerOrUpdateDevice(userId, sessionId) {
-    // Obtener fingerprint (async con FingerprintJS)
-    const fingerprint = await getDeviceFingerprint();
+    const fingerprint = getDeviceFingerprint();
     const deviceName = getDeviceName();
 
     const deviceData = {
@@ -175,7 +126,7 @@ async function registerOrUpdateDevice(userId, sessionId) {
 
 // --- ELIMINACION DE DISPOSITIVO ---
 async function removeDevice(userId) {
-    const fingerprint = await getDeviceFingerprint();
+    const fingerprint = getDeviceFingerprint();
 
     try {
         await supabase

@@ -74,7 +74,7 @@ const renderNavbar = async () => {
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><h6 class="dropdown-header">Hola, ${userName}</h6></li>
                     ${isLoggedIn
-                        ? `<li><a class="dropdown-item" href="account.html">Mi Cuenta</a></li>
+                        ? `<li><a class="dropdown-item" href="${(userRole === 'admin' || userRole === 'superadmin') ? 'adminPanel.html' : 'account.html'}">Mi Cuenta</a></li>
                            <li><a class="dropdown-item" href="#" id="btn-logout">Cerrar Sesión</a></li>`
                         : `<li><a class="dropdown-item" href="login.html">Iniciar Sesión</a></li>`
                     }
