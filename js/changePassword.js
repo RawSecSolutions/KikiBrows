@@ -2,7 +2,13 @@
  * js/changePassword.js
  * Módulo seguro para cambio de contraseña
  * Implementa prácticas de seguridad estándar de OWASP
+ * Usa Supabase para autenticación y actualización de contraseña
  */
+
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- CONFIGURACIÓN DE SEGURIDAD ---
 const PASSWORD_CONFIG = {
@@ -222,69 +228,76 @@ function updatePasswordStrengthIndicator(password, elementId = 'password-strengt
     }
 }
 
-// --- FUNCIONES DE CAMBIO DE CONTRASEÑA ---
+// --- FUNCIONES DE CAMBIO DE CONTRASEÑA CON SUPABASE ---
 
 /**
- * Verifica si la contraseña actual es correcta
+ * Verifica si la contraseña actual es correcta usando Supabase
  * @param {string} currentPassword - Contraseña actual ingresada
- * @returns {boolean}
+ * @returns {Promise<{valid: boolean, email: string|null, error: string|null}>}
  */
-function verifyCurrentPassword(currentPassword) {
-    // Obtener usuario registrado de localStorage
-    const registeredUser = JSON.parse(localStorage.getItem('registeredUser') || '{}');
+async function verifyCurrentPassword(currentPassword) {
+    try {
+        // Obtener sesión actual de Supabase
+        const { data: { session } } = await supabase.auth.getSession();
 
-    // En un entorno de producción, esto debería ser una llamada al backend
-    // que compare el hash de la contraseña
-    if (!registeredUser.password) {
-        console.error('No se encontró contraseña almacenada');
-        return false;
+        if (!session) {
+            return { valid: false, email: null, error: 'No hay sesión activa. Por favor, inicia sesión nuevamente.' };
+        }
+
+        const email = session.user.email;
+
+        // Verificar la contraseña actual re-autenticando con Supabase
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: currentPassword
+        });
+
+        if (signInError) {
+            return { valid: false, email: email, error: 'Contraseña actual incorrecta' };
+        }
+
+        return { valid: true, email: email, error: null };
+    } catch (error) {
+        console.error('Error verificando contraseña:', error);
+        return { valid: false, email: null, error: 'Error al verificar la contraseña' };
     }
-
-    // Comparación directa (en producción, debería comparar hashes)
-    return currentPassword === registeredUser.password;
 }
 
 /**
- * Actualiza la contraseña del usuario
+ * Actualiza la contraseña del usuario usando Supabase
  * @param {string} newPassword - Nueva contraseña
- * @returns {boolean} - true si se actualizó correctamente
+ * @returns {Promise<{success: boolean, error: string|null}>}
  */
-function updatePassword(newPassword) {
+async function updatePassword(newPassword) {
     try {
-        // Obtener usuario registrado
-        const registeredUser = JSON.parse(localStorage.getItem('registeredUser') || '{}');
+        // Actualizar contraseña en Supabase Auth
+        const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword
+        });
 
-        if (!registeredUser.email) {
-            throw new Error('No se encontró información del usuario');
+        if (updateError) {
+            console.error('Error al actualizar contraseña:', updateError);
+
+            if (updateError.message.includes('should be different')) {
+                return { success: false, error: 'La nueva contraseña debe ser diferente a las anteriores.' };
+            }
+            return { success: false, error: 'Error al actualizar la contraseña: ' + updateError.message };
         }
 
-        // En producción, aquí deberías:
-        // 1. Hacer un POST al backend con la nueva contraseña
-        // 2. El backend debe hashear la contraseña (bcrypt/Argon2)
-        // 3. Guardar el hash en la base de datos
-        // 4. Invalidar todas las sesiones activas
-        // 5. Enviar email de confirmación
-
-        // Por ahora, actualizamos en localStorage (NO HACER EN PRODUCCIÓN)
-        registeredUser.password = newPassword;
-        localStorage.setItem('registeredUser', JSON.stringify(registeredUser));
-
-        // Log del cambio (en producción, esto debería ir a un sistema de auditoría)
-        console.log(`Contraseña actualizada para: ${registeredUser.email} a las ${new Date().toISOString()}`);
-
-        return true;
+        console.log(`Contraseña actualizada correctamente a las ${new Date().toISOString()}`);
+        return { success: true, error: null };
     } catch (error) {
         console.error('Error al actualizar contraseña:', error);
-        return false;
+        return { success: false, error: 'Error inesperado al actualizar la contraseña' };
     }
 }
 
 /**
  * Maneja el proceso completo de cambio de contraseña
  * @param {Object} data - { currentPassword, newPassword, confirmPassword }
- * @returns {Object} - { success: boolean, message: string }
+ * @returns {Promise<Object>} - { success: boolean, message: string }
  */
-function handlePasswordChange(data) {
+async function handlePasswordChange(data) {
     const { currentPassword, newPassword, confirmPassword } = data;
 
     // 1. Verificar si el usuario está bloqueado
@@ -305,26 +318,7 @@ function handlePasswordChange(data) {
         };
     }
 
-    // 3. Verificar contraseña actual
-    if (!verifyCurrentPassword(currentPassword)) {
-        const isLocked = registerFailedAttempt();
-        const attemptsLeft = PASSWORD_CONFIG.maxAttempts - changePasswordAttempts.count;
-
-        if (isLocked) {
-            return {
-                success: false,
-                message: `Contraseña actual incorrecta. Has excedido el límite de intentos. Bloqueado por ${PASSWORD_CONFIG.lockoutDuration / 60000} minutos.`,
-                locked: true
-            };
-        }
-
-        return {
-            success: false,
-            message: `Contraseña actual incorrecta. Te quedan ${attemptsLeft} intentos.`
-        };
-    }
-
-    // 4. Verificar que nueva contraseña no sea igual a la actual
+    // 3. Verificar que nueva contraseña no sea igual a la actual
     if (currentPassword === newPassword) {
         return {
             success: false,
@@ -332,7 +326,7 @@ function handlePasswordChange(data) {
         };
     }
 
-    // 5. Validar fortaleza de nueva contraseña
+    // 4. Validar fortaleza de nueva contraseña
     const validation = validatePasswordStrength(newPassword);
     if (!validation.valid) {
         return {
@@ -342,7 +336,7 @@ function handlePasswordChange(data) {
         };
     }
 
-    // 6. Verificar que las contraseñas coincidan
+    // 5. Verificar que las contraseñas coincidan
     if (newPassword !== confirmPassword) {
         return {
             success: false,
@@ -350,12 +344,32 @@ function handlePasswordChange(data) {
         };
     }
 
-    // 7. Actualizar contraseña
-    const updated = updatePassword(newPassword);
-    if (!updated) {
+    // 6. Verificar contraseña actual con Supabase
+    const verifyResult = await verifyCurrentPassword(currentPassword);
+    if (!verifyResult.valid) {
+        const isLocked = registerFailedAttempt();
+        const attemptsLeft = PASSWORD_CONFIG.maxAttempts - changePasswordAttempts.count;
+
+        if (isLocked) {
+            return {
+                success: false,
+                message: `${verifyResult.error || 'Contraseña actual incorrecta'}. Has excedido el límite de intentos. Bloqueado por ${PASSWORD_CONFIG.lockoutDuration / 60000} minutos.`,
+                locked: true
+            };
+        }
+
         return {
             success: false,
-            message: 'Error al actualizar la contraseña. Inténtalo de nuevo.'
+            message: `${verifyResult.error || 'Contraseña actual incorrecta'}. Te quedan ${attemptsLeft} intentos.`
+        };
+    }
+
+    // 7. Actualizar contraseña en Supabase
+    const updateResult = await updatePassword(newPassword);
+    if (!updateResult.success) {
+        return {
+            success: false,
+            message: updateResult.error || 'Error al actualizar la contraseña. Inténtalo de nuevo.'
         };
     }
 
@@ -370,10 +384,17 @@ function handlePasswordChange(data) {
 }
 
 /**
- * Cierra sesión y redirige al login
+ * Cierra sesión de Supabase y redirige al login
  */
-function logoutAndRedirect() {
-    // Limpiar datos de sesión
+async function logoutAndRedirect() {
+    try {
+        // Cerrar sesión en Supabase
+        await supabase.auth.signOut();
+    } catch (error) {
+        console.error('Error cerrando sesión:', error);
+    }
+
+    // Limpiar datos de sesión locales
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userName');
     localStorage.removeItem('userRole');
@@ -468,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Configurar eventos del formulario
     const form = document.getElementById('change-password-form');
     if (form) {
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             // Limpiar mensajes anteriores
@@ -480,29 +501,54 @@ document.addEventListener('DOMContentLoaded', () => {
             const newPassword = document.getElementById('new-password')?.value.trim();
             const confirmPassword = document.getElementById('confirm-password')?.value.trim();
 
-            // Procesar cambio de contraseña
-            const result = handlePasswordChange({
-                currentPassword,
-                newPassword,
-                confirmPassword
-            });
+            // Mostrar estado de carga
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn?.innerHTML || 'Cambiar Contraseña';
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verificando...';
+                submitBtn.disabled = true;
+            }
 
-            if (result.success) {
-                // Éxito
-                showSuccessMessage(result.message);
-                clearPasswordForm();
+            try {
+                // Procesar cambio de contraseña (ahora es asíncrono)
+                const result = await handlePasswordChange({
+                    currentPassword,
+                    newPassword,
+                    confirmPassword
+                });
 
-                // Cerrar sesión y redirigir
-                logoutAndRedirect();
-            } else {
-                // Error
-                showErrorMessage(result.message, result.errors);
+                if (result.success) {
+                    // Éxito
+                    showSuccessMessage(result.message);
+                    clearPasswordForm();
 
-                // Si está bloqueado, deshabilitar el formulario
-                if (result.locked) {
-                    form.querySelectorAll('input, button').forEach(el => {
-                        el.disabled = true;
-                    });
+                    // Cerrar sesión y redirigir
+                    await logoutAndRedirect();
+                } else {
+                    // Error
+                    showErrorMessage(result.message, result.errors);
+
+                    // Restaurar botón
+                    if (submitBtn) {
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                    }
+
+                    // Si está bloqueado, deshabilitar el formulario
+                    if (result.locked) {
+                        form.querySelectorAll('input, button').forEach(el => {
+                            el.disabled = true;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error en el cambio de contraseña:', error);
+                showErrorMessage('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
+
+                // Restaurar botón
+                if (submitBtn) {
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
                 }
             }
         });
@@ -536,4 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Exponer función para uso desde HTML onclick
+    window.openChangePasswordView = openChangePasswordView;
 });
