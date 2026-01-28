@@ -2,14 +2,38 @@
 // Protección de páginas de ADMIN - Verifica sesión y rol
 import { supabase, initAuthListener } from './sessionManager.js';
 
-// Inicializar el listener global (limpieza y fingerprint)
-initAuthListener();
+// NO inicializar listener aquí - lo hacemos después de verificar auth
+// para evitar race conditions con getSession()
 
 async function checkAdminAuth() {
-    console.log("AuthGuard: Iniciando verificación..."); 
+    console.log("AuthGuard: Iniciando verificación...");
 
     try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Pequeño delay para asegurar que Supabase esté listo
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        console.log("AuthGuard: Obteniendo sesión...");
+
+        // Usar timeout para evitar que getSession() se quede colgado indefinidamente
+        const getSessionWithTimeout = () => {
+            return Promise.race([
+                supabase.auth.getSession(),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout obteniendo sesión')), 8000)
+                )
+            ]);
+        };
+
+        const { data, error: sessionError } = await getSessionWithTimeout();
+
+        if (sessionError) {
+            console.error("AuthGuard: Error obteniendo sesión:", sessionError);
+            handleLogout();
+            return null;
+        }
+
+        const session = data?.session;
+        console.log("AuthGuard: getSession completado", session ? "(con sesión)" : "(sin sesión)");
 
         if (!session) {
             console.warn("AuthGuard: No hay sesión activa.");
@@ -44,22 +68,25 @@ async function checkAdminAuth() {
 
         // --- ÉXITO: ES ADMIN ---
         console.log("AuthGuard: Usuario autorizado. Desbloqueando UI...");
-        
+
         // 1. Actualizar localStorage
         updateLocalStorage(session, profile);
 
-        // 2. DESBLOQUEAR LA UI (Solución Pantalla Blanca)
+        // 2. Inicializar listener DESPUÉS de verificar auth (evita race condition)
+        initAuthListener();
+
+        // 3. DESBLOQUEAR LA UI (Solución Pantalla Blanca)
         // Usamos requestAnimationFrame para asegurar que el DOM esté pintado antes de buscar el elemento
         requestAnimationFrame(() => {
             // Buscamos por ambos IDs comunes por si acaso
             const loadingScreen = document.getElementById('loading-screen');
             const loadingOverlay = document.getElementById('loading-overlay');
-            
+
             if (loadingScreen) loadingScreen.style.display = 'none';
             if (loadingOverlay) loadingOverlay.style.display = 'none';
-            
-            document.body.classList.add('loaded'); 
-            
+
+            document.body.classList.add('loaded');
+
             console.log("UI Desbloqueada");
         });
 
