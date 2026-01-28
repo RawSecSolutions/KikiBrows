@@ -11,13 +11,20 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 let cachedFingerprint = null;
 let fingerprintPromise = null;
 
-// Cargar FingerprintJS dinámicamente
+// Cargar FingerprintJS dinámicamente con timeout
 async function loadFingerprintJS() {
     try {
-        const FingerprintJS = await import('https://openfpcdn.io/fingerprintjs/v4');
-        return FingerprintJS.default;
+        // Usar Promise.race con timeout para evitar bloqueos indefinidos
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), 3000)
+        );
+
+        const importPromise = import('https://openfpcdn.io/fingerprintjs/v4')
+            .then(FingerprintJS => FingerprintJS.default);
+
+        return await Promise.race([importPromise, timeoutPromise]);
     } catch (error) {
-        console.warn('Error cargando FingerprintJS:', error);
+        // Silenciar errores - el fallback se encargará
         return null;
     }
 }
@@ -70,16 +77,16 @@ async function getDeviceFingerprint() {
                 const fp = await FingerprintJS.load();
                 const result = await fp.get();
                 cachedFingerprint = result.visitorId;
-                console.log('FingerprintJS visitorId obtenido:', cachedFingerprint);
+                console.log('Fingerprint obtenido correctamente');
                 return cachedFingerprint;
             }
         } catch (error) {
-            console.warn('Error obteniendo fingerprint con FingerprintJS:', error);
+            // Silenciar - el fallback manejará esto
         }
 
-        // Fallback a fingerprint básico
+        // Fallback a fingerprint básico (funciona siempre)
         cachedFingerprint = generateBasicFingerprint();
-        console.log('Usando fingerprint básico (fallback):', cachedFingerprint);
+        console.log('Fingerprint generado (fallback)');
         return cachedFingerprint;
     })();
 
@@ -291,10 +298,6 @@ function initAuthListener() {
 
     console.log('Auth listener inicializado (centralizado)');
 }
-
-// Pre-cargar FingerprintJS al importar el módulo
-// Esto mejora la performance del primer login
-loadFingerprintJS().catch(() => {});
 
 // Exportar funciones y cliente de Supabase
 export {
