@@ -46,7 +46,27 @@ function getDeviceName() {
     return `${browser} en ${os}`;
 }
 
+// Función para limpiar dispositivos huérfanos (sin sesión activa)
+async function cleanupOrphanedDevices(userId) {
+    try {
+        const { data, error } = await supabase.rpc('cleanup_orphaned_devices', {
+            p_user_id: userId
+        });
+
+        if (error) {
+            console.warn('Error limpiando dispositivos huérfanos:', error);
+        } else if (data > 0) {
+            console.log(`Se limpiaron ${data} dispositivo(s) sin sesión activa`);
+        }
+    } catch (err) {
+        console.warn('Error en cleanup:', err);
+    }
+}
+
 async function registerDevice(userId) {
+    // Primero intentar limpiar dispositivos huérfanos
+    await cleanupOrphanedDevices(userId);
+
     const fingerprint = generateDeviceFingerprint();
     const deviceName = getDeviceName();
 
