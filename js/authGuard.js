@@ -2,13 +2,33 @@
 // Protección de páginas - Verifica sesión de Supabase
 import { supabase, initAuthListener } from './sessionManager.js';
 
-// Inicializar el listener global de autenticación
-// Esto maneja el registro/actualización del dispositivo con session_id
-// en eventos como SIGNED_IN, TOKEN_REFRESHED, INITIAL_SESSION (refresh de página)
-initAuthListener();
+// NO inicializar listener aquí - lo hacemos después de verificar auth
+// para evitar race conditions con getSession()
 
 async function checkAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
+    // Pequeño delay para asegurar que Supabase esté listo
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Usar timeout para evitar que getSession() se quede colgado
+    const getSessionWithTimeout = () => {
+        return Promise.race([
+            supabase.auth.getSession(),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout obteniendo sesión')), 8000)
+            )
+        ]);
+    };
+
+    let session = null;
+    try {
+        const { data, error } = await getSessionWithTimeout();
+        if (error) {
+            console.error('Error obteniendo sesión:', error);
+        }
+        session = data?.session;
+    } catch (err) {
+        console.error('Timeout o error en getSession:', err);
+    }
 
     if (!session) {
         // Guardar la URL actual para redirigir después del login
@@ -61,6 +81,9 @@ async function checkAuth() {
         role: profile?.role || 'student'
     };
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+
+    // Inicializar listener DESPUÉS de verificar auth (evita race condition)
+    initAuthListener();
 
     return { session, profile };
 }
