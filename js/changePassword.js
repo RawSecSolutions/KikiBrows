@@ -17,7 +17,7 @@ const PASSWORD_CONFIG = {
     requireUppercase: true,
     requireLowercase: true,
     requireNumbers: true,
-    requireSpecialChars: true,
+    requireSpecialChars: false, // Solo requerido para admin
     // Rate limiting: máximo de intentos
     maxAttempts: 5,
     lockoutDuration: 15 * 60 * 1000, // 15 minutos en milisegundos
