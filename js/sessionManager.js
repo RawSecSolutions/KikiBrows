@@ -137,28 +137,8 @@ function extractSessionIdFromToken(accessToken) {
     }
 }
 
-// --- LIMPIEZA DE DISPOSITIVOS HUERFANOS ---
-async function cleanupOrphanedDevices(userId) {
-    try {
-        const { data, error } = await supabase.rpc('cleanup_orphaned_devices', {
-            p_user_id: userId
-        });
-
-        if (error) {
-            console.warn('Error limpiando dispositivos huerfanos:', error);
-        } else if (data > 0) {
-            console.log(`Se limpiaron ${data} dispositivo(s) sin sesion activa`);
-        }
-    } catch (err) {
-        console.warn('Error en cleanup:', err);
-    }
-}
-
 // --- REGISTRO/ACTUALIZACION DE DISPOSITIVO CON SESSION_ID ---
 async function registerOrUpdateDevice(userId, sessionId) {
-    // Primero intentar limpiar dispositivos huerfanos
-    await cleanupOrphanedDevices(userId);
-
     // Obtener fingerprint (async con FingerprintJS)
     const fingerprint = await getDeviceFingerprint();
     const deviceName = getDeviceName();
@@ -307,6 +287,5 @@ export {
     extractSessionIdFromToken,
     registerOrUpdateDevice,
     removeDevice,
-    cleanupOrphanedDevices,
     initAuthListener
 };
