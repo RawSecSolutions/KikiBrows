@@ -1,22 +1,5 @@
 // js/componenteAdmin.js
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// --- FUNCIÓN IDÉNTICA AL LOGIN ---
-function generateDeviceFingerprint() {
-    const nav = window.navigator;
-    const screen = window.screen;
-    const fingerprint = [nav.userAgent, nav.language, screen.width + 'x' + screen.height, screen.colorDepth, new Date().getTimezoneOffset()].join('|');
-    let hash = 0;
-    for (let i = 0; i < fingerprint.length; i++) {
-        const char = fingerprint.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return 'device_' + Math.abs(hash).toString(16);
-}
+import { supabase, removeDevice } from './sessionManager.js';
 
 // --- FUNCIÓN PARA RENDERIZAR SIDEBAR ---
 function renderSidebar(adminName, roleLabel) {
@@ -142,16 +125,7 @@ const renderNavbarAdmin = async () => {
                     const { data: { user } } = await supabase.auth.getUser();
 
                     if (user) {
-                        const huella = generateDeviceFingerprint();
-                        const { error: deleteError } = await supabase
-                            .from('authorized_devices')
-                            .delete()
-                            .match({ 
-                                user_id: user.id,
-                                device_fingerprint: huella 
-                            });
-                        
-                        if (deleteError) console.error("Error borrando dispositivo admin:", deleteError);
+                        await removeDevice(user.id);
                     }
                     await supabase.auth.signOut();
                 } catch (error) {

@@ -1,9 +1,10 @@
 // js/authGuardAdmin.js
 // Protección de páginas de ADMIN - Verifica sesión y rol
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { supabase, initAuthListener } from './sessionManager.js';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Inicializar el listener global de autenticación
+// Esto maneja el registro/actualización del dispositivo con session_id
+initAuthListener();
 
 async function checkAdminAuth() {
     try {

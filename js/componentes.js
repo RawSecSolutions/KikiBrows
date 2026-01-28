@@ -1,36 +1,14 @@
 // js/componentes.js
 
 let supabase = null;
+let removeDeviceFn = null;
 
-// --- FUNCIÓN IDÉNTICA AL LOGIN PARA GENERAR LA HUELLA ---
-function generateDeviceFingerprint() {
-    const nav = window.navigator;
-    const screen = window.screen;
-
-    const fingerprint = [
-        nav.userAgent,
-        nav.language,
-        screen.width + 'x' + screen.height,
-        screen.colorDepth,
-        new Date().getTimezoneOffset()
-    ].join('|');
-
-    let hash = 0;
-    for (let i = 0; i < fingerprint.length; i++) {
-        const char = fingerprint.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-
-    return 'device_' + Math.abs(hash).toString(16);
-}
-
-// Intentar cargar la configuración de Supabase
+// Intentar cargar la configuración de Supabase y sessionManager
 const initSupabase = async () => {
     try {
-        const { SUPABASE_URL, SUPABASE_KEY } = await import('./config.js');
-        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-        supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sessionManager = await import('./sessionManager.js');
+        supabase = sessionManager.supabase;
+        removeDeviceFn = sessionManager.removeDevice;
         return true;
     } catch (error) {
         console.warn('Supabase config not available, running in offline mode');
@@ -135,17 +113,8 @@ const renderNavbar = async () => {
                     try {
                         const { data: { user } } = await supabase.auth.getUser();
 
-                        if (user) {
-                            // Usamos la misma función que el Login
-                            const huella = generateDeviceFingerprint();
-                            
-                            await supabase
-                                .from('authorized_devices')
-                                .delete()
-                                .match({ 
-                                    user_id: user.id,
-                                    device_fingerprint: huella 
-                                });
+                        if (user && removeDeviceFn) {
+                            await removeDeviceFn(user.id);
                         }
                         await supabase.auth.signOut();
                     } catch (err) {
