@@ -1,97 +1,9 @@
 // js/login.js
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// --- FUNCIONES DE DISPOSITIVOS ---
-function generateDeviceFingerprint() {
-    const nav = window.navigator;
-    const screen = window.screen;
-
-    const fingerprint = [
-        nav.userAgent,
-        nav.language,
-        screen.width + 'x' + screen.height,
-        screen.colorDepth,
-        new Date().getTimezoneOffset()
-    ].join('|');
-
-    let hash = 0;
-    for (let i = 0; i < fingerprint.length; i++) {
-        const char = fingerprint.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-
-    return 'device_' + Math.abs(hash).toString(16);
-}
-
-function getDeviceName() {
-    const ua = navigator.userAgent;
-    let browser = 'Navegador';
-    let os = 'desconocido';
-
-    if (ua.includes('Chrome')) browser = 'Chrome';
-    else if (ua.includes('Firefox')) browser = 'Firefox';
-    else if (ua.includes('Safari')) browser = 'Safari';
-    else if (ua.includes('Edge')) browser = 'Edge';
-
-    if (ua.includes('Windows')) os = 'Windows';
-    else if (ua.includes('Mac')) os = 'macOS';
-    else if (ua.includes('Linux')) os = 'Linux';
-    else if (ua.includes('Android')) os = 'Android';
-    else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-
-    return `${browser} en ${os}`;
-}
-
-// Función para limpiar dispositivos huérfanos (sin sesión activa)
-async function cleanupOrphanedDevices(userId) {
-    try {
-        const { data, error } = await supabase.rpc('cleanup_orphaned_devices', {
-            p_user_id: userId
-        });
-
-        if (error) {
-            console.warn('Error limpiando dispositivos huérfanos:', error);
-        } else if (data > 0) {
-            console.log(`Se limpiaron ${data} dispositivo(s) sin sesión activa`);
-        }
-    } catch (err) {
-        console.warn('Error en cleanup:', err);
-    }
-}
-
-async function registerDevice(userId) {
-    // Primero intentar limpiar dispositivos huérfanos
-    await cleanupOrphanedDevices(userId);
-
-    const fingerprint = generateDeviceFingerprint();
-    const deviceName = getDeviceName();
-
-    const { data, error } = await supabase
-        .from('authorized_devices')
-        .upsert({
-            user_id: userId,
-            device_fingerprint: fingerprint,
-            device_name: deviceName,
-            last_accessed_at: new Date().toISOString()
-        }, {
-            onConflict: 'user_id,device_fingerprint'
-        })
-        .select()
-        .single();
-
-    if (error) {
-        if (error.message.includes('Límite de dispositivos')) {
-            throw new Error(error.message);
-        }
-        throw error;
-    }
-
-    return data;
-}
+import {
+    supabase,
+    registerOrUpdateDevice,
+    extractSessionIdFromToken
+} from './sessionManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.querySelector('.user-registration-form');
@@ -191,11 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // REGISTRAR DISPOSITIVO (Control de límite de sesiones)
+                // REGISTRAR DISPOSITIVO CON SESSION_ID
                 try {
-                    await registerDevice(user.id);
+                    const sessionId = extractSessionIdFromToken(data.session.access_token);
+                    await registerOrUpdateDevice(user.id, sessionId);
+                    console.log('Dispositivo registrado con session_id:', sessionId);
                 } catch (deviceError) {
-                    if (deviceError.message.includes('Límite de dispositivos')) {
+                    if (deviceError.message.includes('Límite de dispositivos') || deviceError.message.includes('Limite de dispositivos')) {
                         await supabase.auth.signOut();
                         mostrarError(deviceError.message);
                         btnSubmit.innerHTML = textoOriginal;

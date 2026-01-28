@@ -1,9 +1,11 @@
 // js/authGuard.js
 // Protección de páginas - Verifica sesión de Supabase
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { supabase, initAuthListener } from './sessionManager.js';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Inicializar el listener global de autenticación
+// Esto maneja el registro/actualización del dispositivo con session_id
+// en eventos como SIGNED_IN, TOKEN_REFRESHED, INITIAL_SESSION (refresh de página)
+initAuthListener();
 
 async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession();
