@@ -168,7 +168,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let mensaje = 'Error al enviar el código. Intenta de nuevo.';
             if (error.message.includes('rate limit')) {
-                mensaje = 'Has solicitado muchos códigos. Espera unos minutos.';
+                if (esAutomatico) {
+                    // Si es automático y hay rate limit, probablemente ya hay un código enviado recientemente
+                    mensaje = 'Ya se envió un código recientemente. Revisa tu correo o espera unos minutos para solicitar otro.';
+                } else {
+                    mensaje = 'Has solicitado muchos códigos. Espera unos minutos.';
+                }
             }
 
             mostrarErrorCodigo(mensaje);
