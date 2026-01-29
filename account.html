@@ -144,14 +144,22 @@
                 <div class="col-lg-6">
                     <div class="account-card p-4 h-100">
                         <h2>Cambiar correo electrónico</h2>
+
+                        <!-- Mensaje informativo -->
+                        <div class="alert alert-info small mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Al cambiar tu correo, recibirás un enlace de confirmación en la nueva dirección.
+                            Debes hacer clic en el enlace para completar el cambio.
+                        </div>
+
                         <form>
                             <div class="mb-3">
                                 <label for="nuevoCorreo" class="form-label">Nueva dirección*</label>
-                                <input type="email" class="form-control" id="nuevoCorreo" placeholder="correonuevo@correo.com">
+                                <input type="email" class="form-control" id="nuevoCorreo" placeholder="correonuevo@correo.com" required>
                             </div>
                             <div class="mb-4">
                                 <label for="confirmarCorreo" class="form-label">Confirma la nueva dirección*</label>
-                                <input type="email" class="form-control" id="confirmarCorreo" placeholder="correonuevo@correo.com">
+                                <input type="email" class="form-control" id="confirmarCorreo" placeholder="correonuevo@correo.com" required>
                             </div>
 
                             <button type="submit" class="btn btn-primary custom-btn-guardar">Guardar cambios</button>
