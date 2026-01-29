@@ -1,5 +1,5 @@
 // js/componentsAlumn.js
-import { supabase, removeDevice } from './sessionManager.js';
+import { supabase } from './sessionManager.js';
 
 const COURSES_DATA = [
     {
@@ -95,7 +95,7 @@ const UI = {
         <hr class="navbar-divider">
         `;
 
-        // --- LISTENER CORREGIDO ---
+        // --- LISTENER LOGOUT ---
         const logoutBtn = document.getElementById('btn-logout-alumn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
@@ -103,15 +103,9 @@ const UI = {
                 logoutBtn.innerText = "Saliendo...";
 
                 try {
-                    const { data: { user } } = await supabase.auth.getUser();
-
-                    if (user) {
-                        await removeDevice(user.id);
-                    }
                     await supabase.auth.signOut();
                 } catch (error) {
                     console.error('Error al salir:', error);
-                    await supabase.auth.signOut();
                 }
 
                 localStorage.removeItem('isLoggedIn');
