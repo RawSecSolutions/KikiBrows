@@ -347,6 +347,115 @@ window.openChangePasswordView = function(event) {
     if (changePasswordView) changePasswordView.classList.remove('d-none');
 }
 
+// --- FUNCION PARA CAMBIO DE EMAIL ---
+
+/**
+ * Cambia el correo electronico del usuario usando Supabase Auth
+ * Supabase enviara un email de confirmacion al nuevo correo
+ * @param {Event} event - Evento del formulario
+ */
+async function saveEmailChange(event) {
+    event.preventDefault();
+
+    const nuevoCorreo = document.getElementById('nuevoCorreo')?.value.trim().toLowerCase();
+    const confirmarCorreo = document.getElementById('confirmarCorreo')?.value.trim().toLowerCase();
+
+    // Validar campos
+    if (!nuevoCorreo || !confirmarCorreo) {
+        showNotification('Por favor, completa todos los campos.', 'error');
+        return;
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(nuevoCorreo)) {
+        showNotification('Por favor, ingresa un correo electrónico válido.', 'error');
+        return;
+    }
+
+    // Validar que coincidan
+    if (nuevoCorreo !== confirmarCorreo) {
+        showNotification('Los correos electrónicos no coinciden.', 'error');
+        return;
+    }
+
+    // Obtener sesion actual para verificar que no sea el mismo email
+    try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+            showNotification('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'error');
+            setTimeout(() => window.location.href = 'login.html', 2000);
+            return;
+        }
+
+        // Verificar que el nuevo email sea diferente al actual
+        if (session.user.email.toLowerCase() === nuevoCorreo) {
+            showNotification('El nuevo correo debe ser diferente al actual.', 'error');
+            return;
+        }
+
+        // Deshabilitar boton mientras se procesa
+        const submitBtn = document.querySelector('#split-edit-view .col-lg-6:last-child button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        }
+
+        // Llamar a Supabase para cambiar el email
+        // Esto enviara un email de confirmacion al nuevo correo
+        const { data, error } = await supabase.auth.updateUser({
+            email: nuevoCorreo
+        });
+
+        if (error) {
+            console.error('Error al cambiar email:', error);
+
+            // Manejar errores especificos
+            if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+                showNotification('Este correo electrónico ya está registrado en otra cuenta.', 'error');
+            } else if (error.message.includes('same')) {
+                showNotification('El nuevo correo debe ser diferente al actual.', 'error');
+            } else {
+                showNotification('Error al cambiar el correo: ' + error.message, 'error');
+            }
+
+            // Rehabilitar boton
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Guardar cambios';
+            }
+            return;
+        }
+
+        // Exito - mostrar mensaje de confirmacion
+        showNotification(
+            'Se ha enviado un enlace de confirmación a tu nuevo correo (' + nuevoCorreo + '). ' +
+            'Por favor, revisa tu bandeja de entrada y haz clic en el enlace para completar el cambio.',
+            'success'
+        );
+
+        // Limpiar campos del formulario
+        document.getElementById('nuevoCorreo').value = '';
+        document.getElementById('confirmarCorreo').value = '';
+
+        // Rehabilitar boton
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Guardar cambios';
+        }
+
+        // Volver al dashboard despues de 5 segundos
+        setTimeout(() => {
+            window.cancelEdit(event);
+        }, 5000);
+
+    } catch (err) {
+        console.error('Error en saveEmailChange:', err);
+        showNotification('Ocurrió un error inesperado. Intenta de nuevo.', 'error');
+    }
+}
+
 // --- INICIALIZACION AUTOMATICA ---
 // Esto carga el Navbar en cuanto el HTML esta listo
 document.addEventListener("DOMContentLoaded", async () => {
@@ -364,14 +473,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Agregar eventos a los formularios
     const simpleForm = document.querySelector('#simple-edit-view form');
-    const splitForm = document.querySelector('#split-edit-view form');
+    const splitProfileForm = document.querySelector('#split-edit-view .col-lg-6:first-child form');
+    const splitEmailForm = document.querySelector('#split-edit-view .col-lg-6:last-child form');
 
     if (simpleForm) {
         simpleForm.addEventListener('submit', (e) => saveProfileChanges(e, 'simple'));
     }
 
-    if (splitForm) {
-        splitForm.addEventListener('submit', (e) => saveProfileChanges(e, 'split'));
+    if (splitProfileForm) {
+        splitProfileForm.addEventListener('submit', (e) => saveProfileChanges(e, 'split'));
+    }
+
+    // Agregar evento para el formulario de cambio de email
+    if (splitEmailForm) {
+        splitEmailForm.addEventListener('submit', (e) => saveEmailChange(e));
     }
 
 });
