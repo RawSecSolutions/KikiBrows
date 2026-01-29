@@ -1,14 +1,12 @@
 // js/componentes.js
 
 let supabase = null;
-let removeDeviceFn = null;
 
 // Intentar cargar la configuración de Supabase y sessionManager
 const initSupabase = async () => {
     try {
         const sessionManager = await import('./sessionManager.js');
         supabase = sessionManager.supabase;
-        removeDeviceFn = sessionManager.removeDevice;
         return true;
     } catch (error) {
         console.warn('Supabase config not available, running in offline mode');
@@ -102,24 +100,18 @@ const renderNavbar = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // --- LÓGICA DE CIERRE DE SESIÓN CORREGIDA ---
+        // --- LÓGICA DE CIERRE DE SESIÓN ---
         const logoutBtn = document.getElementById('btn-logout');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 logoutBtn.innerText = "Cerrando...";
-                
+
                 if (supabase) {
                     try {
-                        const { data: { user } } = await supabase.auth.getUser();
-
-                        if (user && removeDeviceFn) {
-                            await removeDeviceFn(user.id);
-                        }
                         await supabase.auth.signOut();
                     } catch (err) {
                         console.error("Error logout:", err);
-                        await supabase.auth.signOut();
                     }
                 }
 
@@ -128,7 +120,7 @@ const renderNavbar = async () => {
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
 
-                window.location.href = 'login.html'; // Cambiado a login para que se vea claro
+                window.location.href = 'login.html';
             });
         }
     }

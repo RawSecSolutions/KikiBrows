@@ -1,5 +1,5 @@
 // js/componenteAdmin.js
-import { supabase, removeDevice } from './sessionManager.js';
+import { supabase } from './sessionManager.js';
 
 // --- FUNCIÓN PARA RENDERIZAR SIDEBAR ---
 function renderSidebar(adminName, roleLabel) {
@@ -114,7 +114,7 @@ const renderNavbarAdmin = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // --- LISTENER CORREGIDO ---
+        // --- LISTENER LOGOUT ---
         const logoutBtn = document.getElementById('btn-logout-admin');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
@@ -122,15 +122,9 @@ const renderNavbarAdmin = async () => {
                 logoutBtn.innerText = "Saliendo...";
 
                 try {
-                    const { data: { user } } = await supabase.auth.getUser();
-
-                    if (user) {
-                        await removeDevice(user.id);
-                    }
                     await supabase.auth.signOut();
                 } catch (error) {
                     console.error('Error cerrando sesión:', error);
-                    await supabase.auth.signOut();
                 }
 
                 localStorage.removeItem('isLoggedIn');
@@ -138,7 +132,7 @@ const renderNavbarAdmin = async () => {
                 localStorage.removeItem('usuarioActual');
                 localStorage.removeItem('userRole');
 
-                window.location.href = 'index.html'; // O login.html
+                window.location.href = 'index.html';
             });
         }
 

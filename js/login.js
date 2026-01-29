@@ -1,9 +1,5 @@
 // js/login.js
-import {
-    supabase,
-    registerOrUpdateDevice,
-    extractSessionIdFromToken
-} from './sessionManager.js';
+import { supabase } from './sessionManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.querySelector('.user-registration-form');
@@ -101,22 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnSubmit.innerHTML = textoOriginal;
                     btnSubmit.disabled = false;
                     return;
-                }
-
-                // REGISTRAR DISPOSITIVO CON SESSION_ID
-                try {
-                    const sessionId = extractSessionIdFromToken(data.session.access_token);
-                    await registerOrUpdateDevice(user.id, sessionId);
-                    console.log('Dispositivo registrado con session_id:', sessionId);
-                } catch (deviceError) {
-                    if (deviceError.message.includes('Límite de dispositivos') || deviceError.message.includes('Limite de dispositivos')) {
-                        await supabase.auth.signOut();
-                        mostrarError(deviceError.message);
-                        btnSubmit.innerHTML = textoOriginal;
-                        btnSubmit.disabled = false;
-                        return;
-                    }
-                    console.warn('Error registrando dispositivo:', deviceError);
                 }
 
                 // Guardar datos en localStorage para compatibilidad
