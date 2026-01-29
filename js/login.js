@@ -340,22 +340,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Verificación exitosa - limpiar datos temporales
                 localStorage.removeItem('pendingVerificationEmail');
 
+                const user = data.user;
+
+                // Obtener perfil del usuario
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profileError) console.warn('Error obteniendo perfil:', profileError);
+
+                // Guardar datos en localStorage
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', profile?.first_name || email.split('@')[0]);
+                localStorage.setItem('userRole', profile?.role || 'student');
+
+                const usuarioActual = {
+                    id: user.id,
+                    email: user.email,
+                    nombre: profile?.first_name || '',
+                    apellido: profile?.last_name || '',
+                    role: profile?.role || 'student'
+                };
+                localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+
                 // Mostrar mensaje de éxito
                 if (seccionVerificacion) {
                     seccionVerificacion.innerHTML = `
                         <div class="text-center">
                             <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                            <h2 class="mt-3 mb-3">Cuenta verificada</h2>
+                            <h2 class="mt-3 mb-3">¡Cuenta verificada!</h2>
                             <p>Tu cuenta ha sido verificada exitosamente.</p>
-                            <p>Ahora puedes iniciar sesión.</p>
+                            <p>Redirigiendo...</p>
                         </div>
                     `;
                 }
 
-                // Recargar la página para volver al login
+                // Redirigir según el rol del usuario
                 setTimeout(() => {
-                    window.location.reload();
-                }, 2500);
+                    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+                    if (redirectUrl) {
+                        localStorage.removeItem('redirectAfterLogin');
+                        window.location.href = redirectUrl;
+                    } else if (profile?.role === 'admin' || profile?.role === 'superadmin') {
+                        window.location.href = 'adminPanel.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }, 2000);
 
             } catch (error) {
                 console.error('Error de verificación:', error);
