@@ -6,6 +6,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const mostrarPassCheckbox = document.getElementById('mostrar-password');
     const passwordInput = document.getElementById('password');
     const loginErrorMsg = document.getElementById('login-error-msg');
+    const tituloPrincipal = document.querySelector('h1');
+
+    // Elementos de la sección de verificación
+    const seccionVerificacion = document.getElementById('seccion-verificacion-login');
+    const emailVerificacion = document.getElementById('email-verificacion-login');
+    const inputCodigo = document.getElementById('codigo-verificacion-login');
+    const btnValidarCodigo = document.getElementById('btn-validar-codigo-login');
+    const btnReenviar = document.getElementById('btn-reenviar-login');
+    const btnVolverLogin = document.getElementById('btn-volver-login');
+    const msgErrorCodigo = document.getElementById('msg-error-codigo-login');
+    const msgExitoCodigo = document.getElementById('msg-exito-codigo-login');
 
     // 1. MOSTRAR/OCULTAR CONTRASEÑA
     if (mostrarPassCheckbox && passwordInput) {
@@ -30,6 +41,140 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputs = loginForm.querySelectorAll('.form-control');
         inputs.forEach(input => input.classList.remove('is-invalid'));
         if (loginErrorMsg) loginErrorMsg.style.display = 'none';
+    };
+
+    // Funciones para errores del código de verificación
+    const mostrarErrorCodigo = (mensaje) => {
+        if (msgErrorCodigo) {
+            msgErrorCodigo.textContent = mensaje;
+            msgErrorCodigo.style.display = 'block';
+        }
+        if (msgExitoCodigo) msgExitoCodigo.style.display = 'none';
+        if (inputCodigo) inputCodigo.classList.add('is-invalid');
+    };
+
+    const mostrarExitoCodigo = (mensaje) => {
+        if (msgExitoCodigo) {
+            msgExitoCodigo.textContent = mensaje;
+            msgExitoCodigo.style.display = 'block';
+        }
+        if (msgErrorCodigo) msgErrorCodigo.style.display = 'none';
+        if (inputCodigo) inputCodigo.classList.remove('is-invalid');
+    };
+
+    const limpiarErrorCodigo = () => {
+        if (msgErrorCodigo) msgErrorCodigo.style.display = 'none';
+        if (msgExitoCodigo) msgExitoCodigo.style.display = 'none';
+        if (inputCodigo) inputCodigo.classList.remove('is-invalid');
+    };
+
+    // Función para mostrar la sección de verificación
+    const mostrarSeccionVerificacion = async (email) => {
+        // Guardar email para verificación
+        localStorage.setItem('pendingVerificationEmail', email);
+
+        // Mostrar email en la sección
+        if (emailVerificacion) {
+            emailVerificacion.textContent = email;
+        }
+
+        // Ocultar formulario de login y mostrar verificación
+        if (loginForm) loginForm.style.display = 'none';
+        if (tituloPrincipal) tituloPrincipal.style.display = 'none';
+        if (seccionVerificacion) seccionVerificacion.style.display = 'block';
+
+        // Enfocar input del código
+        if (inputCodigo) {
+            inputCodigo.value = '';
+            inputCodigo.focus();
+        }
+
+        // Reenviar automáticamente un nuevo código
+        await reenviarCodigoVerificacion(email, true);
+    };
+
+    // Función para volver al login
+    const volverAlLogin = () => {
+        localStorage.removeItem('pendingVerificationEmail');
+
+        if (seccionVerificacion) seccionVerificacion.style.display = 'none';
+        if (loginForm) loginForm.style.display = 'block';
+        if (tituloPrincipal) tituloPrincipal.style.display = 'block';
+
+        limpiarErrorCodigo();
+        if (inputCodigo) inputCodigo.value = '';
+    };
+
+    // Función para reenviar código
+    let cooldownTimer = null;
+    let cooldownSeconds = 0;
+
+    const actualizarBotonReenviar = () => {
+        if (!btnReenviar) return;
+        if (cooldownSeconds > 0) {
+            btnReenviar.textContent = `Reenviar código (${cooldownSeconds}s)`;
+            btnReenviar.disabled = true;
+        } else {
+            btnReenviar.textContent = 'Reenviar código';
+            btnReenviar.disabled = false;
+        }
+    };
+
+    const iniciarCooldown = () => {
+        cooldownSeconds = 60;
+        actualizarBotonReenviar();
+
+        cooldownTimer = setInterval(() => {
+            cooldownSeconds--;
+            actualizarBotonReenviar();
+
+            if (cooldownSeconds <= 0) {
+                clearInterval(cooldownTimer);
+            }
+        }, 1000);
+    };
+
+    const reenviarCodigoVerificacion = async (email, esAutomatico = false) => {
+        if (!btnReenviar) return;
+
+        const textoOriginal = btnReenviar.textContent;
+        btnReenviar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        btnReenviar.disabled = true;
+
+        try {
+            const { data, error } = await supabase.auth.resend({
+                type: 'signup',
+                email: email
+            });
+
+            if (error) throw error;
+
+            if (esAutomatico) {
+                mostrarExitoCodigo('Se ha enviado un nuevo código de verificación a tu correo.');
+            } else {
+                mostrarExitoCodigo('Código reenviado. Revisa tu correo.');
+            }
+
+            // Iniciar cooldown
+            iniciarCooldown();
+
+            // Ocultar mensaje de éxito después de 5 segundos
+            setTimeout(() => {
+                if (msgExitoCodigo) msgExitoCodigo.style.display = 'none';
+            }, 5000);
+
+        } catch (error) {
+            console.error('Error al reenviar código:', error);
+
+            let mensaje = 'Error al enviar el código. Intenta de nuevo.';
+            if (error.message.includes('rate limit')) {
+                mensaje = 'Has solicitado muchos códigos. Espera unos minutos.';
+            }
+
+            mostrarErrorCodigo(mensaje);
+            btnReenviar.textContent = textoOriginal;
+            btnReenviar.disabled = false;
+        }
     };
 
     // 2. MANEJO DEL LOGIN
@@ -135,11 +280,17 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error de login:', error);
 
+                // Si el email no está confirmado, mostrar sección de verificación
+                if (error.message.includes('Email not confirmed')) {
+                    btnSubmit.innerHTML = textoOriginal;
+                    btnSubmit.disabled = false;
+                    await mostrarSeccionVerificacion(email);
+                    return;
+                }
+
                 let mensaje = 'Error al iniciar sesión';
                 if (error.message.includes('Invalid login credentials')) {
                     mensaje = 'Correo o contraseña incorrectos';
-                } else if (error.message.includes('Email not confirmed')) {
-                    mensaje = 'Por favor confirma tu correo antes de iniciar sesión';
                 }
 
                 mostrarError(mensaje);
@@ -149,7 +300,114 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Limpiar errores al escribir
+    // 3. VALIDAR CÓDIGO DE VERIFICACIÓN
+    if (btnValidarCodigo) {
+        btnValidarCodigo.addEventListener('click', async function() {
+            const codigo = inputCodigo?.value.trim();
+            const email = localStorage.getItem('pendingVerificationEmail');
+
+            if (!email) {
+                mostrarErrorCodigo('Error: No se encontró el email. Vuelve a intentar el login.');
+                return;
+            }
+
+            if (!codigo || codigo.length !== 8 || !/^\d{8}$/.test(codigo)) {
+                mostrarErrorCodigo('Ingresa un código válido de 8 dígitos');
+                return;
+            }
+
+            // UI: Estado de carga
+            const textoOriginal = btnValidarCodigo.innerHTML;
+            btnValidarCodigo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+            btnValidarCodigo.disabled = true;
+            limpiarErrorCodigo();
+
+            try {
+                // Verificar el código OTP
+                const { data, error } = await supabase.auth.verifyOtp({
+                    email: email,
+                    token: codigo,
+                    type: 'signup'
+                });
+
+                if (error) throw error;
+
+                // Verificación exitosa - limpiar datos temporales
+                localStorage.removeItem('pendingVerificationEmail');
+
+                // Mostrar mensaje de éxito
+                if (seccionVerificacion) {
+                    seccionVerificacion.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                            <h2 class="mt-3 mb-3">Cuenta verificada</h2>
+                            <p>Tu cuenta ha sido verificada exitosamente.</p>
+                            <p>Ahora puedes iniciar sesión.</p>
+                        </div>
+                    `;
+                }
+
+                // Recargar la página para volver al login
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2500);
+
+            } catch (error) {
+                console.error('Error de verificación:', error);
+
+                let mensaje = 'Código incorrecto';
+                if (error.message.includes('expired')) {
+                    mensaje = 'El código ha expirado. Solicita uno nuevo haciendo clic en "Reenviar código".';
+                } else if (error.message.includes('invalid')) {
+                    mensaje = 'Código inválido. Verifica e intenta de nuevo.';
+                }
+
+                mostrarErrorCodigo(mensaje);
+                btnValidarCodigo.innerHTML = textoOriginal;
+                btnValidarCodigo.disabled = false;
+            }
+        });
+    }
+
+    // 4. EVENTOS DEL INPUT DE CÓDIGO
+    if (inputCodigo) {
+        inputCodigo.addEventListener('input', () => {
+            limpiarErrorCodigo();
+            // Solo permitir números
+            inputCodigo.value = inputCodigo.value.replace(/[^0-9]/g, '');
+        });
+
+        inputCodigo.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnValidarCodigo?.click();
+            }
+        });
+    }
+
+    // 5. BOTÓN REENVIAR CÓDIGO
+    if (btnReenviar) {
+        btnReenviar.addEventListener('click', async function() {
+            const email = localStorage.getItem('pendingVerificationEmail');
+
+            if (!email) {
+                mostrarErrorCodigo('Error: No se encontró el email. Vuelve a intentar el login.');
+                return;
+            }
+
+            await reenviarCodigoVerificacion(email, false);
+        });
+    }
+
+    // 6. BOTÓN VOLVER AL LOGIN
+    if (btnVolverLogin) {
+        btnVolverLogin.addEventListener('click', function(e) {
+            e.preventDefault();
+            volverAlLogin();
+        });
+    }
+
+    // Limpiar errores al escribir en el formulario de login
     const inputs = document.querySelectorAll('.form-control');
     inputs.forEach(input => {
         input.addEventListener('input', function() {
