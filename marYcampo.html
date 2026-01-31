@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mar y Campo - Terrenos con Futuro</title>
+    <meta name="description" content="Terrenos bien ubicados en un proyecto con visión de largo plazo. Inversión sólida con desarrollo progresivo.">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Lato:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/marYcampo.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="myc-navbar" id="mainNav">
+        <div class="container">
+            <a href="#inicio" class="myc-logo">Mar y Campo</a>
+            <button class="myc-nav-toggle" id="navToggle" aria-label="Menú">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="myc-nav-menu" id="navMenu">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#zona">La Zona</a></li>
+                <li><a href="#inversion">Inversión</a></li>
+                <li><a href="#proyecto">Proyecto</a></li>
+                <li><a href="#terrenos">Terrenos</a></li>
+                <li><a href="#masterplan">Masterplan</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero con Carrusel -->
+    <section id="inicio" class="myc-hero">
+        <div class="myc-carousel" id="heroCarousel">
+            <div class="myc-carousel-inner">
+                <div class="myc-carousel-item active" style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&q=80');">
+                    <div class="myc-hero-overlay">
+                        <div class="myc-hero-content animate-fade-up">
+                            <h1>Mar y Campo</h1>
+                            <p class="myc-hero-subtitle">Terrenos con visión de futuro</p>
+                            <a href="#contacto" class="myc-btn myc-btn-primary">Solicitar Información</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="myc-carousel-item" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80');">
+                    <div class="myc-hero-overlay">
+                        <div class="myc-hero-content animate-fade-up">
+                            <h1>Ubicación Privilegiada</h1>
+                            <p class="myc-hero-subtitle">Entre el mar y la cordillera</p>
+                            <a href="#zona" class="myc-btn myc-btn-primary">Conocer la Zona</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="myc-carousel-item" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&q=80');">
+                    <div class="myc-hero-overlay">
+                        <div class="myc-hero-content animate-fade-up">
+                            <h1>Desarrollo Progresivo</h1>
+                            <p class="myc-hero-subtitle">Un proyecto que crece contigo</p>
+                            <a href="#proyecto" class="myc-btn myc-btn-primary">Ver Proyecto</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="myc-carousel-btn myc-carousel-prev" aria-label="Anterior">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="myc-carousel-btn myc-carousel-next" aria-label="Siguiente">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="myc-carousel-indicators">
+                <button class="active" data-slide="0"></button>
+                <button data-slide="1"></button>
+                <button data-slide="2"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sobre la Zona -->
+    <section id="zona" class="myc-section myc-section-light">
+        <div class="container">
+            <div class="myc-section-header animate-fade-up">
+                <span class="myc-section-tag">La Zona</span>
+                <h2>Un entorno que habla por sí solo</h2>
+                <p class="myc-section-intro">Una ubicación estratégica donde la naturaleza, el clima y la conectividad se encuentran.</p>
+            </div>
+
+            <div class="row g-4 mt-4">
+                <div class="col-md-6 col-lg-3 animate-fade-up">
+                    <div class="myc-feature-card">
+                        <div class="myc-feature-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <h3>Clima Privilegiado</h3>
+                        <p>Más de 300 días de sol al año. Temperaturas moderadas todo el año.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 animate-fade-up" style="animation-delay: 0.1s;">
+                    <div class="myc-feature-card">
+                        <div class="myc-feature-icon">
+                            <i class="fas fa-road"></i>
+                        </div>
+                        <h3>Accesos Consolidados</h3>
+                        <p>Conexión directa a rutas principales. A minutos de servicios esenciales.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 animate-fade-up" style="animation-delay: 0.2s;">
+                    <div class="myc-feature-card">
+                        <div class="myc-feature-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h3>Servicios Cercanos</h3>
+                        <p>Comercio, salud y educación en la zona. Infraestructura en crecimiento.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 animate-fade-up" style="animation-delay: 0.3s;">
+                    <div class="myc-feature-card">
+                        <div class="myc-feature-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h3>Entorno Natural</h3>
+                        <p>Paisaje preservado. Aire limpio y tranquilidad que se siente.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mapa placeholder -->
+            <div class="myc-map-container animate-fade-up mt-5">
+                <div class="myc-map-placeholder">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <p>Mapa de ubicación</p>
+                    <span class="myc-map-note">Coordenadas exactas disponibles al solicitar información</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inversión & Plusvalía -->
+    <section id="inversion" class="myc-section myc-section-earth">
+        <div class="container">
+            <div class="myc-section-header animate-fade-up">
+                <span class="myc-section-tag">Inversión</span>
+                <h2>El suelo bien ubicado es un activo escaso</h2>
+            </div>
+
+            <div class="row align-items-center g-5 mt-3">
+                <div class="col-lg-6 animate-fade-up">
+                    <div class="myc-investment-content">
+                        <div class="myc-investment-point">
+                            <div class="myc-investment-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h3>Escasez del Suelo</h3>
+                                <p>La tierra bien ubicada no se produce más. A medida que crece la demanda, la oferta permanece limitada. Es una realidad que el inversionista experimentado comprende.</p>
+                            </div>
+                        </div>
+
+                        <div class="myc-investment-point">
+                            <div class="myc-investment-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div>
+                                <h3>Desarrollo Progresivo</h3>
+                                <p>Cada mejora en infraestructura, cada nuevo servicio que llega a la zona, suma valor al entorno. Es un proceso natural que ya está en marcha.</p>
+                            </div>
+                        </div>
+
+                        <div class="myc-investment-point">
+                            <div class="myc-investment-icon">
+                                <i class="fas fa-hands-helping"></i>
+                            </div>
+                            <div>
+                                <h3>Gestión Activa del Valor</h3>
+                                <p>Un proyecto bien planificado cuida su desarrollo. Normas claras, áreas comunes definidas y una visión de largo plazo que protege tu inversión.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 animate-fade-up" style="animation-delay: 0.2s;">
+                    <div class="myc-investment-image">
+                        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80" alt="Terreno con vista" loading="lazy">
+                    </div>
+                    <div class="myc-investment-note">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No prometemos rentabilidades específicas. El valor de la tierra depende de múltiples factores. Quien busca invertir en suelo lo sabe bien.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tema del Agua -->
+    <section id="agua" class="myc-section myc-section-water">
+        <div class="container">
+            <div class="myc-section-header animate-fade-up">
+                <span class="myc-section-tag">Recurso Hídrico</span>
+                <h2>El agua, un tema que abordamos con claridad</h2>
+            </div>
+
+            <div class="row justify-content-center mt-4">
+                <div class="col-lg-10">
+                    <div class="myc-water-grid animate-fade-up">
+                        <div class="myc-water-card">
+                            <div class="myc-water-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <h3>Disponibilidad Hídrica Identificada</h3>
+                            <p>Estudios realizados confirman la existencia de fuentes de agua en la zona. Información técnica disponible para quienes la soliciten.</p>
+                        </div>
+                        <div class="myc-water-card">
+                            <div class="myc-water-icon">
+                                <i class="fas fa-drafting-compass"></i>
+                            </div>
+                            <h3>Área Técnica Definida</h3>
+                            <p>El proyecto cuenta con una planificación clara respecto a la infraestructura hídrica. Sabemos dónde y cómo se abastecerá cada sector.</p>
+                        </div>
+                        <div class="myc-water-card">
+                            <div class="myc-water-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <h3>Ejecución Proyectada</h3>
+                            <p>Las obras de infraestructura hídrica están contempladas en el plan de desarrollo. Con etapas definidas y plazos realistas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Estado del Proyecto -->
+    <section id="proyecto" class="myc-section myc-section-light">
+        <div class="container">
+            <div class="myc-section-header animate-fade-up">
+                <span class="myc-section-tag">Estado Actual</span>
+                <h2>Transparencia en cada etapa</h2>
+                <p class="myc-section-intro">Preferimos decirte exactamente en qué punto estamos. La honestidad construye confianza.</p>
+            </div>
+
+            <div class="row justify-content-center mt-5">
+                <div class="col-lg-10">
+                    <div class="myc-timeline animate-fade-up">
+                        <div class="myc-timeline-item completed">
+                            <div class="myc-timeline-marker">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="myc-timeline-content">
+                                <h3>Adquisición del Terreno</h3>
+                                <p>Terreno adquirido con toda la documentación en regla. Títulos saneados y sin gravámenes.</p>
+                                <span class="myc-timeline-status">Completado</span>
+                            </div>
+                        </div>
+                        <div class="myc-timeline-item completed">
+                            <div class="myc-timeline-marker">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="myc-timeline-content">
+                                <h3>Planificación General</h3>
+                                <p>Masterplan definido con distribución de lotes, áreas comunes y vialidad interna.</p>
+                                <span class="myc-timeline-status">Completado</span>
+                            </div>
+                        </div>
+                        <div class="myc-timeline-item in-progress">
+                            <div class="myc-timeline-marker">
+                                <i class="fas fa-spinner fa-pulse"></i>
+                            </div>
+                            <div class="myc-timeline-content">
+                                <h3>Proceso de Subdivisión</h3>
+                                <p>Trámites en etapa final ante las autoridades correspondientes. Avance sostenido.</p>
+                                <span class="myc-timeline-status">En Proceso</span>
+                            </div>
+                        </div>
+                        <div class="myc-timeline-item pending">
+                            <div class="myc-timeline-marker">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="myc-timeline-content">
+                                <h3>Obras de Infraestructura</h3>
+                                <p>Caminos internos, cercos perimetrales y conexiones de servicios básicos.</p>
+                                <span class="myc-timeline-status">Próxima Etapa</span>
+                            </div>
+                        </div>
+                        <div class="myc-timeline-item pending">
+                            <div class="myc-timeline-marker">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="myc-timeline-content">
+                                <h3>Entrega de Lotes</h3>
+                                <p>Lotes individualizados y listos para escrituración a nombre del comprador.</p>
+                                <span class="myc-timeline-status">Proyectado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="myc-project-badge animate-fade-up">
+                <i class="fas fa-hard-hat"></i>
+                <span>Proyecto en Desarrollo Activo</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Terrenos Disponibles -->
+    <section id="terrenos" class="myc-section myc-section-cream">
+        <div class="container">
+            <div class="myc-section-header animate-fade-up">
+                <span class="myc-section-tag">Terrenos</span>
+                <h2>Lotes disponibles</h2>
+                <p class="myc-section-intro">Diferentes tamaños para diferentes proyectos de vida. Todos con acceso y servicios proyectados.</p>
+            </div>
+
+            <div class="row g-4 mt-4">
+                <!-- Lote 1 -->
+                <div class="col-md-6 col-lg-4 animate-fade-up">
+                    <div class="myc-lot-card">
+                        <div class="myc-lot-status available">Disponible</div>
+                        <div class="myc-lot-image">
+                            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80" alt="Lote A-01" loading="lazy">
+                        </div>
+                        <div class="myc-lot-info">
+                            <h3>Lote A-01</h3>
+                            <div class="myc-lot-details">
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-expand"></i>
+                                    <span>5.000 m²</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-compass"></i>
+                                    <span>Orientación Norte</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-mountain"></i>
+                                    <span>Vista al valle</span>
+                                </div>
+                            </div>
+                            <div class="myc-lot-price">
+                                <span class="myc-price-label">Precio</span>
+                                <span class="myc-price-value">Consultar</span>
+                            </div>
+                            <a href="#contacto" class="myc-btn myc-btn-outline">Más Información</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lote 2 -->
+                <div class="col-md-6 col-lg-4 animate-fade-up" style="animation-delay: 0.1s;">
+                    <div class="myc-lot-card">
+                        <div class="myc-lot-status available">Disponible</div>
+                        <div class="myc-lot-image">
+                            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80" alt="Lote A-02" loading="lazy">
+                        </div>
+                        <div class="myc-lot-info">
+                            <h3>Lote A-02</h3>
+                            <div class="myc-lot-details">
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-expand"></i>
+                                    <span>7.500 m²</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-compass"></i>
+                                    <span>Orientación Noreste</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-tree"></i>
+                                    <span>Vegetación nativa</span>
+                                </div>
+                            </div>
+                            <div class="myc-lot-price">
+                                <span class="myc-price-label">Precio</span>
+                                <span class="myc-price-value">Consultar</span>
+                            </div>
+                            <a href="#contacto" class="myc-btn myc-btn-outline">Más Información</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lote 3 -->
+                <div class="col-md-6 col-lg-4 animate-fade-up" style="animation-delay: 0.2s;">
+                    <div class="myc-lot-card">
+                        <div class="myc-lot-status reserved">Reservado</div>
+                        <div class="myc-lot-image">
+                            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&q=80" alt="Lote B-01" loading="lazy">
+                        </div>
+                        <div class="myc-lot-info">
+                            <h3>Lote B-01</h3>
+                            <div class="myc-lot-details">
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-expand"></i>
+                                    <span>6.200 m²</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-compass"></i>
+                                    <span>Orientación Oeste</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-water"></i>
+                                    <span>Cercano a estero</span>
+                                </div>
+                            </div>
+                            <div class="myc-lot-price">
+                                <span class="myc-price-label">Estado</span>
+                                <span class="myc-price-value myc-reserved">Reservado</span>
+                            </div>
+                            <button class="myc-btn myc-btn-disabled" disabled>No Disponible</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lote 4 -->
+                <div class="col-md-6 col-lg-4 animate-fade-up" style="animation-delay: 0.3s;">
+                    <div class="myc-lot-card">
+                        <div class="myc-lot-status available">Disponible</div>
+                        <div class="myc-lot-image">
+                            <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=80" alt="Lote B-02" loading="lazy">
+                        </div>
+                        <div class="myc-lot-info">
+                            <h3>Lote B-02</h3>
+                            <div class="myc-lot-details">
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-expand"></i>
+                                    <span>10.000 m²</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-compass"></i>
+                                    <span>Esquina privilegiada</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Vista panorámica</span>
+                                </div>
+                            </div>
+                            <div class="myc-lot-price">
+                                <span class="myc-price-label">Precio</span>
+                                <span class="myc-price-value">Consultar</span>
+                            </div>
+                            <a href="#contacto" class="myc-btn myc-btn-outline">Más Información</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lote 5 -->
+                <div class="col-md-6 col-lg-4 animate-fade-up" style="animation-delay: 0.4s;">
+                    <div class="myc-lot-card">
+                        <div class="myc-lot-status available">Disponible</div>
+                        <div class="myc-lot-image">
+                            <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80" alt="Lote C-01" loading="lazy">
+                        </div>
+                        <div class="myc-lot-info">
+                            <h3>Lote C-01</h3>
+                            <div class="myc-lot-details">
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-expand"></i>
+                                    <span>5.500 m²</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-compass"></i>
+                                    <span>Orientación Sur</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-tree"></i>
+                                    <span>Bosque nativo</span>
+                                </div>
+                            </div>
+                            <div class="myc-lot-price">
+                                <span class="myc-price-label">Precio</span>
+                                <span class="myc-price-value">Consultar</span>
+                            </div>
+                            <a href="#contacto" class="myc-btn myc-btn-outline">Más Información</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lote 6 -->
+                <div class="col-md-6 col-lg-4 animate-fade-up" style="animation-delay: 0.5s;">
+                    <div class="myc-lot-card">
+                        <div class="myc-lot-status available">Disponible</div>
+                        <div class="myc-lot-image">
+                            <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=80" alt="Lote C-02" loading="lazy">
+                        </div>
+                        <div class="myc-lot-info">
+                            <h3>Lote C-02</h3>
+                            <div class="myc-lot-details">
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-expand"></i>
+                                    <span>8.000 m²</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-compass"></i>
+                                    <span>Orientación Este</span>
+                                </div>
+                                <div class="myc-lot-detail">
+                                    <i class="fas fa-sun"></i>
+                                    <span>Sol de mañana</span>
+                                </div>
+                            </div>
+                            <div class="myc-lot-price">
+                                <span class="myc-price-label">Precio</span>
+                                <span class="myc-price-value">Consultar</span>
+                            </div>
+                            <a href="#contacto" class="myc-btn myc-btn-outline">Más Información</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Galería -->
+    <section id="galeria" class="myc-section myc-section-dark">
+        <div class="container">
+            <div class="myc-section-header animate-fade-up">
+                <span class="myc-section-tag light">Galería</span>
+                <h2>El lugar en imágenes</h2>
+            </div>
+
+            <div class="myc-gallery animate-fade-up mt-4">
+                <div class="myc-gallery-item" data-index="0">
+                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80" alt="Vista del terreno" loading="lazy">
+                </div>
+                <div class="myc-gallery-item" data-index="1">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80" alt="Paisaje natural" loading="lazy">
+                </div>
+                <div class="myc-gallery-item" data-index="2">
+                    <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80" alt="Atardecer" loading="lazy">
+                </div>
+                <div class="myc-gallery-item" data-index="3">
+                    <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80" alt="Montañas" loading="lazy">
+                </div>
+                <div class="myc-gallery-item" data-index="4">
+                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80" alt="Bosque" loading="lazy">
+                </div>
+                <div class="myc-gallery-item" data-index="5">
+                    <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80" alt="Campo" loading="lazy">
+                </div>
+            </div>
+        </div>
+
+        <!-- Lightbox -->
+        <div class="myc-lightbox" id="lightbox">
+            <button class="myc-lightbox-close" aria-label="Cerrar">&times;</button>
+            <button class="myc-lightbox-prev" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
+            <button class="myc-lightbox-next" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></button>
+            <img src="" alt="Imagen ampliada" id="lightboxImage">
+        </div>
+    </section>
+
+    <!-- Visor Virtual 360 - Masterplan -->
+    <section id="masterplan" class="myc-section myc-section-light">
+        <div class="container">
+            <div class="myc-section-header animate-fade-up">
+                <span class="myc-section-tag">Masterplan 360</span>
+                <h2>Recorre el proyecto virtualmente</h2>
+                <p class="myc-section-intro">Explora la distribución de lotes, accesos y áreas comunes en nuestro visor interactivo.</p>
+            </div>
+
+            <div class="myc-masterplan-container animate-fade-up mt-4">
+                <!-- Placeholder para el iframe de Masterplan360 -->
+                <div class="myc-masterplan-wrapper" id="masterplanViewer">
+                    <!--
+                        INSTRUCCIONES PARA INTEGRAR MASTERPLAN 360:
+                        ============================================
+                        1. Reemplaza este div con el iframe proporcionado por Masterplan360
+                        2. El iframe debe tener las siguientes características:
+                           - width="100%"
+                           - height="600"
+                           - frameborder="0"
+                           - allowfullscreen
+
+                        Ejemplo:
+                        <iframe
+                            src="https://tu-url-de-masterplan360.com/viewer/tu-proyecto"
+                            width="100%"
+                            height="600"
+                            frameborder="0"
+                            allowfullscreen>
+                        </iframe>
+                    -->
+                    <div class="myc-masterplan-placeholder">
+                        <div class="myc-masterplan-icon">
+                            <i class="fas fa-vr-cardboard"></i>
+                        </div>
+                        <h3>Visor 360 en preparación</h3>
+                        <p>El recorrido virtual interactivo estará disponible próximamente.</p>
+                        <p class="myc-masterplan-note">Mientras tanto, solicita una presentación personalizada del proyecto.</p>
+                        <a href="#contacto" class="myc-btn myc-btn-primary">Solicitar Presentación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="myc-section myc-section-contact">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-6 animate-fade-up">
+                    <div class="myc-contact-info">
+                        <span class="myc-section-tag">Contacto</span>
+                        <h2>Conversemos sobre tu proyecto</h2>
+                        <p>Si llegaste hasta aquí, probablemente buscas algo concreto. Podemos darte toda la información que necesitas para tomar una decisión informada.</p>
+
+                        <div class="myc-contact-methods">
+                            <a href="https://wa.me/56912345678" target="_blank" class="myc-contact-method myc-whatsapp">
+                                <i class="fab fa-whatsapp"></i>
+                                <div>
+                                    <span>WhatsApp</span>
+                                    <strong>+56 9 1234 5678</strong>
+                                </div>
+                            </a>
+                            <a href="mailto:info@marycampo.cl" class="myc-contact-method">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <span>Email</span>
+                                    <strong>info@marycampo.cl</strong>
+                                </div>
+                            </a>
+                            <a href="tel:+56912345678" class="myc-contact-method">
+                                <i class="fas fa-phone-alt"></i>
+                                <div>
+                                    <span>Teléfono</span>
+                                    <strong>+56 9 1234 5678</strong>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 animate-fade-up" style="animation-delay: 0.2s;">
+                    <form class="myc-contact-form" id="contactForm">
+                        <div class="myc-form-group">
+                            <label for="nombre">Nombre completo</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                        </div>
+                        <div class="myc-form-group">
+                            <label for="email">Correo electrónico</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="myc-form-group">
+                            <label for="telefono">Teléfono</label>
+                            <input type="tel" id="telefono" name="telefono">
+                        </div>
+                        <div class="myc-form-group">
+                            <label for="interes">¿Qué te interesa saber?</label>
+                            <select id="interes" name="interes">
+                                <option value="">Selecciona una opción</option>
+                                <option value="precios">Precios y formas de pago</option>
+                                <option value="ubicacion">Ubicación exacta y visita</option>
+                                <option value="documentacion">Documentación legal</option>
+                                <option value="proyecto">Estado del proyecto</option>
+                                <option value="otro">Otra consulta</option>
+                            </select>
+                        </div>
+                        <div class="myc-form-group">
+                            <label for="mensaje">Mensaje (opcional)</label>
+                            <textarea id="mensaje" name="mensaje" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="myc-btn myc-btn-primary myc-btn-full">Enviar Consulta</button>
+                        <p class="myc-form-note">Responderemos dentro de las próximas 24 horas hábiles.</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="myc-footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="myc-footer-brand">
+                        <h3>Mar y Campo</h3>
+                        <p>Terrenos con visión de futuro. Un proyecto pensado para quienes valoran la tierra como activo y como proyecto de vida.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="myc-footer-links">
+                        <h4>Navegación</h4>
+                        <ul>
+                            <li><a href="#inicio">Inicio</a></li>
+                            <li><a href="#zona">La Zona</a></li>
+                            <li><a href="#inversion">Inversión</a></li>
+                            <li><a href="#proyecto">Proyecto</a></li>
+                            <li><a href="#terrenos">Terrenos</a></li>
+                            <li><a href="#contacto">Contacto</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="myc-footer-contact">
+                        <h4>Contacto Directo</h4>
+                        <p><i class="fab fa-whatsapp"></i> +56 9 1234 5678</p>
+                        <p><i class="fas fa-envelope"></i> info@marycampo.cl</p>
+                        <div class="myc-footer-social">
+                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="myc-footer-bottom">
+                <p>&copy; 2024 Mar y Campo. Todos los derechos reservados.</p>
+                <p class="myc-footer-legal">Las imágenes son referenciales. El proyecto se encuentra en desarrollo. Consulte condiciones de venta.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/marYcampo.js"></script>
+
+</body>
+</html>
