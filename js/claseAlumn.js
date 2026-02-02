@@ -370,54 +370,129 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== CONTENIDO: VIDEO ====================
 
     function renderVideoContent() {
-        const videoSrc = currentClase.src || 'https://www.w3schools.com/html/mov_bbb.mp4';
+        // Leer configuración desde metadata si existe (para Vimeo/YouTube)
+        const metadata = currentClase.metadata || {};
 
-        dynamicContent.innerHTML = `
-            <div class="video-container">
-                <video id="mainVideo" controls>
-                    <source src="${videoSrc}" type="video/mp4">
-                    Tu navegador no soporta video HTML5.
-                </video>
-            </div>
-        `;
+        // Determinar la fuente del video
+        let videoHTML = '';
 
+        if (metadata.proveedor === 'vimeo' && metadata.video_id) {
+            // Video de Vimeo embebido
+            const allowDownload = metadata.permitir_descarga ? '' : '&download=0';
+            videoHTML = `
+                <div class="video-container video-embed">
+                    <iframe
+                        src="https://player.vimeo.com/video/${metadata.video_id}?badge=0&autopause=0&player_id=0${allowDownload}"
+                        frameborder="0"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowfullscreen
+                        id="vimeoPlayer">
+                    </iframe>
+                </div>
+            `;
+            // Para Vimeo, habilitar siguiente después de un tiempo mínimo
+            setTimeout(() => {
+                if (!isClaseCompleted()) {
+                    enableNext();
+                }
+            }, 30000); // 30 segundos mínimo
+
+        } else if (metadata.proveedor === 'youtube' && metadata.video_id) {
+            // Video de YouTube embebido
+            videoHTML = `
+                <div class="video-container video-embed">
+                    <iframe
+                        src="https://www.youtube.com/embed/${metadata.video_id}?rel=0&modestbranding=1"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        id="youtubePlayer">
+                    </iframe>
+                </div>
+            `;
+            // Para YouTube, habilitar siguiente después de un tiempo mínimo
+            setTimeout(() => {
+                if (!isClaseCompleted()) {
+                    enableNext();
+                }
+            }, 30000); // 30 segundos mínimo
+
+        } else {
+            // Video directo (subido a Supabase Storage o URL externa)
+            const videoSrc = currentClase.video_url || currentClase.src || currentClase.contenido_url || '';
+
+            if (!videoSrc) {
+                dynamicContent.innerHTML = `
+                    <div class="alert alert-warning text-center py-5">
+                        <i class="fas fa-video-slash fa-3x mb-3"></i>
+                        <h5>Video no disponible</h5>
+                        <p class="text-muted">El video de esta clase aún no ha sido cargado.</p>
+                    </div>
+                `;
+                enableNext(); // Permitir avanzar si no hay video
+                return;
+            }
+
+            videoHTML = `
+                <div class="video-container">
+                    <video id="mainVideo" controls controlsList="nodownload">
+                        <source src="${videoSrc}" type="video/mp4">
+                        Tu navegador no soporta video HTML5.
+                    </video>
+                </div>
+            `;
+        }
+
+        dynamicContent.innerHTML = videoHTML;
+
+        // Solo configurar eventos para video HTML5 nativo
         const video = document.getElementById('mainVideo');
-        videoWatchProgress = 0;
+        if (video) {
+            videoWatchProgress = 0;
 
-        video.addEventListener('timeupdate', () => {
-            if (video.duration) {
-                const progress = (video.currentTime / video.duration) * 100;
-                videoWatchProgress = Math.max(videoWatchProgress, progress);
+            video.addEventListener('timeupdate', () => {
+                if (video.duration) {
+                    const progress = (video.currentTime / video.duration) * 100;
+                    videoWatchProgress = Math.max(videoWatchProgress, progress);
 
-                // Marcar como completado al 90%
-                if (videoWatchProgress >= 90 && !isClaseCompleted()) {
+                    // Marcar como completado al 90%
+                    if (videoWatchProgress >= 90 && !isClaseCompleted()) {
+                        markAsCompleted();
+                    }
+                }
+            });
+
+            video.addEventListener('ended', () => {
+                if (!isClaseCompleted()) {
                     markAsCompleted();
                 }
-            }
-        });
+            });
 
-        video.addEventListener('ended', () => {
-            if (!isClaseCompleted()) {
-                markAsCompleted();
-            }
-        });
+            // Prevenir clic derecho para evitar descarga
+            video.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
+        }
     }
 
     // ==================== CONTENIDO: TEXTO ====================
 
     function renderTextContent() {
-        const content = currentClase.contenido || `
-            <h2>Contenido de la Lección</h2>
-            <p>Este es el contenido de texto de la lección "${currentClase.nombre}".</p>
-            <p>El texto enriquecido permite incluir:</p>
-            <ul>
-                <li>Listas ordenadas y no ordenadas</li>
-                <li>Texto en <strong>negrita</strong> y <em>cursiva</em></li>
-                <li>Enlaces y referencias</li>
-            </ul>
-            <h3>Subtítulos</h3>
-            <p>Los subtítulos ayudan a organizar el contenido de manera clara y estructurada.</p>
-        `;
+        // Usar contenido_texto de Supabase o fallback a contenido legacy
+        const content = currentClase.contenido_texto || currentClase.contenido || currentClase.descripcion || '';
+
+        if (!content) {
+            dynamicContent.innerHTML = `
+                <div class="alert alert-info text-center py-5">
+                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                    <h5>Contenido en preparación</h5>
+                    <p class="text-muted">El contenido de esta lección estará disponible pronto.</p>
+                </div>
+            `;
+            enableNext();
+            return;
+        }
 
         dynamicContent.innerHTML = `
             <div class="text-content">
@@ -432,7 +507,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== CONTENIDO: PDF ====================
 
     function renderPDFContent() {
-        const pdfSrc = currentClase.src || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+        // Usar contenido_url de Supabase o fallback a src legacy
+        const pdfSrc = currentClase.contenido_url || currentClase.src || '';
+
+        if (!pdfSrc) {
+            dynamicContent.innerHTML = `
+                <div class="alert alert-warning text-center py-5">
+                    <i class="fas fa-file-pdf fa-3x mb-3"></i>
+                    <h5>PDF no disponible</h5>
+                    <p class="text-muted">El documento PDF de esta clase aún no ha sido cargado.</p>
+                </div>
+            `;
+            enableNext();
+            return;
+        }
 
         dynamicContent.innerHTML = `
             <div class="pdf-container position-relative">
