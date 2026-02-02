@@ -1,5 +1,16 @@
 // js/coursePreview.js - Lógica para la página de preview de cursos
-// Este archivo carga el curso desde la URL y muestra toda su información
+// Conecta con Supabase para mostrar la estructura del curso
+// Usuarios sin acceso solo ven nombres, usuarios con acceso pueden ir al aula virtual
+
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Estado global
+let cursoActual = null;
+let usuarioActual = null;
+let tieneAcceso = false;
 
 // ==================== OBTENER ID DEL CURSO DESDE URL ====================
 
@@ -12,7 +23,7 @@ function obtenerCursoIdDesdeUrl() {
         return null;
     }
 
-    return parseInt(cursoId);
+    return cursoId; // UUID como string
 }
 
 function esModoPreview() {
@@ -23,118 +34,245 @@ function esModoPreview() {
 // ==================== FUNCIONES AUXILIARES ====================
 
 function formatearPrecio(precio) {
-    return `$${precio.toLocaleString('es-CL')} CLP`;
+    return `$${(precio || 0).toLocaleString('es-CL')} CLP`;
 }
 
-function calcularDuracionTotal(cursoId) {
-    const duracion = CursosData.calcularDuracionCurso(cursoId);
-    return CursosData.formatearDuracion(duracion);
+function formatearDuracion(minutos) {
+    if (!minutos || minutos <= 0) return '0 min';
+    if (minutos < 60) return `${minutos} min`;
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    if (mins === 0) return `${horas}h`;
+    return `${horas}h ${mins}min`;
+}
+
+function calcularDuracionTotal(modulos) {
+    let total = 0;
+    (modulos || []).forEach(modulo => {
+        (modulo.clases || []).forEach(clase => {
+            total += clase.duracion || clase.clase_duracion || 5;
+        });
+    });
+    return total;
 }
 
 function contarClasesTotales(modulos) {
-    return modulos.reduce((total, modulo) => {
-        const clases = CursosData.getClasesByModulo(modulo.id);
-        return total + clases.length;
+    return (modulos || []).reduce((total, modulo) => {
+        return total + (modulo.clases?.length || 0);
     }, 0);
 }
 
 /**
  * Valida que el perfil del usuario esté completo (nombre y apellido)
- * @param {Object} usuario - Objeto usuario de localStorage
- * @returns {boolean} - true si el perfil está completo, false en caso contrario
  */
 function validarPerfilCompleto(usuario) {
-    if (!usuario) {
-        return false;
-    }
-
-    // Verificar que nombre y apellido existan y no estén vacíos
+    if (!usuario) return false;
     const nombreCompleto = usuario.nombre && usuario.nombre.trim() !== '';
     const apellidoCompleto = usuario.apellido && usuario.apellido.trim() !== '';
-
     return nombreCompleto && apellidoCompleto;
+}
+
+// ==================== VERIFICAR ACCESO ====================
+
+async function verificarAccesoUsuario(cursoId) {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session) {
+            return { autenticado: false, tieneAcceso: false };
+        }
+
+        usuarioActual = session.user;
+
+        // Obtener perfil
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', session.user.id)
+            .single();
+
+        if (profile) {
+            usuarioActual.nombre = profile.first_name;
+            usuarioActual.apellido = profile.last_name;
+        }
+
+        // Verificar si tiene transacción pagada para este curso
+        const { data: transaccion, error } = await supabase
+            .from('transacciones')
+            .select('id, estado, created_at')
+            .eq('curso_id', cursoId)
+            .eq('usuario_id', session.user.id)
+            .eq('estado', 'PAGADO')
+            .limit(1)
+            .maybeSingle();
+
+        if (error) {
+            console.error('Error verificando acceso:', error);
+        }
+
+        return {
+            autenticado: true,
+            tieneAcceso: !!transaccion,
+            transaccion
+        };
+
+    } catch (error) {
+        console.error('Error en verificarAccesoUsuario:', error);
+        return { autenticado: false, tieneAcceso: false };
+    }
 }
 
 // ==================== CARGAR INFORMACIÓN DEL CURSO ====================
 
-function cargarInformacionCurso(cursoId) {
-    // Inicializar CursosData si es necesario
-    if (typeof CursosData.init === 'function') {
-        CursosData.init();
+async function cargarInformacionCurso(cursoId) {
+    try {
+        // Mostrar estado de carga
+        mostrarCargando();
+
+        // Verificar acceso del usuario
+        const acceso = await verificarAccesoUsuario(cursoId);
+        tieneAcceso = acceso.tieneAcceso;
+
+        // Obtener datos básicos del curso
+        const { data: curso, error: cursoError } = await supabase
+            .from('cursos')
+            .select('id, nombre, descripcion, portada, precio, estado, duracion_acceso')
+            .eq('id', cursoId)
+            .single();
+
+        if (cursoError) throw cursoError;
+
+        if (!curso) {
+            mostrarError('El curso solicitado no existe.');
+            return;
+        }
+
+        // Verificar estado del curso
+        const modoPreview = esModoPreview();
+        if (!modoPreview && curso.estado !== 'publicado') {
+            mostrarError('Este curso no está disponible en este momento.');
+            return;
+        }
+
+        cursoActual = curso;
+
+        // Obtener estructura usando la función RPC segura
+        const { data: previewData, error: previewError } = await supabase
+            .rpc('obtener_preview_curso', {
+                curso_id_input: cursoId
+            });
+
+        if (previewError) {
+            console.error('Error al obtener preview:', previewError);
+            // Continuar sin módulos si falla
+        }
+
+        // Agrupar por módulo
+        const modulosMap = new Map();
+        (previewData || []).forEach(row => {
+            if (!modulosMap.has(row.modulo_nombre)) {
+                modulosMap.set(row.modulo_nombre, {
+                    nombre: row.modulo_nombre,
+                    orden: row.modulo_orden,
+                    clases: []
+                });
+            }
+            modulosMap.get(row.modulo_nombre).clases.push({
+                nombre: row.clase_nombre,
+                orden: row.clase_orden,
+                tipo: row.clase_tipo,
+                duracion: row.clase_duracion
+            });
+        });
+
+        const modulos = Array.from(modulosMap.values())
+            .sort((a, b) => a.orden - b.orden);
+
+        modulos.forEach(mod => {
+            mod.clases.sort((a, b) => a.orden - b.orden);
+        });
+
+        cursoActual.modulos = modulos;
+
+        console.log('Curso cargado:', cursoActual);
+
+        // Actualizar título de la página
+        document.title = `${curso.nombre} - KIKIBROWS`;
+
+        // Cargar UI
+        cargarHero(cursoActual);
+        cargarMetaInfo(cursoActual);
+        cargarModulos(cursoActual.modulos);
+        configurarBotonCompra(cursoActual, acceso);
+
+    } catch (error) {
+        console.error('Error al cargar curso:', error);
+        mostrarError('Error al cargar la información del curso.');
     }
+}
 
-    const curso = CursosData.getCurso(cursoId);
+// ==================== MOSTRAR CARGANDO ====================
 
-    if (!curso) {
-        mostrarError('El curso solicitado no existe o no está disponible.');
-        return;
-    }
+function mostrarCargando() {
+    const container = document.querySelector('.preview-main .container');
+    if (!container) return;
 
-    // Verificar que el curso esté publicado (salvo que sea modo preview de admin)
-    const modoPreview = esModoPreview();
-    if (!modoPreview && curso.estado !== 'publicado') {
-        mostrarError('Este curso no está disponible en este momento.');
-        return;
-    }
-
-    console.log('Cargando curso:', curso);
-
-    // Actualizar título de la página
-    document.title = `${curso.nombre} - KIKIBROWS`;
-
-    // Cargar hero
-    cargarHero(curso);
-
-    // Cargar meta info
-    cargarMetaInfo(curso, cursoId);
-
-    // Cargar módulos
-    cargarModulos(cursoId);
-
-    // Configurar botón de compra
-    configurarBotonCompra(curso);
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 text-muted">Cargando información del curso...</p>
+        </div>
+    `;
 }
 
 // ==================== CARGAR HERO ====================
 
 function cargarHero(curso) {
-    document.getElementById('cursoNombre').textContent = curso.nombre;
-    document.getElementById('cursoDescripcion').textContent =
-        curso.descripcion || 'Sin descripción disponible.';
-
+    const nombreEl = document.getElementById('cursoNombre');
+    const descripcionEl = document.getElementById('cursoDescripcion');
     const portadaEl = document.getElementById('heroPortada');
-    if (curso.portada) {
-        portadaEl.innerHTML = `<img src="${curso.portada}" alt="${curso.nombre}">`;
-    } else {
-        portadaEl.innerHTML = '<i class="fas fa-image"></i>';
+
+    if (nombreEl) nombreEl.textContent = curso.nombre;
+    if (descripcionEl) descripcionEl.textContent = curso.descripcion || 'Sin descripción disponible.';
+
+    if (portadaEl) {
+        if (curso.portada) {
+            portadaEl.innerHTML = `<img src="${curso.portada}" alt="${curso.nombre}">`;
+        } else {
+            portadaEl.innerHTML = '<i class="fas fa-image"></i>';
+        }
     }
 }
 
 // ==================== CARGAR META INFO ====================
 
-function cargarMetaInfo(curso, cursoId) {
-    document.getElementById('cursoPrecio').textContent =
-        formatearPrecio(curso.precio || 0);
+function cargarMetaInfo(curso) {
+    const precioEl = document.getElementById('cursoPrecio');
+    const duracionEl = document.getElementById('cursoDuracion');
+    const modulosEl = document.getElementById('cursoModulos');
 
-    const duracion = CursosData.calcularDuracionCurso(cursoId);
-    document.getElementById('cursoDuracion').textContent =
-        CursosData.formatearDuracion(duracion);
+    if (precioEl) precioEl.textContent = formatearPrecio(curso.precio);
 
-    const modulos = CursosData.getModulosByCurso(cursoId);
-    const totalClases = contarClasesTotales(modulos);
-    document.getElementById('cursoModulos').textContent =
-        `${modulos.length} módulos · ${totalClases} clases`;
+    const duracion = calcularDuracionTotal(curso.modulos);
+    if (duracionEl) duracionEl.textContent = formatearDuracion(duracion);
+
+    const totalClases = contarClasesTotales(curso.modulos);
+    if (modulosEl) {
+        modulosEl.textContent = `${(curso.modulos || []).length} módulos · ${totalClases} clases`;
+    }
 }
 
 // ==================== CARGAR MÓDULOS ====================
 
-function cargarModulos(cursoId) {
-    const modulos = CursosData.getModulosByCurso(cursoId);
+function cargarModulos(modulos) {
     const container = document.getElementById('modulosList');
+    if (!container) return;
 
     container.innerHTML = '';
 
-    if (modulos.length === 0) {
+    if (!modulos || modulos.length === 0) {
         container.innerHTML = `
             <div class="no-modulos">
                 <i class="fas fa-folder-open"></i>
@@ -146,9 +284,8 @@ function cargarModulos(cursoId) {
     }
 
     modulos.forEach((modulo, index) => {
-        const clases = CursosData.getClasesByModulo(modulo.id);
-        const duracion = CursosData.calcularDuracionModulo(modulo.id);
-        const moduloEl = crearModuloElement(modulo, clases, duracion, index + 1, index === 0);
+        const duracion = (modulo.clases || []).reduce((t, c) => t + (c.duracion || 5), 0);
+        const moduloEl = crearModuloElement(modulo, modulo.clases || [], duracion, index + 1, index === 0);
         container.appendChild(moduloEl);
     });
 }
@@ -165,7 +302,7 @@ function crearModuloElement(modulo, clases, duracion, numero, expandido) {
         <div class="modulo-body ${expandido ? 'show' : ''}">
             <div class="modulo-meta">
                 <span>${clases.length} clases</span>
-                <span>${CursosData.formatearDuracion(duracion)}</span>
+                <span>${formatearDuracion(duracion)}</span>
             </div>
             <div class="clases-list">
                 ${clases.map(clase => crearClaseHTML(clase)).join('')}
@@ -186,19 +323,27 @@ function crearModuloElement(modulo, clases, duracion, numero, expandido) {
 function crearClaseHTML(clase) {
     const iconos = {
         video: 'fa-play-circle',
+        VIDEO: 'fa-play-circle',
         texto: 'fa-file-alt',
+        TEXTO: 'fa-file-alt',
         pdf: 'fa-file-pdf',
+        PDF: 'fa-file-pdf',
         quiz: 'fa-question-circle',
-        entrega: 'fa-upload'
+        QUIZ: 'fa-question-circle',
+        entrega: 'fa-upload',
+        ENTREGA: 'fa-upload',
+        PRACTICA: 'fa-upload'
     };
+
+    const tipo = clase.tipo || 'video';
 
     return `
         <div class="clase-row">
             <div class="clase-check"><i class="fas fa-check"></i></div>
             <span class="clase-nombre">${clase.nombre}</span>
             <div class="clase-meta">
-                <i class="fas ${iconos[clase.tipo] || 'fa-file'}"></i>
-                <span>${clase.duracion} min</span>
+                <i class="fas ${iconos[tipo] || 'fa-file'}"></i>
+                <span>${clase.duracion || 5} min</span>
             </div>
         </div>
     `;
@@ -206,79 +351,86 @@ function crearClaseHTML(clase) {
 
 // ==================== CONFIGURAR BOTÓN DE COMPRA ====================
 
-function configurarBotonCompra(curso) {
+function configurarBotonCompra(curso, acceso) {
     const btnComprar = document.getElementById('btnComprarCurso');
+    if (!btnComprar) return;
 
+    // Si ya tiene acceso, cambiar el botón
+    if (acceso.tieneAcceso) {
+        btnComprar.innerHTML = '<i class="fas fa-play me-2"></i>Ir al Aula Virtual';
+        btnComprar.classList.remove('btn-primary');
+        btnComprar.classList.add('btn-success');
+
+        btnComprar.addEventListener('click', () => {
+            localStorage.setItem('activeCourseId', curso.id);
+            window.location.href = 'claseAlumn.html?curso=' + curso.id;
+        });
+        return;
+    }
+
+    // Configurar para compra
     btnComprar.addEventListener('click', () => {
         // Verificar si el usuario está autenticado
-        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-
-        if (!usuarioActual) {
-            // Si no está autenticado, guardar la URL actual para redirigir después del login
+        if (!acceso.autenticado) {
             localStorage.setItem('redirectAfterLogin', window.location.href);
             alert('Debes iniciar sesión para comprar este curso.');
             window.location.href = 'login.html';
             return;
         }
 
-        // Verificar que el perfil esté completo (nombre y apellido)
+        // Verificar que el perfil esté completo
         if (!validarPerfilCompleto(usuarioActual)) {
             const confirmar = confirm(
-                '⚠️ Completa tu perfil antes de comprar\n\n' +
+                'Completa tu perfil antes de comprar\n\n' +
                 'Para poder generar tu certificado al finalizar el curso, necesitamos que completes tu perfil con tu nombre y apellido.\n\n' +
-                'Estos datos se capturarán en tu certificado y no podrán modificarse después.\n\n' +
                 '¿Deseas completar tu perfil ahora?'
             );
 
             if (confirmar) {
-                // Guardar la URL actual para redirigir después de completar el perfil
                 localStorage.setItem('redirectAfterLogin', window.location.href);
                 window.location.href = 'account.html';
             }
             return;
         }
 
-        // Verificar si ya tiene el curso
-        const usuariosData = JSON.parse(localStorage.getItem('kikibrows_usuarios')) || {};
-        const datosUsuario = usuariosData[usuarioActual.email] || {};
-        const cursosAdquiridos = datosUsuario.cursosAdquiridos || [];
-
-        if (cursosAdquiridos.includes(curso.id)) {
-            alert('Ya has adquirido este curso. Puedes acceder desde tu panel de estudiante.');
-            window.location.href = 'Alumno.html';
-            return;
-        }
-
-        // Si está autenticado, tiene perfil completo y no tiene el curso, abrir portal de pago
-        abrirPortalPago(curso, usuarioActual);
+        // Abrir portal de pago
+        abrirPortalPago(curso);
     });
 }
 
 // ==================== PORTAL DE PAGO ====================
 
-function abrirPortalPago(curso, usuario) {
+function abrirPortalPago(curso) {
     const modal = document.getElementById('portalPagoModal');
+    if (!modal) return;
 
     // Cargar información del curso en el modal
-    document.getElementById('portalCursoNombre').textContent = curso.nombre;
-    document.getElementById('portalCursoPrecio').textContent = formatearPrecio(curso.precio || 0);
+    const portalNombre = document.getElementById('portalCursoNombre');
+    const portalPrecio = document.getElementById('portalCursoPrecio');
+
+    if (portalNombre) portalNombre.textContent = curso.nombre;
+    if (portalPrecio) portalPrecio.textContent = formatearPrecio(curso.precio);
 
     // Mostrar modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
     // Configurar eventos del modal
-    configurarEventosPortalPago(curso, usuario);
+    configurarEventosPortalPago(curso);
 }
 
 function cerrarPortalPago() {
     const modal = document.getElementById('portalPagoModal');
+    if (!modal) return;
+
     modal.classList.remove('active');
     document.body.style.overflow = 'auto';
 
     // Resetear secciones de pago
-    document.getElementById('seccionWebpay').style.display = 'none';
-    document.getElementById('seccionMercadoPago').style.display = 'none';
+    const seccionWebpay = document.getElementById('seccionWebpay');
+    const seccionMercadoPago = document.getElementById('seccionMercadoPago');
+    if (seccionWebpay) seccionWebpay.style.display = 'none';
+    if (seccionMercadoPago) seccionMercadoPago.style.display = 'none';
 
     // Resetear botones de método de pago
     document.querySelectorAll('.metodo-pago-btn').forEach(btn => {
@@ -286,239 +438,157 @@ function cerrarPortalPago() {
     });
 }
 
-function configurarEventosPortalPago(curso, usuario) {
+function configurarEventosPortalPago(curso) {
     // Botón cerrar
     const btnCerrar = document.getElementById('btnCerrarPortal');
-    btnCerrar.onclick = cerrarPortalPago;
+    if (btnCerrar) btnCerrar.onclick = cerrarPortalPago;
 
     // Botón volver
     const btnVolver = document.getElementById('btnVolverCheckout');
-    btnVolver.onclick = cerrarPortalPago;
+    if (btnVolver) btnVolver.onclick = cerrarPortalPago;
 
     // Cerrar al hacer click en overlay
     const overlay = document.querySelector('.portal-pago-overlay');
-    overlay.onclick = cerrarPortalPago;
+    if (overlay) overlay.onclick = cerrarPortalPago;
 
     // Botón Webpay
     const btnWebpay = document.getElementById('btnWebpay');
-    btnWebpay.onclick = () => {
-        // Marcar como seleccionado
-        document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
-        btnWebpay.classList.add('selected');
+    if (btnWebpay) {
+        btnWebpay.onclick = () => {
+            document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
+            btnWebpay.classList.add('selected');
 
-        // Mostrar sección de Webpay
-        document.getElementById('seccionWebpay').style.display = 'block';
-        document.getElementById('seccionMercadoPago').style.display = 'none';
+            const seccionWebpay = document.getElementById('seccionWebpay');
+            const seccionMercadoPago = document.getElementById('seccionMercadoPago');
+            if (seccionWebpay) seccionWebpay.style.display = 'block';
+            if (seccionMercadoPago) seccionMercadoPago.style.display = 'none';
 
-        // Scroll hacia la sección
-        document.getElementById('seccionWebpay').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    };
+            seccionWebpay?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
+    }
 
     // Botón Mercado Pago
     const btnMercadoPago = document.getElementById('btnMercadoPago');
-    btnMercadoPago.onclick = () => {
-        // Marcar como seleccionado
-        document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
-        btnMercadoPago.classList.add('selected');
+    if (btnMercadoPago) {
+        btnMercadoPago.onclick = () => {
+            document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
+            btnMercadoPago.classList.add('selected');
 
-        // Mostrar sección de Mercado Pago
-        document.getElementById('seccionWebpay').style.display = 'none';
-        document.getElementById('seccionMercadoPago').style.display = 'block';
+            const seccionWebpay = document.getElementById('seccionWebpay');
+            const seccionMercadoPago = document.getElementById('seccionMercadoPago');
+            if (seccionWebpay) seccionWebpay.style.display = 'none';
+            if (seccionMercadoPago) seccionMercadoPago.style.display = 'block';
 
-        // Scroll hacia la sección
-        document.getElementById('seccionMercadoPago').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    };
+            seccionMercadoPago?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
+    }
 
-    // Configurar evento de pago con Webpay
+    // Formulario Webpay
     const formWebpay = document.getElementById('formWebpay');
-    formWebpay.onsubmit = (e) => {
-        e.preventDefault();
-        iniciarPagoWebpay(curso, usuario);
-    };
+    if (formWebpay) {
+        formWebpay.onsubmit = (e) => {
+            e.preventDefault();
+            iniciarPagoWebpay(curso);
+        };
+    }
 
-    // Configurar evento de pago con Mercado Pago
+    // Botón Mercado Pago pagar
     const btnPagarMP = document.getElementById('btnPagarMercadoPago');
-    btnPagarMP.onclick = () => {
-        iniciarPagoMercadoPago(curso, usuario);
-    };
+    if (btnPagarMP) {
+        btnPagarMP.onclick = () => iniciarPagoMercadoPago(curso);
+    }
 }
 
 // ==================== INTEGRACIÓN DE PASARELAS DE PAGO ====================
 
-function iniciarPagoWebpay(curso, usuario) {
+async function iniciarPagoWebpay(curso) {
     console.log('Iniciando pago con Webpay para curso:', curso.nombre);
 
-    // AQUÍ SE INTEGRARÁ LA LÓGICA DE TRANSBANK/WEBPAY
-    // Ejemplo de flujo:
-    // 1. Crear transacción en el backend
-    // 2. Obtener token de Webpay
-    // 3. Redirigir a la página de pago de Webpay
-
-    /*
-    // Ejemplo de integración (descomentar cuando se configure el backend):
-    fetch('/api/transbank/crear-transaccion', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            cursoId: curso.id,
-            monto: curso.precio,
-            usuarioEmail: usuario.email
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Redirigir a Webpay con el token
-        document.getElementById('tokenWebpay').value = data.token;
-        document.getElementById('formWebpay').action = data.url;
-        document.getElementById('formWebpay').submit();
-    })
-    .catch(error => {
-        console.error('Error al crear transacción:', error);
-        alert('Hubo un error al procesar el pago. Por favor intenta nuevamente.');
-    });
-    */
-
-    // SIMULACIÓN TEMPORAL (eliminar cuando se integre la API real)
+    // SIMULACIÓN TEMPORAL
     alert('Portal de pago de Webpay/Transbank.\n\nAquí se redirigirá a la pasarela de pago de Transbank.\n\nPor ahora es una simulación.');
 
-    // Simulación de compra exitosa (eliminar en producción)
-    procesarCompraExitosa(curso, usuario, 'Webpay Plus');
+    await procesarCompraExitosa(curso, 'Webpay Plus');
 }
 
-function iniciarPagoMercadoPago(curso, usuario) {
+async function iniciarPagoMercadoPago(curso) {
     console.log('Iniciando pago con Mercado Pago para curso:', curso.nombre);
 
-    // AQUÍ SE INTEGRARÁ LA LÓGICA DE MERCADO PAGO
-    // Ejemplo de flujo:
-    // 1. Crear preferencia de pago en el backend
-    // 2. Inicializar el checkout de Mercado Pago
-    // 3. Redirigir o mostrar el checkout
-
-    /*
-    // Ejemplo de integración (descomentar cuando se configure el backend):
-    fetch('/api/mercadopago/crear-preferencia', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            cursoId: curso.id,
-            titulo: curso.nombre,
-            precio: curso.precio,
-            usuarioEmail: usuario.email
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Inicializar Mercado Pago Checkout
-        const mp = new MercadoPago('TU_PUBLIC_KEY');
-        mp.checkout({
-            preference: {
-                id: data.preferenceId
-            },
-            render: {
-                container: '#mercadoPagoCheckout',
-                label: 'Pagar con Mercado Pago',
-            }
-        });
-    })
-    .catch(error => {
-        console.error('Error al crear preferencia:', error);
-        alert('Hubo un error al procesar el pago. Por favor intenta nuevamente.');
-    });
-    */
-
-    // SIMULACIÓN TEMPORAL (eliminar cuando se integre la API real)
+    // SIMULACIÓN TEMPORAL
     alert('Portal de pago de Mercado Pago.\n\nAquí se mostrará el checkout de Mercado Pago.\n\nPor ahora es una simulación.');
 
-    // Simulación de compra exitosa (eliminar en producción)
-    procesarCompraExitosa(curso, usuario, 'Mercado Pago');
+    await procesarCompraExitosa(curso, 'Mercado Pago');
 }
 
-function procesarCompraExitosa(curso, usuario, metodoPago = 'Webpay Plus') {
-    // Esta función se llamará cuando el pago sea confirmado
-    // En producción, esto debería ser llamado desde el callback/webhook de la pasarela
+async function procesarCompraExitosa(curso, metodoPago) {
+    try {
+        const fechaCompra = new Date();
+        const diasAcceso = curso.duracion_acceso || 180;
+        const transaccionId = generarTransaccionId();
+        const codigoAutorizacion = generarCodigoAutorizacion();
 
-    const usuariosData = JSON.parse(localStorage.getItem('kikibrows_usuarios')) || {};
-    const datosUsuario = usuariosData[usuario.email] || {};
+        // Registrar transacción en Supabase
+        const { data: transaccion, error } = await supabase
+            .from('transacciones')
+            .insert([{
+                usuario_id: usuarioActual.id,
+                curso_id: curso.id,
+                monto: curso.precio,
+                estado: 'PAGADO',
+                metodo_pago: metodoPago,
+                codigo_autorizacion: codigoAutorizacion
+            }])
+            .select()
+            .single();
 
-    // Agregar curso a cursosAdquiridos
-    const cursosAdquiridos = datosUsuario.cursosAdquiridos || [];
-    cursosAdquiridos.push(curso.id);
+        if (error) {
+            console.error('Error al registrar transacción:', error);
+            // Continuar con el flujo de UI aunque falle el registro
+        }
 
-    // Calcular fecha de expiración
-    const fechaCompra = new Date();
-    const diasAcceso = curso.duracionAcceso || 180;
-    const fechaExpiracion = new Date(fechaCompra);
-    fechaExpiracion.setDate(fechaExpiracion.getDate() + diasAcceso);
+        // Crear objeto de transacción para localStorage (página de confirmación)
+        const transaccionLocal = {
+            estado: 'PAGADO',
+            cursoId: curso.id,
+            cursoNombre: curso.nombre,
+            monto: curso.precio,
+            metodoPago: metodoPago,
+            fecha: fechaCompra.toISOString(),
+            codigoAutorizacion: codigoAutorizacion,
+            transaccionId: transaccion?.id || transaccionId,
+            usuarioEmail: usuarioActual.email,
+            usuarioNombre: usuarioActual.nombre
+        };
 
-    // Actualizar accesoCursos
-    if (!datosUsuario.accesoCursos) {
-        datosUsuario.accesoCursos = {};
+        localStorage.setItem('ultimaTransaccion', JSON.stringify(transaccionLocal));
+
+        // También guardar en historial local
+        guardarTransaccionEnHistorial(transaccionLocal);
+
+        // Cerrar portal y redirigir
+        cerrarPortalPago();
+        window.location.href = 'payment-confirmation.html';
+
+    } catch (error) {
+        console.error('Error procesando compra:', error);
+        alert('Hubo un error al procesar la compra. Por favor intenta nuevamente.');
     }
-
-    datosUsuario.accesoCursos[curso.id] = {
-        fechaCompra: fechaCompra.toISOString().split('T')[0],
-        fechaExpiracion: fechaExpiracion.toISOString().split('T')[0],
-        diasAcceso: diasAcceso
-    };
-
-    // Actualizar datos del usuario
-    datosUsuario.cursosAdquiridos = cursosAdquiridos;
-    usuariosData[usuario.email] = datosUsuario;
-
-    // Guardar en localStorage
-    localStorage.setItem('kikibrows_usuarios', JSON.stringify(usuariosData));
-
-    // Crear objeto de transacción
-    const transaccionId = generarTransaccionId();
-    const codigoAutorizacion = generarCodigoAutorizacion();
-
-    const transaccion = {
-        estado: 'PAGADO',
-        cursoId: curso.id,
-        cursoNombre: curso.nombre,
-        monto: curso.precio,
-        metodoPago: metodoPago,
-        fecha: fechaCompra.toISOString(),
-        codigoAutorizacion: codigoAutorizacion,
-        transaccionId: transaccionId,
-        usuarioEmail: usuario.email,
-        usuarioNombre: usuario.nombre
-    };
-
-    // Guardar transacción en localStorage para la página de confirmación
-    localStorage.setItem('ultimaTransaccion', JSON.stringify(transaccion));
-
-    // Guardar en historial de transacciones
-    guardarTransaccionEnHistorial(transaccion);
-
-    // Cerrar portal y redirigir a página de confirmación
-    cerrarPortalPago();
-    window.location.href = 'payment-confirmation.html';
 }
 
 // ==================== FUNCIONES AUXILIARES DE TRANSACCIONES ====================
 
 function generarTransaccionId() {
-    // Generar un ID único para la transacción
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 10000);
     return `TXN-${timestamp}-${random}`;
 }
 
 function generarCodigoAutorizacion() {
-    // Generar un código de autorización de 6 dígitos
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 function guardarTransaccionEnHistorial(transaccion) {
-    // Obtener historial existente
     const historial = JSON.parse(localStorage.getItem('kikibrows_transacciones')) || [];
 
-    // Agregar nueva transacción
     historial.push({
         id: transaccion.transaccionId,
         producto: transaccion.cursoNombre,
@@ -534,16 +604,15 @@ function guardarTransaccionEnHistorial(transaccion) {
         gatewayToken: transaccion.transaccionId
     });
 
-    // Guardar historial actualizado
     localStorage.setItem('kikibrows_transacciones', JSON.stringify(historial));
-
-    console.log('Transacción guardada en historial:', transaccion.transaccionId);
 }
 
 // ==================== MANEJO DE ERRORES ====================
 
 function mostrarError(mensaje) {
     const container = document.querySelector('.preview-main .container');
+    if (!container) return;
+
     container.innerHTML = `
         <div class="alert alert-danger text-center mt-5" role="alert">
             <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
@@ -558,7 +627,7 @@ function mostrarError(mensaje) {
 // ==================== INICIALIZACIÓN ====================
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Inicializando coursePreview.js');
+    console.log('Inicializando coursePreview.js con Supabase');
 
     const cursoId = obtenerCursoIdDesdeUrl();
 
@@ -572,7 +641,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const previewBanner = document.getElementById('previewBanner');
         if (previewBanner) {
             previewBanner.style.display = 'flex';
-            // Ajustar padding del body para que no tape el contenido
             document.body.style.paddingTop = '50px';
         }
     }

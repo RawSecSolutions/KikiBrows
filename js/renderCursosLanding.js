@@ -1,11 +1,16 @@
 // js/renderCursosLanding.js - Renderiza dinámicamente los cursos en index.html
-// Este script carga cursos desde CursosData y genera las tarjetas automáticamente
+// Conecta con Supabase para obtener cursos publicados
+
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
     renderizarCursos();
 });
 
-function renderizarCursos() {
+async function renderizarCursos() {
     const container = document.querySelector('.productos-grid');
 
     if (!container) {
@@ -13,22 +18,60 @@ function renderizarCursos() {
         return;
     }
 
-    // Limpiar contenido existente
-    container.innerHTML = '';
+    // Mostrar estado de carga
+    container.innerHTML = `
+        <div class="text-center py-5 w-100">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 text-muted">Cargando cursos...</p>
+        </div>
+    `;
 
-    // Obtener todos los cursos publicados
-    const todosLosCursos = CursosData.getAllCursos();
-    const cursosPublicados = todosLosCursos.filter(curso => curso.estado === 'publicado');
+    try {
+        // Obtener cursos publicados desde Supabase
+        const { data: cursosPublicados, error } = await supabase
+            .from('cursos')
+            .select('id, nombre, descripcion, portada, precio, estado')
+            .eq('estado', 'publicado')
+            .order('created_at', { ascending: false });
 
-    if (cursosPublicados.length === 0) {
-        container.innerHTML = '<p class="text-center text-muted">No hay cursos disponibles en este momento.</p>';
-        return;
+        if (error) throw error;
+
+        if (!cursosPublicados || cursosPublicados.length === 0) {
+            container.innerHTML = '<p class="text-center text-muted">No hay cursos disponibles en este momento.</p>';
+            return;
+        }
+
+        // Crear carrusel en lugar de grid
+        crearCarruselCursos(container, cursosPublicados);
+
+        console.log(`${cursosPublicados.length} cursos renderizados en carrusel`);
+
+    } catch (error) {
+        console.error('Error al cargar cursos:', error);
+
+        // Fallback: intentar usar CursosData si está disponible
+        if (typeof CursosData !== 'undefined' && CursosData._initialized) {
+            const todosLosCursos = CursosData.getAllCursos();
+            const cursosPublicados = todosLosCursos.filter(curso => curso.estado === 'publicado');
+
+            if (cursosPublicados.length > 0) {
+                crearCarruselCursos(container, cursosPublicados);
+                return;
+            }
+        }
+
+        container.innerHTML = `
+            <div class="text-center py-5 w-100">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <p class="text-muted">No se pudieron cargar los cursos. Intenta de nuevo más tarde.</p>
+                <button class="btn btn-outline-primary mt-2" onclick="window.renderizarCursos()">
+                    <i class="fas fa-refresh me-2"></i>Reintentar
+                </button>
+            </div>
+        `;
     }
-
-    // Crear carrusel en lugar de grid
-    crearCarruselCursos(container, cursosPublicados);
-
-    console.log(`${cursosPublicados.length} cursos renderizados en carrusel`);
 }
 
 function crearCarruselCursos(container, cursos) {
@@ -97,10 +140,10 @@ function crearCarruselCursos(container, cursos) {
 }
 
 function crearTarjetaCursoHTML(curso) {
-    const imagenUrl = curso.portada || 'tu-imagen-curso-default.jpg';
-    const descripcionCorta = curso.descripcion.length > 100
+    const imagenUrl = curso.portada || 'img/curso-default.jpg';
+    const descripcionCorta = curso.descripcion && curso.descripcion.length > 100
         ? curso.descripcion.substring(0, 100) + '...'
-        : curso.descripcion;
+        : (curso.descripcion || 'Sin descripción disponible');
 
     return `
         <div class="producto-card" data-curso-id="${curso.id}">
@@ -120,12 +163,12 @@ function crearTarjetaCurso(curso) {
     card.dataset.cursoId = curso.id;
 
     // Imagen de portada (si existe, sino usa placeholder)
-    const imagenUrl = curso.portada || 'tu-imagen-curso-default.jpg';
+    const imagenUrl = curso.portada || 'img/curso-default.jpg';
 
     // Truncar descripción si es muy larga
-    const descripcionCorta = curso.descripcion.length > 100
+    const descripcionCorta = curso.descripcion && curso.descripcion.length > 100
         ? curso.descripcion.substring(0, 100) + '...'
-        : curso.descripcion;
+        : (curso.descripcion || 'Sin descripción disponible');
 
     card.innerHTML = `
         <div class="producto-image" style="background-image: url('${imagenUrl}');"></div>

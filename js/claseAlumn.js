@@ -459,8 +459,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================== CONTENIDO: QUIZ (H6.4) ====================
 
     function renderQuizContent(forceRetry = false) {
-        const questions = quizQuestions[currentClaseId] || quizQuestions[4];
-        const passingScore = currentClase.passingScore || 70;
+        // Intentar cargar preguntas desde metadata JSONB de la clase
+        let questions = [];
+        let passingScore = currentClase.passingScore || 70;
+
+        if (currentClase.metadata && currentClase.metadata.preguntas) {
+            // Cargar desde metadata de Supabase
+            const config = currentClase.metadata.configuracion || {};
+            passingScore = config.porcentaje_aprobacion || 70;
+
+            questions = currentClase.metadata.preguntas.map(p => ({
+                id: p.id,
+                pregunta: p.texto,
+                opciones: p.opciones.map(o => o.texto),
+                correcta: p.opciones.findIndex(o => o.correcta === true),
+                puntos: p.puntos || 10
+            }));
+
+            console.log('Quiz cargado desde metadata:', questions.length, 'preguntas');
+        } else {
+            // Fallback a preguntas hardcodeadas para compatibilidad
+            questions = quizQuestions[currentClaseId] || quizQuestions[4];
+        }
         const totalPoints = questions.reduce((sum, q) => sum + q.puntos, 0);
         const intentos = CursosData.getIntentosQuiz(currentClaseId);
         const ultimoIntento = intentos.length > 0 ? intentos[intentos.length - 1] : null;
@@ -706,8 +726,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderEntregaContent() {
         const modulo = CursosData.getModulo(currentModuloId);
         const ultimaEntrega = CursosData.getUltimaEntrega(currentClaseId);
-        const instrucciones = currentClase.instrucciones || 'Sube un video demostrando la técnica aprendida en este módulo.';
-        const demoVideo = currentClase.demoVideo || 'https://www.w3schools.com/html/mov_bbb.mp4';
+
+        // Leer configuración desde metadata JSONB si existe
+        const metadata = currentClase.metadata || {};
+        const instrucciones = metadata.instrucciones_entrega || currentClase.instrucciones || currentClase.descripcion || 'Sube un archivo demostrando la técnica aprendida en este módulo.';
+        const demoVideo = currentClase.video_url || currentClase.demoVideo || '';
+        const archivosPermitidos = metadata.archivos_permitidos || ['.jpg', '.png', '.pdf', '.mp4', '.webm'];
+        const pesoMaximoMb = metadata.peso_maximo_mb || 500;
+        const rubrica = metadata.rubrica_evaluacion || [];
+
+        // Determinar tipos de archivo para el input
+        const tiposArchivo = archivosPermitidos.map(ext => {
+            if (ext.includes('jpg') || ext.includes('png')) return 'image/*';
+            if (ext.includes('pdf')) return 'application/pdf';
+            if (ext.includes('mp4') || ext.includes('webm')) return 'video/*';
+            return ext;
+        }).join(',');
 
         let uploadSection = '';
         let statusSection = '';
@@ -720,12 +754,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="number">2</span>
                         ${ultimaEntrega?.estado === 'rechazada' ? 'Reenviar Tu Entrega' : 'Sube Tu Práctica'}
                     </h5>
+                    ${rubrica.length > 0 ? `
+                        <div class="rubrica-info mb-3">
+                            <h6><i class="fas fa-list-check me-2"></i>Criterios de Evaluación:</h6>
+                            <ul class="list-unstyled">
+                                ${rubrica.map(r => `<li><i class="fas fa-check text-success me-2"></i>${r.criterio}: ${r.puntos} pts</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                     <div class="upload-zone" id="uploadZone">
                         <div class="upload-icon">
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
-                        <div class="upload-text">Arrastra aquí tu video o haz clic para seleccionar</div>
-                        <div class="upload-hint">Formatos: MP4, WEBM | Máximo: 500MB</div>
+                        <div class="upload-text">Arrastra aquí tu archivo o haz clic para seleccionar</div>
+                        <div class="upload-hint">Formatos: ${archivosPermitidos.join(', ')} | Máximo: ${pesoMaximoMb}MB</div>
                         <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
                             <i class="fas fa-upload me-2"></i>Seleccionar Video
                         </button>
@@ -826,6 +868,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Construir sección de video solo si hay URL
+        const videoSection = demoVideo ? `
+            <div class="entrega-section">
+                <h5 class="entrega-section-title">
+                    <span class="number">1</span>
+                    Video Demostrativo
+                </h5>
+                <div class="entrega-demo-video">
+                    <div class="video-container">
+                        <video controls>
+                            <source src="${demoVideo}" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+            </div>
+        ` : '';
+
         dynamicContent.innerHTML = `
             <div class="entrega-container">
                 <div class="entrega-instructions">
@@ -833,20 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="mb-0 mt-2">${instrucciones}</p>
                 </div>
 
-                <div class="entrega-section">
-                    <h5 class="entrega-section-title">
-                        <span class="number">1</span>
-                        Video Demostrativo
-                    </h5>
-                    <div class="entrega-demo-video">
-                        <div class="video-container">
-                            <video controls>
-                                <source src="${demoVideo}" type="video/mp4">
-                            </video>
-                        </div>
-                    </div>
-                </div>
-
+                ${videoSection}
                 ${uploadSection}
                 ${statusSection}
             </div>
