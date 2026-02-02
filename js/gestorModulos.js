@@ -562,9 +562,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- 5.2 VALIDACIÓN Y SUBIDA DE VIDEO (H4.1 + H4.5) ---
             // Aplica si es 'video' o 'entrega' Y si es una creación nueva (para simplificar MVP)
-            const needsUpload = (tipo === 'video' || tipo === 'entrega') && !editingClaseId; 
-            
-            if (needsUpload) { 
+            const needsUpload = (tipo === 'video' || tipo === 'entrega') && !editingClaseId;
+
+            if (needsUpload) {
                 const fileInput = document.getElementById('videoFileInput');
                 const errorMsg = document.getElementById('videoValidationError');
                 const file = fileInput.files[0];
@@ -587,31 +587,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 errorMsg.classList.add('d-none');
 
-                // Simulación Visual de Subida
+                // Mostrar progreso de subida
                 const progressContainer = document.getElementById('uploadProgress');
                 const progressBar = progressContainer.querySelector('.progress-bar');
                 const progressPercent = document.getElementById('progressPercent');
-                
+
                 progressContainer.style.display = 'block';
-                saveClaseBtn.disabled = true; 
+                saveClaseBtn.disabled = true;
                 saveClaseBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Subiendo...';
 
-                let width = 0;
-                const interval = setInterval(() => {
-                    if (width >= 100) {
-                        clearInterval(interval);
-                        // Subida completa: Guardar datos en el DOM
-                        finishSaveClase(name, editClaseDuration.value || '5', tipo, contentData);
-                        
-                        // Restaurar botón
-                        saveClaseBtn.disabled = false;
-                        saveClaseBtn.textContent = 'Guardar';
-                    } else {
-                        width += 5; // Velocidad de simulación
-                        progressBar.style.width = width + '%';
-                        progressPercent.textContent = width + '%';
-                    }
-                }, 100);
+                // Obtener cursoId de la URL o usar 'general'
+                const urlParams = new URLSearchParams(window.location.search);
+                const cursoId = urlParams.get('curso') || 'general';
+
+                // Subida real a Supabase Storage (si el servicio está disponible)
+                if (typeof window.AdminCursosService !== 'undefined') {
+                    // Usar servicio real
+                    window.AdminCursosService.subirVideo(file, cursoId, 'clase_' + Date.now())
+                        .then(result => {
+                            progressBar.style.width = '100%';
+                            progressPercent.textContent = '100%';
+
+                            if (result.success) {
+                                console.log('Video subido a Supabase:', result.url);
+                                // Guardar URL del contenido en contentData
+                                const claseDataWithVideo = {
+                                    ...JSON.parse(contentData || '{}'),
+                                    contenido_url: result.url
+                                };
+                                finishSaveClase(name, editClaseDuration.value || '5', tipo, JSON.stringify(claseDataWithVideo), result.url);
+                            } else {
+                                errorMsg.textContent = result.error || 'Error al subir video';
+                                errorMsg.classList.remove('d-none');
+                                progressContainer.style.display = 'none';
+                            }
+
+                            saveClaseBtn.disabled = false;
+                            saveClaseBtn.textContent = 'Guardar';
+                        })
+                        .catch(err => {
+                            console.error('Error subiendo video:', err);
+                            errorMsg.textContent = 'Error de conexión al subir video';
+                            errorMsg.classList.remove('d-none');
+                            progressContainer.style.display = 'none';
+                            saveClaseBtn.disabled = false;
+                            saveClaseBtn.textContent = 'Guardar';
+                        });
+                } else {
+                    // Fallback: Simulación visual si el servicio no está cargado
+                    console.warn('AdminCursosService no disponible, usando simulación');
+                    let width = 0;
+                    const interval = setInterval(() => {
+                        if (width >= 100) {
+                            clearInterval(interval);
+                            finishSaveClase(name, editClaseDuration.value || '5', tipo, contentData);
+                            saveClaseBtn.disabled = false;
+                            saveClaseBtn.textContent = 'Guardar';
+                        } else {
+                            width += 5;
+                            progressBar.style.width = width + '%';
+                            progressPercent.textContent = width + '%';
+                        }
+                    }, 100);
+                }
                 return; // IMPORTANTE: Detener ejecución aquí, finishSaveClase se llama en el callback
             }
 
@@ -623,9 +661,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 6. ACTUALIZACIÓN DE LA LISTA EN EL DOM
     // ==========================================
-    function finishSaveClase(name, duration, tipo, customContent = null) {
+    function finishSaveClase(name, duration, tipo, customContent = null, videoUrl = null) {
         const typeInfo = claseTypes[tipo];
-        
+
         if (editingClaseId) {
             // --- EDITANDO ---
             const claseItem = document.querySelector(`.clase-item[data-clase-id="${editingClaseId}"]`);
@@ -636,6 +674,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (customContent !== null) {
                     claseItem.setAttribute('data-content', customContent);
                 }
+                // Actualizar URL del contenido si existe
+                if (videoUrl) {
+                    claseItem.setAttribute('data-contenido-url', videoUrl);
+                }
             }
         } else {
             // --- CREANDO ---
@@ -645,18 +687,24 @@ document.addEventListener('DOMContentLoaded', () => {
             newClase.setAttribute('data-clase-id', claseCounter);
             newClase.setAttribute('data-tipo', tipo);
             newClase.setAttribute('draggable', 'true');
-            
+
             // Guardar contenido rico
             if (customContent !== null) {
                 newClase.setAttribute('data-content', customContent);
             }
-            
+
+            // Guardar URL del contenido si se subió a Supabase
+            if (videoUrl) {
+                newClase.setAttribute('data-contenido-url', videoUrl);
+                console.log('Contenido URL guardada en elemento:', videoUrl);
+            }
+
             let actionsHTML = '';
-            
+
             // Agregar botón Play si tiene video asociado (Video o Entrega)
             if (tipo === 'video' || tipo === 'entrega') {
                 actionsHTML += `
-                    <button type="button" class="btn-clase-play" title="Previsualizar Video" onclick="previewVideo('${name}')">
+                    <button type="button" class="btn-clase-play" title="Previsualizar Video" onclick="previewVideo('${name}', this)">
                         <i class="fas fa-play"></i>
                     </button>
                 `;
