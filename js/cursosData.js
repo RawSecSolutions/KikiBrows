@@ -53,7 +53,6 @@ const CursosData = {
                             tipo,
                             duracion,
                             orden,
-                            video_url,
                             contenido_url,
                             contenido_texto,
                             metadata,

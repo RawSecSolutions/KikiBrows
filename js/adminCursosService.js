@@ -241,7 +241,6 @@ export const AdminCursosService = {
                 tipo: claseData.tipo || 'VIDEO',
                 duracion: claseData.duracion || 5,
                 orden: claseData.orden || 1,
-                video_url: claseData.video_url || null,
                 contenido_url: claseData.contenido_url || null,
                 contenido_texto: claseData.contenido_texto || null,
                 metadata: claseData.metadata || null
@@ -321,7 +320,7 @@ export const AdminCursosService = {
             // 2. Crear clase con URL del video
             const claseConVideo = {
                 ...claseData,
-                video_url: uploadResult.url
+                contenido_url: uploadResult.url
             };
 
             const claseResult = await this.crearClase(claseConVideo);
@@ -410,7 +409,6 @@ export const AdminCursosService = {
                             tipo,
                             duracion,
                             orden,
-                            video_url,
                             contenido_url,
                             contenido_texto,
                             metadata

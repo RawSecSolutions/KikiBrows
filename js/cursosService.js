@@ -107,7 +107,7 @@ export const CursosService = {
 
     /**
      * Obtener curso completo con todo el contenido (para alumnos con acceso)
-     * Incluye metadata, video_url, contenido_texto, etc.
+     * Incluye metadata, contenido_url, contenido_texto, etc.
      */
     async getCursoCompleto(cursoId) {
         try {
@@ -127,7 +127,6 @@ export const CursosService = {
                             tipo,
                             duracion,
                             orden,
-                            video_url,
                             contenido_url,
                             contenido_texto,
                             metadata
@@ -235,7 +234,6 @@ export const CursosService = {
                     tipo,
                     duracion,
                     orden,
-                    video_url,
                     contenido_url,
                     contenido_texto,
                     metadata,

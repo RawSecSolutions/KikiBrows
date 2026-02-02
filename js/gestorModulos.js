@@ -610,10 +610,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             if (result.success) {
                                 console.log('Video subido a Supabase:', result.url);
-                                // Guardar URL del video en contentData
+                                // Guardar URL del contenido en contentData
                                 const claseDataWithVideo = {
                                     ...JSON.parse(contentData || '{}'),
-                                    video_url: result.url
+                                    contenido_url: result.url
                                 };
                                 finishSaveClase(name, editClaseDuration.value || '5', tipo, JSON.stringify(claseDataWithVideo), result.url);
                             } else {
@@ -674,9 +674,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (customContent !== null) {
                     claseItem.setAttribute('data-content', customContent);
                 }
-                // Actualizar URL del video si existe
+                // Actualizar URL del contenido si existe
                 if (videoUrl) {
-                    claseItem.setAttribute('data-video-url', videoUrl);
+                    claseItem.setAttribute('data-contenido-url', videoUrl);
                 }
             }
         } else {
@@ -693,10 +693,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 newClase.setAttribute('data-content', customContent);
             }
 
-            // Guardar URL del video si se subió a Supabase
+            // Guardar URL del contenido si se subió a Supabase
             if (videoUrl) {
-                newClase.setAttribute('data-video-url', videoUrl);
-                console.log('Video URL guardada en elemento:', videoUrl);
+                newClase.setAttribute('data-contenido-url', videoUrl);
+                console.log('Contenido URL guardada en elemento:', videoUrl);
             }
 
             let actionsHTML = '';

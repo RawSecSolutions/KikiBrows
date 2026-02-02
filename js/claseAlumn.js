@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             // Video directo (subido a Supabase Storage o URL externa)
-            const videoSrc = currentClase.video_url || currentClase.src || currentClase.contenido_url || '';
+            const videoSrc = currentClase.contenido_url || currentClase.src || '';
 
             if (!videoSrc) {
                 dynamicContent.innerHTML = `
@@ -818,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Leer configuración desde metadata JSONB si existe
         const metadata = currentClase.metadata || {};
         const instrucciones = metadata.instrucciones_entrega || currentClase.instrucciones || currentClase.descripcion || 'Sube un archivo demostrando la técnica aprendida en este módulo.';
-        const demoVideo = currentClase.video_url || currentClase.demoVideo || '';
+        const demoVideo = currentClase.contenido_url || currentClase.demoVideo || '';
         const archivosPermitidos = metadata.archivos_permitidos || ['.jpg', '.png', '.pdf', '.mp4', '.webm'];
         const pesoMaximoMb = metadata.peso_maximo_mb || 500;
         const rubrica = metadata.rubrica_evaluacion || [];
