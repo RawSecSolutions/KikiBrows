@@ -1,5 +1,7 @@
 // js/creaCurso.js - Lógica para Creación de Curso
 
+import { AdminCursosService } from './adminCursosService.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // === ELEMENTOS ===
@@ -346,19 +348,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // === VALIDACIÓN Y ENVÍO ===
-    
+
     if (courseForm) {
-        courseForm.addEventListener('submit', function(e) {
+        courseForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const incompleteAlert = document.getElementById('incompleteFieldsAlert');
             const successAlert = document.getElementById('successAlert');
-            
+            const submitBtn = courseForm.querySelector('button[type="submit"]');
+
             incompleteAlert.classList.add('d-none');
             successAlert.classList.add('d-none');
-            
+
             let valid = true;
-            
+
             const requiredFields = courseForm.querySelectorAll('[required]');
             requiredFields.forEach(field => {
                 if (!field.value.trim()) {
@@ -368,32 +371,83 @@ document.addEventListener('DOMContentLoaded', () => {
                     field.classList.remove('is-invalid');
                 }
             });
-            
+
             // Validar imagen
             if (!imageInput.files.length && imageUploadedDisplay.classList.contains('d-none')) {
                 valid = false;
                 imageAlertText.textContent = 'Debes subir una imagen de portada.';
                 imageAlert.classList.remove('d-none');
             }
-            
+
             if (!valid) {
                 incompleteAlert.classList.remove('d-none');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
 
-            // Obtener el estado del curso
-            const status = courseStatus.value;
-            console.log('Estado del curso:', status);
+            // Deshabilitar botón mientras se procesa
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
 
-            // Aquí se enviaría al backend incluyendo el estado
-            // Ejemplo: { nombre, descripcion, precio, duracion, estado: status, ... }
+            try {
+                // Obtener valores del formulario
+                const courseName = document.getElementById('courseName').value.trim();
+                const courseDescription = document.getElementById('courseDescription').value.trim();
+                const coursePrice = parseFloat(document.getElementById('coursePrice').value) || 0;
+                const courseAccessDuration = parseInt(document.getElementById('courseAccessDuration').value) || 180;
+                const status = courseStatus.value;
 
-            successAlert.classList.remove('d-none');
+                // Subir imagen de portada
+                let portadaUrl = null;
+                if (imageInput.files.length > 0) {
+                    console.log('Subiendo imagen de portada...');
+                    const imageResult = await AdminCursosService.subirImagenPortada(imageInput.files[0]);
 
-            setTimeout(() => {
-                alert(`Curso creado exitosamente con estado: ${status === 'publicado' ? 'Publicado' : 'Borrador'}`);
-            }, 1000);
+                    if (!imageResult.success) {
+                        throw new Error(imageResult.error || 'Error al subir la imagen de portada');
+                    }
+                    portadaUrl = imageResult.url;
+                    console.log('Imagen subida:', portadaUrl);
+                }
+
+                // Crear el curso en Supabase
+                console.log('Creando curso en la base de datos...');
+                const cursoData = {
+                    nombre: courseName,
+                    descripcion: courseDescription,
+                    portada_url: portadaUrl,
+                    precio: coursePrice,
+                    estado: status,
+                    dias_duracion_acceso: courseAccessDuration
+                };
+
+                const result = await AdminCursosService.crearCurso(cursoData);
+
+                if (!result.success) {
+                    throw new Error(result.error?.message || result.error || 'Error al crear el curso');
+                }
+
+                console.log('Curso creado exitosamente:', result.data);
+
+                // Mostrar éxito
+                successAlert.classList.remove('d-none');
+                successAlert.innerHTML = `<i class="fas fa-check-circle me-2"></i>Curso "${courseName}" creado exitosamente como ${status === 'publicado' ? 'Publicado' : 'Borrador'}`;
+
+                // Redirigir a gestión de cursos
+                setTimeout(() => {
+                    window.location.href = 'gestionCursos.html';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error al crear curso:', error);
+                incompleteAlert.classList.remove('d-none');
+                incompleteAlert.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error.message || 'Error al crear el curso. Inténtalo de nuevo.'}`;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Rehabilitar botón
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Confirmar';
+            }
         });
     }
     

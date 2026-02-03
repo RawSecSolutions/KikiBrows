@@ -70,6 +70,56 @@ export const AdminCursosService = {
     },
 
     /**
+     * Subir imagen de portada a Supabase Storage
+     * @param {File} file - Archivo de imagen
+     * @returns {Promise<{success: boolean, url?: string, error?: any}>}
+     */
+    async subirImagenPortada(file) {
+        try {
+            if (!file) {
+                return { success: false, error: 'No se proporcionó archivo' };
+            }
+
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                return { success: false, error: 'Formato no válido. Solo PNG, JPG, WEBP' };
+            }
+
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSize) {
+                return { success: false, error: 'La imagen excede los 2MB permitidos' };
+            }
+
+            const fileExt = file.name.split('.').pop();
+            const timestamp = Date.now();
+            const fileName = `portadas/${timestamp}.${fileExt}`;
+
+            const { data, error } = await supabase.storage
+                .from('imagenes')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (error) throw error;
+
+            const { data: publicUrlData } = supabase.storage
+                .from('imagenes')
+                .getPublicUrl(fileName);
+
+            return {
+                success: true,
+                url: publicUrlData.publicUrl,
+                path: fileName
+            };
+
+        } catch (error) {
+            console.error('Error al subir imagen de portada:', error);
+            return { success: false, error: error.message || error };
+        }
+    },
+
+    /**
      * Subir archivo PDF a Supabase Storage
      */
     async subirPDF(file, cursoId, claseId = 'temp') {
