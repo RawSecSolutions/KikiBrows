@@ -370,26 +370,42 @@ export const CursosService = {
 
     /**
      * Subir una entrega práctica
+     * Path format: ${cursoId}/${claseId}/${userId}/${timestamp.ext}
+     *
+     * IMPORTANTE: Si la inserción en BD falla, se elimina el archivo del Storage
+     * para evitar archivos huérfanos (Caso 2 de seguridad)
      */
-    async subirEntrega(claseId, file, usuarioId) {
-        try {
-            // A. Subir archivo al Storage (Bucket 'entregas')
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${usuarioId}/${claseId}/${Date.now()}.${fileExt}`;
-            const filePath = fileName;
+    async subirEntrega(claseId, file, usuarioId, cursoId) {
+        // Validar que todos los parámetros sean UUIDs válidos o valores correctos
+        if (!cursoId || !claseId || !usuarioId) {
+            return {
+                success: false,
+                error: { message: 'Faltan parámetros requeridos: cursoId, claseId o usuarioId' }
+            };
+        }
 
+        let filePath = null; // Para poder limpiar si falla
+
+        try {
+            // A. Construir el path con formato requerido por políticas de Storage
+            // Formato: ${cursoId}/${claseId}/${userId}/${timestamp}.${ext}
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const timestamp = Date.now();
+            filePath = `${cursoId}/${claseId}/${usuarioId}/${timestamp}.${fileExt}`;
+
+            // B. Subir archivo al Storage (Bucket 'entregas')
             const { error: uploadError } = await supabase.storage
                 .from('entregas')
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
 
-            // B. Obtener URL pública (o firmada)
+            // C. Obtener URL pública
             const { data: publicUrlData } = supabase.storage
                 .from('entregas')
                 .getPublicUrl(filePath);
 
-            // C. Contar intentos anteriores
+            // D. Contar intentos anteriores
             const { data: intentosAnteriores } = await supabase
                 .from('entregas')
                 .select('intento_numero')
@@ -402,7 +418,7 @@ export const CursosService = {
                 ? intentosAnteriores[0].intento_numero + 1
                 : 1;
 
-            // D. Guardar registro en la tabla 'entregas'
+            // E. Guardar registro en la tabla 'entregas'
             const { data, error: dbError } = await supabase
                 .from('entregas')
                 .insert([{
@@ -416,11 +432,82 @@ export const CursosService = {
                 .select()
                 .single();
 
-            if (dbError) throw dbError;
-            return { success: true, data };
+            if (dbError) {
+                // CASO 2: Si la inserción en BD falla, eliminar archivo huérfano del Storage
+                console.error('Error insertando en BD, eliminando archivo huérfano del Storage...');
+                await supabase.storage.from('entregas').remove([filePath]);
+                throw dbError;
+            }
+
+            return { success: true, data, filePath };
 
         } catch (error) {
             console.error('Error subiendo entrega:', error);
+
+            // Limpieza adicional: si tenemos filePath y hubo error, intentar eliminar
+            if (filePath) {
+                try {
+                    await supabase.storage.from('entregas').remove([filePath]);
+                    console.log('Archivo huérfano eliminado del Storage');
+                } catch (cleanupError) {
+                    console.warn('No se pudo eliminar archivo huérfano:', cleanupError);
+                }
+            }
+
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Eliminar una entrega (solo si está en estado PENDIENTE)
+     */
+    async eliminarEntrega(entregaId, archivoUrl) {
+        try {
+            // A. Verificar que la entrega existe y está pendiente
+            const { data: entrega, error: fetchError } = await supabase
+                .from('entregas')
+                .select('*')
+                .eq('id', entregaId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            if (entrega.estado !== 'PENDIENTE') {
+                return {
+                    success: false,
+                    error: { message: 'Solo se pueden eliminar entregas pendientes' }
+                };
+            }
+
+            // B. Extraer el path del archivo desde la URL
+            // La URL tiene formato: .../entregas/cursoId/claseId/userId/timestamp.ext
+            const urlParts = archivoUrl.split('/entregas/');
+            if (urlParts.length > 1) {
+                const filePath = urlParts[1];
+
+                // C. Eliminar archivo del Storage
+                const { error: storageError } = await supabase.storage
+                    .from('entregas')
+                    .remove([filePath]);
+
+                if (storageError) {
+                    console.warn('Error eliminando archivo de storage:', storageError);
+                    // Continuamos aunque falle el storage
+                }
+            }
+
+            // D. Eliminar registro de la base de datos
+            const { error: dbError } = await supabase
+                .from('entregas')
+                .delete()
+                .eq('id', entregaId);
+
+            if (dbError) throw dbError;
+
+            return { success: true };
+
+        } catch (error) {
+            console.error('Error eliminando entrega:', error);
             return { success: false, error };
         }
     },
