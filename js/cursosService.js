@@ -24,10 +24,10 @@ export const CursosService = {
                     id,
                     nombre,
                     descripcion,
-                    portada,
+                    portada_url,
                     precio,
                     estado,
-                    duracion_acceso,
+                    dias_duracion_acceso,
                     created_at
                 `)
                 .eq('estado', 'PUBLICADO')
@@ -51,7 +51,7 @@ export const CursosService = {
             // Primero obtener datos básicos del curso
             const { data: cursoData, error: cursoError } = await supabase
                 .from('cursos')
-                .select('id, nombre, descripcion, portada, precio, estado, duracion_acceso')
+                .select('id, nombre, descripcion, portada_url, precio, estado, dias_duracion_acceso')
                 .eq('id', cursoId)
                 .single();
 
@@ -278,7 +278,7 @@ export const CursosService = {
         try {
             const { data, error } = await supabase
                 .from('transacciones')
-                .select('id, estado, created_at')
+                .select('id, estado, fecha_compra')
                 .eq('curso_id', cursoId)
                 .eq('usuario_id', usuarioId)
                 .eq('estado', 'PAGADO')
@@ -309,13 +309,13 @@ export const CursosService = {
                     id,
                     curso_id,
                     estado,
-                    created_at,
+                    fecha_compra,
                     cursos (
                         id,
                         nombre,
                         descripcion,
-                        portada,
-                        duracion_acceso
+                        portada_url,
+                        dias_duracion_acceso
                     )
                 `)
                 .eq('usuario_id', usuarioId)
@@ -328,7 +328,7 @@ export const CursosService = {
                 .filter(t => t.cursos)
                 .map(t => ({
                     ...t.cursos,
-                    fechaCompra: t.created_at,
+                    fechaCompra: t.fecha_compra,
                     transaccionId: t.id
                 }));
 

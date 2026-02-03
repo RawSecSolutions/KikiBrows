@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
             curso.descripcion || 'Sin descripción disponible.';
         
         const portadaEl = document.getElementById('heroPortada');
-        if (curso.portada) {
-            portadaEl.innerHTML = `<img src="${curso.portada}" alt="${curso.nombre}">`;
+        if (curso.portada_url) {
+            portadaEl.innerHTML = `<img src="${curso.portada_url}" alt="${curso.nombre}">`;
         }
     }
     

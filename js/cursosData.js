@@ -156,7 +156,7 @@ const CursosData = {
                     id,
                     curso_id,
                     estado,
-                    created_at,
+                    fecha_compra,
                     cursos (*)
                 `)
                 .eq('usuario_id', this._currentUserId)
@@ -168,7 +168,7 @@ const CursosData = {
                 .filter(t => t.cursos)
                 .map(t => ({
                     ...t.cursos,
-                    fechaCompra: t.created_at,
+                    fechaCompra: t.fecha_compra,
                     transaccionId: t.id
                 }));
 
@@ -230,7 +230,7 @@ const CursosData = {
      */
     _calcularAcceso(curso) {
         const fechaCompra = new Date(curso.fechaCompra);
-        const diasAcceso = curso.duracion_acceso || 180;
+        const diasAcceso = curso.dias_duracion_acceso || 180;
         const fechaExpiracion = new Date(fechaCompra);
         fechaExpiracion.setDate(fechaExpiracion.getDate() + diasAcceso);
 

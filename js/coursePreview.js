@@ -99,7 +99,7 @@ async function verificarAccesoUsuario(cursoId) {
         // Verificar si tiene transacción pagada para este curso
         const { data: transaccion, error } = await supabase
             .from('transacciones')
-            .select('id, estado, created_at')
+            .select('id, estado')
             .eq('curso_id', cursoId)
             .eq('usuario_id', session.user.id)
             .eq('estado', 'PAGADO')
@@ -136,7 +136,7 @@ async function cargarInformacionCurso(cursoId) {
         // Obtener datos básicos del curso
         const { data: curso, error: cursoError } = await supabase
             .from('cursos')
-            .select('id, nombre, descripcion, portada, precio, estado, duracion_acceso')
+            .select('id, nombre, descripcion, portada_url, precio, estado, dias_duracion_acceso')
             .eq('id', cursoId)
             .single();
 
@@ -238,8 +238,8 @@ function cargarHero(curso) {
     if (descripcionEl) descripcionEl.textContent = curso.descripcion || 'Sin descripción disponible.';
 
     if (portadaEl) {
-        if (curso.portada) {
-            portadaEl.innerHTML = `<img src="${curso.portada}" alt="${curso.nombre}">`;
+        if (curso.portada_url) {
+            portadaEl.innerHTML = `<img src="${curso.portada_url}" alt="${curso.nombre}">`;
         } else {
             portadaEl.innerHTML = '<i class="fas fa-image"></i>';
         }
@@ -522,7 +522,7 @@ async function iniciarPagoMercadoPago(curso) {
 async function procesarCompraExitosa(curso, metodoPago) {
     try {
         const fechaCompra = new Date();
-        const diasAcceso = curso.duracion_acceso || 180;
+        const diasAcceso = curso.dias_duracion_acceso || 180;
         const transaccionId = generarTransaccionId();
         const codigoAutorizacion = generarCodigoAutorizacion();
 
