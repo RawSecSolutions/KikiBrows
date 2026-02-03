@@ -147,38 +147,7 @@
                                 
                                 <!-- Lista de módulos (drag and drop) -->
                                 <div id="modulosContainer" class="sortable-container">
-                                    <!-- Módulo 1 -->
-                                    <div class="modulo-item" data-modulo-id="1" draggable="true">
-                                        <div class="drag-handle" title="Arrastra para reordenar">
-                                            <i class="fas fa-grip-vertical"></i>
-                                        </div>
-                                        <span class="modulo-name">módulo 1</span>
-                                        <a href="gestorModulos.html?id=1" class="btn-modulo-edit" title="Editar contenido del módulo">
-                                            <i class="fas fa-pen"></i>
-                                        </a>
-                                    </div>
-                                    
-                                    <!-- Módulo 2 -->
-                                    <div class="modulo-item" data-modulo-id="2" draggable="true">
-                                        <div class="drag-handle" title="Arrastra para reordenar">
-                                            <i class="fas fa-grip-vertical"></i>
-                                        </div>
-                                        <span class="modulo-name">módulo 2</span>
-                                        <a href="gestorModulos.html?id=2" class="btn-modulo-edit" title="Editar contenido del módulo">
-                                            <i class="fas fa-pen"></i>
-                                        </a>
-                                    </div>
-                                    
-                                    <!-- Módulo 3 -->
-                                    <div class="modulo-item" data-modulo-id="3" draggable="true">
-                                        <div class="drag-handle" title="Arrastra para reordenar">
-                                            <i class="fas fa-grip-vertical"></i>
-                                        </div>
-                                        <span class="modulo-name">módulo 3</span>
-                                        <a href="gestorModulos.html?id=3" class="btn-modulo-edit" title="Editar contenido del módulo">
-                                            <i class="fas fa-pen"></i>
-                                        </a>
-                                    </div>
+                                    <!-- Los módulos se cargan dinámicamente -->
                                 </div>
                             </div>
                         </div>
@@ -270,6 +239,23 @@
                 <div class="modal-footer border-0 justify-content-center pt-0">
                     <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteImage">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar eliminar módulo -->
+    <div class="modal fade" id="deleteModuloModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-kikibrows">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+                    <h5>¿Estás seguro de borrar por completo este módulo?</h5>
+                    <p class="text-muted small mb-0">Cambio no reversible</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteModulo">Eliminar</button>
                 </div>
             </div>
         </div>

@@ -260,6 +260,33 @@
     color: #fff;
 }
 
+/* Contenedor de acciones del módulo */
+.modulo-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Botón eliminar módulo */
+.btn-modulo-delete {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-modulo-delete:hover {
+    background: #c82333;
+    color: #fff;
+}
+
 /* Botón Añadir módulo */
 .btn-add-module {
     display: inline-flex;

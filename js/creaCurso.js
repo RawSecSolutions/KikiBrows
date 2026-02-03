@@ -18,19 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageAlert = document.getElementById('imageAlert');
     const imageAlertText = document.getElementById('imageAlertText');
     
-    // Video
-    const videoInput = document.getElementById('courseVideo');
-    const btnAddVideo = document.getElementById('btnAddVideo');
-    const videoUploadedDisplay = document.getElementById('videoUploadedDisplay');
-    const videoFileName = document.getElementById('videoFileName');
-    const changeVideo = document.getElementById('changeVideo');
-    const deleteVideoBtn = document.getElementById('deleteVideoBtn');
-    const videoAlert = document.getElementById('videoAlert');
-    const videoAlertText = document.getElementById('videoAlertText');
-    const videoProgressContainer = document.getElementById('videoProgressContainer');
-    const videoProgress = document.getElementById('videoProgress');
-    const videoSuccessMsg = document.getElementById('videoSuccessMsg');
-    
     // Carrusel
     const showInCarousel = document.getElementById('showInCarousel');
     const carouselPosition = document.getElementById('carouselPosition');
@@ -44,15 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveModuleName = document.getElementById('saveModuleName');
     
     // Modales de confirmación
-    const deleteVideoModalEl = document.getElementById('deleteVideoModal');
-    const deleteVideoModal = deleteVideoModalEl ? new bootstrap.Modal(deleteVideoModalEl) : null;
-    const confirmDeleteVideo = document.getElementById('confirmDeleteVideo');
-    
     const deleteImageModalEl = document.getElementById('deleteImageModal');
     const deleteImageModal = deleteImageModalEl ? new bootstrap.Modal(deleteImageModalEl) : null;
     const confirmDeleteImage = document.getElementById('confirmDeleteImage');
+
+    // Modal de confirmación para eliminar módulo
+    const deleteModuloModalEl = document.getElementById('deleteModuloModal');
+    const deleteModuloModal = deleteModuloModalEl ? new bootstrap.Modal(deleteModuloModalEl) : null;
+    const confirmDeleteModulo = document.getElementById('confirmDeleteModulo');
+    let moduloToDelete = null;
     
-    let moduleCounter = 3;
+    let moduleCounter = 0;
     
     // === LÓGICA DE IMAGEN ===
     
@@ -103,78 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
             imageUploadedDisplay.classList.add('d-none');
             btnAddImage.classList.remove('d-none');
             deleteImageModal.hide();
-        });
-    }
-    
-    // === LÓGICA DE VIDEO ===
-    
-    if (btnAddVideo) {
-        btnAddVideo.addEventListener('click', () => videoInput.click());
-    }
-    if (changeVideo) {
-        changeVideo.addEventListener('click', () => videoInput.click());
-    }
-    
-    if (videoInput) {
-        videoInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (!file) return;
-            
-            const allowedTypes = ['video/mp4', 'video/webm'];
-            const maxSize = 100 * 1024 * 1024;
-            
-            videoAlert.classList.add('d-none');
-            videoSuccessMsg.classList.add('d-none');
-            
-            if (!allowedTypes.includes(file.type)) {
-                videoAlertText.textContent = 'El video debe ser formato MP4 o WEBM.';
-                videoAlert.classList.remove('d-none');
-                this.value = '';
-                return;
-            }
-            
-            if (file.size > maxSize) {
-                videoAlertText.textContent = 'El video no debe superar 100MB.';
-                videoAlert.classList.remove('d-none');
-                this.value = '';
-                return;
-            }
-            
-            videoFileName.textContent = file.name;
-            btnAddVideo.classList.add('d-none');
-            videoUploadedDisplay.classList.remove('d-none');
-            
-            // Simular progreso
-            videoProgressContainer.classList.remove('d-none');
-            videoProgress.style.width = '0%';
-            
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        videoProgressContainer.classList.add('d-none');
-                        videoSuccessMsg.classList.remove('d-none');
-                    }, 300);
-                }
-                videoProgress.style.width = progress + '%';
-            }, 100);
-        });
-    }
-    
-    if (deleteVideoBtn) {
-        deleteVideoBtn.addEventListener('click', () => deleteVideoModal.show());
-    }
-    
-    if (confirmDeleteVideo) {
-        confirmDeleteVideo.addEventListener('click', () => {
-            videoInput.value = '';
-            videoUploadedDisplay.classList.add('d-none');
-            btnAddVideo.classList.remove('d-none');
-            videoSuccessMsg.classList.add('d-none');
-            deleteVideoModal.hide();
         });
     }
     
@@ -358,10 +275,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 moduleNameInput.classList.add('is-invalid');
                 return;
             }
-            
+
             moduleNameInput.classList.remove('is-invalid');
             moduleCounter++;
-            
+
             const newModule = document.createElement('div');
             newModule.className = 'modulo-item';
             newModule.setAttribute('data-modulo-id', moduleCounter);
@@ -371,13 +288,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fas fa-grip-vertical"></i>
                 </div>
                 <span class="modulo-name">${name}</span>
-                <a href="gestorModulos.html?id=${moduleCounter}" class="btn-modulo-edit" title="Editar">
-                    <i class="fas fa-pen"></i>
-                </a>
+                <div class="modulo-actions">
+                    <a href="gestorModulos.html?id=${moduleCounter}" class="btn-modulo-edit" title="Editar">
+                        <i class="fas fa-pen"></i>
+                    </a>
+                    <button type="button" class="btn-modulo-delete" title="Eliminar módulo">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             `;
-            
+
             modulosContainer.appendChild(newModule);
             moduleNameModal.hide();
+        });
+    }
+
+    // === LÓGICA DE ELIMINAR MÓDULO ===
+
+    // Event delegation para botones de eliminar módulo
+    if (modulosContainer) {
+        modulosContainer.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.btn-modulo-delete');
+            if (deleteBtn) {
+                e.preventDefault();
+                moduloToDelete = deleteBtn.closest('.modulo-item');
+                if (deleteModuloModal) {
+                    deleteModuloModal.show();
+                }
+            }
+        });
+    }
+
+    // Confirmar eliminación de módulo
+    if (confirmDeleteModulo) {
+        confirmDeleteModulo.addEventListener('click', () => {
+            if (moduloToDelete) {
+                moduloToDelete.remove();
+                moduloToDelete = null;
+            }
+            if (deleteModuloModal) {
+                deleteModuloModal.hide();
+            }
         });
     }
     
