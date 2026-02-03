@@ -149,7 +149,7 @@ async function cargarInformacionCurso(cursoId) {
 
         // Verificar estado del curso
         const modoPreview = esModoPreview();
-        if (!modoPreview && curso.estado !== 'publicado') {
+        if (!modoPreview && curso.estado !== 'PUBLICADO') {
             mostrarError('Este curso no está disponible en este momento.');
             return;
         }

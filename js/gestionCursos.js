@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 year: '2-digit'
             });
 
-            const estadoBadge = curso.estado === 'publicado'
+            const estadoBadge = curso.estado === 'PUBLICADO'
                 ? '<span class="badge bg-success position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">PUBLICADO</span>'
                 : '<span class="badge bg-secondary position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">BORRADOR</span>';
 

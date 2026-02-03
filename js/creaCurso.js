@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Mostrar éxito
                 successAlert.classList.remove('d-none');
-                successAlert.innerHTML = `<i class="fas fa-check-circle me-2"></i>Curso "${courseName}" creado exitosamente como ${status === 'publicado' ? 'Publicado' : 'Borrador'}`;
+                successAlert.innerHTML = `<i class="fas fa-check-circle me-2"></i>Curso "${courseName}" creado exitosamente como ${status === 'PUBLICADO' ? 'Publicado' : 'Borrador'}`;
 
                 // Redirigir a gestión de cursos
                 setTimeout(() => {

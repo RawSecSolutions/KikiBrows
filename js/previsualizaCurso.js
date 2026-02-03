@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
             CursosData.formatearDuracion(duracion);
         
         const estadoEl = document.getElementById('cursoEstado');
-        estadoEl.textContent = curso.estado || 'borrador';
-        estadoEl.className = 'badge-estado ' + (curso.estado || 'borrador');
+        estadoEl.textContent = curso.estado || 'BORRADOR';
+        estadoEl.className = 'badge-estado ' + (curso.estado || 'BORRADOR');
         
         document.getElementById('cursoFecha').textContent = 
             CursosData.formatearFecha(curso.fechaCreacion);

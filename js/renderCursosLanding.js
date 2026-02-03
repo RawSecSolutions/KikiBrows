@@ -33,7 +33,7 @@ async function renderizarCursos() {
         const { data: cursosPublicados, error } = await supabase
             .from('cursos')
             .select('id, nombre, descripcion, portada, precio, estado')
-            .eq('estado', 'publicado')
+            .eq('estado', 'PUBLICADO')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -54,7 +54,7 @@ async function renderizarCursos() {
         // Fallback: intentar usar CursosData si está disponible
         if (typeof CursosData !== 'undefined' && CursosData._initialized) {
             const todosLosCursos = CursosData.getAllCursos();
-            const cursosPublicados = todosLosCursos.filter(curso => curso.estado === 'publicado');
+            const cursosPublicados = todosLosCursos.filter(curso => curso.estado === 'PUBLICADO');
 
             if (cursosPublicados.length > 0) {
                 crearCarruselCursos(container, cursosPublicados);
