@@ -179,7 +179,7 @@ export const AdminCursosService = {
                     descripcion: cursoData.descripcion,
                     portada_url: cursoData.portada_url || null,
                     precio: cursoData.precio || 0,
-                    estado: cursoData.estado || 'borrador',
+                    estado: cursoData.estado || 'BORRADOR',
                     dias_duracion_acceso: cursoData.dias_duracion_acceso || 180
                 }])
                 .select()

@@ -30,7 +30,7 @@ export const CursosService = {
                     duracion_acceso,
                     created_at
                 `)
-                .eq('estado', 'publicado')
+                .eq('estado', 'PUBLICADO')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
