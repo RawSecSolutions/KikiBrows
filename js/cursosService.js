@@ -370,12 +370,15 @@ export const CursosService = {
 
     /**
      * Subir una entrega práctica
+     * Path format: ${cursoId}/${claseId}/${userId}/${archivo.name}
      */
-    async subirEntrega(claseId, file, usuarioId) {
+    async subirEntrega(claseId, file, usuarioId, cursoId) {
         try {
             // A. Subir archivo al Storage (Bucket 'entregas')
+            // Formato requerido por políticas: ${cursoId}/${claseId}/${userId}/${archivo.name}
             const fileExt = file.name.split('.').pop();
-            const fileName = `${usuarioId}/${claseId}/${Date.now()}.${fileExt}`;
+            const timestamp = Date.now();
+            const fileName = `${cursoId}/${claseId}/${usuarioId}/${timestamp}.${fileExt}`;
             const filePath = fileName;
 
             const { error: uploadError } = await supabase.storage
@@ -417,10 +420,64 @@ export const CursosService = {
                 .single();
 
             if (dbError) throw dbError;
-            return { success: true, data };
+            return { success: true, data, filePath };
 
         } catch (error) {
             console.error('Error subiendo entrega:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Eliminar una entrega (solo si está en estado PENDIENTE)
+     */
+    async eliminarEntrega(entregaId, archivoUrl) {
+        try {
+            // A. Verificar que la entrega existe y está pendiente
+            const { data: entrega, error: fetchError } = await supabase
+                .from('entregas')
+                .select('*')
+                .eq('id', entregaId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            if (entrega.estado !== 'PENDIENTE') {
+                return {
+                    success: false,
+                    error: { message: 'Solo se pueden eliminar entregas pendientes' }
+                };
+            }
+
+            // B. Extraer el path del archivo desde la URL
+            // La URL tiene formato: .../entregas/cursoId/claseId/userId/timestamp.ext
+            const urlParts = archivoUrl.split('/entregas/');
+            if (urlParts.length > 1) {
+                const filePath = urlParts[1];
+
+                // C. Eliminar archivo del Storage
+                const { error: storageError } = await supabase.storage
+                    .from('entregas')
+                    .remove([filePath]);
+
+                if (storageError) {
+                    console.warn('Error eliminando archivo de storage:', storageError);
+                    // Continuamos aunque falle el storage
+                }
+            }
+
+            // D. Eliminar registro de la base de datos
+            const { error: dbError } = await supabase
+                .from('entregas')
+                .delete()
+                .eq('id', entregaId);
+
+            if (dbError) throw dbError;
+
+            return { success: true };
+
+        } catch (error) {
+            console.error('Error eliminando entrega:', error);
             return { success: false, error };
         }
     },

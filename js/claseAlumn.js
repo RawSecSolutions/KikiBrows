@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeSidebarMobile();
     };
 
-    function loadClase(moduloId, claseId) {
+    async function loadClase(moduloId, claseId) {
         currentModuloId = moduloId;
         currentClaseId = claseId;
         currentClase = CursosData.getClase(claseId);
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderQuizContent();
                 break;
             case 'entrega':
-                renderEntregaContent();
+                await renderEntregaContent();
                 break;
             default:
                 dynamicContent.innerHTML = '<div class="p-5 text-center">Contenido no disponible</div>';
@@ -811,9 +811,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== CONTENIDO: ENTREGA (H6.5) ====================
 
-    function renderEntregaContent() {
+    // Variable para almacenar la última entrega cargada desde Supabase
+    let ultimaEntregaSupabase = null;
+
+    async function renderEntregaContent() {
         const modulo = CursosData.getModulo(currentModuloId);
-        const ultimaEntrega = CursosData.getUltimaEntrega(currentClaseId);
+
+        // Mostrar loading mientras se carga la entrega desde Supabase
+        dynamicContent.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted mt-2">Cargando información de entrega...</p>
+            </div>
+        `;
+
+        // Cargar última entrega desde Supabase
+        const userId = CursosData.getCurrentUserId();
+        if (userId) {
+            const result = await CursosService.getUltimaEntrega(currentClaseId, userId);
+            if (result.success && result.data) {
+                ultimaEntregaSupabase = result.data;
+                // Normalizar estado a minúsculas para compatibilidad
+                ultimaEntregaSupabase.estado = ultimaEntregaSupabase.estado?.toLowerCase() || 'pendiente';
+            } else {
+                ultimaEntregaSupabase = null;
+            }
+        }
+
+        const ultimaEntrega = ultimaEntregaSupabase;
 
         // Leer configuración desde metadata JSONB si existe
         const metadata = currentClase.metadata || {};
@@ -861,17 +886,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </button>
                         <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden>
                     </div>
-
-                    <!-- Controles de Simulación MVP -->
-                    <div class="mvp-controls mt-4">
-                        <div class="alert alert-info mb-3">
-                            <strong><i class="fas fa-flask me-2"></i>Controles de Simulación (MVP)</strong>
-                            <p class="mb-0 small mt-1">Usa estos botones para probar la funcionalidad sin subir videos reales.</p>
-                        </div>
-                        <button class="btn btn-outline-primary w-100 mb-2" onclick="window.simularSubidaVideo()">
-                            <i class="fas fa-video me-2"></i>Simular Subida de Video
-                        </button>
-                    </div>
                 </div>
             `;
         }
@@ -903,27 +917,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
 
-            const feedbackHTML = ultimaEntrega.feedback
+            const feedbackHTML = ultimaEntrega.feedback_instructor
                 ? `<div class="entrega-feedback">
                        <strong><i class="fas fa-comment-alt me-2"></i>Feedback del Instructor:</strong>
-                       <p class="mb-0 mt-2">${ultimaEntrega.feedback}</p>
+                       <p class="mb-0 mt-2">${ultimaEntrega.feedback_instructor}</p>
                    </div>`
                 : '';
 
-            // Controles MVP para simular calificación (solo si está pendiente)
-            const mvpCalificacionHTML = ultimaEntrega.estado === 'pendiente'
-                ? `<div class="mvp-controls mt-3">
-                       <div class="alert alert-warning mb-2">
-                           <strong><i class="fas fa-flask me-2"></i>Simulación de Calificación (MVP)</strong>
-                       </div>
-                       <div class="d-flex gap-2">
-                           <button class="btn btn-success flex-fill" onclick="window.simularCalificacionAprobada()">
-                               <i class="fas fa-check me-2"></i>Aprobar
-                           </button>
-                           <button class="btn btn-danger flex-fill" onclick="window.simularCalificacionRechazada()">
-                               <i class="fas fa-times me-2"></i>Rechazar
-                           </button>
-                       </div>
+            // Botón para eliminar entrega si está pendiente
+            const eliminarBtnHTML = ultimaEntrega.estado === 'pendiente'
+                ? `<div class="mt-3">
+                       <button class="btn btn-outline-danger w-100" id="btnEliminarEntrega" data-entrega-id="${ultimaEntrega.id}" data-archivo-url="${ultimaEntrega.archivo_url}">
+                           <i class="fas fa-trash me-2"></i>Eliminar y subir otro video
+                       </button>
+                       <small class="text-muted d-block text-center mt-2">Solo puedes eliminar entregas que aún no han sido revisadas</small>
                    </div>`
                 : '';
 
@@ -937,7 +944,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     ${feedbackHTML}
-                    ${mvpCalificacionHTML}
+                    ${eliminarBtnHTML}
                 </div>
             `;
 
@@ -987,7 +994,48 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         // Setup drag and drop y event listeners
-        setTimeout(setupDragAndDrop, 100);
+        setTimeout(() => {
+            setupDragAndDrop();
+            setupEliminarEntrega();
+        }, 100);
+    }
+
+    // Función para configurar el botón de eliminar entrega
+    function setupEliminarEntrega() {
+        const btnEliminar = document.getElementById('btnEliminarEntrega');
+        if (!btnEliminar) return;
+
+        btnEliminar.addEventListener('click', async () => {
+            const entregaId = btnEliminar.getAttribute('data-entrega-id');
+            const archivoUrl = btnEliminar.getAttribute('data-archivo-url');
+
+            if (!confirm('¿Estás seguro de que deseas eliminar esta entrega? Esta acción no se puede deshacer.')) {
+                return;
+            }
+
+            // Mostrar loading
+            btnEliminar.disabled = true;
+            btnEliminar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Eliminando...';
+
+            try {
+                const result = await CursosService.eliminarEntrega(entregaId, archivoUrl);
+
+                if (result.success) {
+                    // Recargar la vista de entrega
+                    ultimaEntregaSupabase = null;
+                    await renderEntregaContent();
+                } else {
+                    alert('Error al eliminar la entrega: ' + (result.error?.message || 'Error desconocido'));
+                    btnEliminar.disabled = false;
+                    btnEliminar.innerHTML = '<i class="fas fa-trash me-2"></i>Eliminar y subir otro video';
+                }
+            } catch (error) {
+                console.error('Error eliminando entrega:', error);
+                alert('Error al eliminar la entrega');
+                btnEliminar.disabled = false;
+                btnEliminar.innerHTML = '<i class="fas fa-trash me-2"></i>Eliminar y subir otro video';
+            }
+        });
     }
 
     function setupDragAndDrop() {
@@ -1052,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function processFile(file) {
+    async function processFile(file) {
         // Validar formato
         const validTypes = ['video/mp4', 'video/webm'];
         if (!validTypes.includes(file.type)) {
@@ -1067,56 +1115,85 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Simular subida
+        // Obtener userId
+        const userId = CursosData.getCurrentUserId();
+        if (!userId) {
+            alert('Error: No se pudo identificar al usuario. Por favor recarga la página.');
+            return;
+        }
+
+        // Mostrar interfaz de subida
         const uploadZone = document.getElementById('uploadZone');
         uploadZone.innerHTML = `
             <div class="text-center py-4">
                 <div class="spinner-border text-primary mb-3" role="status"></div>
-                <div class="fw-bold">Subiendo video...</div>
+                <div class="fw-bold">Subiendo video a Supabase...</div>
                 <div class="progress mt-3" style="height: 8px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="uploadProgress" style="width: 0%"></div>
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="uploadProgress" style="width: 30%"></div>
                 </div>
+                <small class="text-muted mt-2 d-block">Esto puede tardar unos minutos dependiendo del tamaño del archivo</small>
             </div>
         `;
 
-        // Simular progreso
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 20;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(interval);
-                completeUpload(file.name);
+        try {
+            // Subir a Supabase con el formato de path correcto: ${cursoId}/${claseId}/${userId}/${archivo.name}
+            const result = await CursosService.subirEntrega(currentClaseId, file, userId, currentCursoId);
+
+            if (result.success) {
+                // Actualizar barra de progreso
+                document.getElementById('uploadProgress').style.width = '100%';
+
+                // Actualizar estado local en el progreso
+                const student = CursosData.getStudent();
+                if (!student.progreso[currentCursoId]) {
+                    student.progreso[currentCursoId] = { modulos: {} };
+                }
+                if (!student.progreso[currentCursoId].modulos[currentModuloId]) {
+                    student.progreso[currentCursoId].modulos[currentModuloId] = { clases: {} };
+                }
+                student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] = {
+                    completado: false,
+                    estado: 'pendiente',
+                    fecha: new Date().toISOString()
+                };
+                CursosData.saveStudent(student);
+
+                // Actualizar la variable de entrega y recargar contenido
+                ultimaEntregaSupabase = result.data;
+                ultimaEntregaSupabase.estado = ultimaEntregaSupabase.estado?.toLowerCase() || 'pendiente';
+
+                // Recargar contenido
+                await renderEntregaContent();
+                renderSidebar();
+
+                // Habilitar el botón siguiente y mostrar estado
+                enableNext();
+                showCompletionStatus('Pendiente de Revisión', 'warning');
+
+                console.log('Entrega subida exitosamente a Supabase');
+            } else {
+                throw new Error(result.error?.message || 'Error al subir el archivo');
             }
-            document.getElementById('uploadProgress').style.width = `${progress}%`;
-        }, 300);
-    }
+        } catch (error) {
+            console.error('Error subiendo entrega:', error);
+            alert('Error al subir el archivo: ' + error.message);
 
-    function completeUpload(fileName) {
-        // Guardar entrega
-        CursosData.guardarEntrega(currentClaseId, fileName);
+            // Restaurar zona de upload
+            uploadZone.innerHTML = `
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">Arrastra aquí tu archivo o haz clic para seleccionar</div>
+                <div class="upload-hint">Formatos: .mp4, .webm | Máximo: 500MB</div>
+                <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
+                    <i class="fas fa-upload me-2"></i>Seleccionar Video
+                </button>
+                <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden>
+            `;
 
-        // Actualizar estado en el progreso (NO completado, solo pendiente)
-        const student = CursosData.getStudent();
-        if (!student.progreso[currentCursoId].modulos[currentModuloId]) {
-            student.progreso[currentCursoId].modulos[currentModuloId] = { clases: {} };
+            // Re-setup event listeners
+            setTimeout(setupDragAndDrop, 100);
         }
-        student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] = {
-            completado: false,
-            estado: 'pendiente',
-            fecha: new Date().toISOString()
-        };
-        CursosData.saveStudent(student);
-
-        // Recargar contenido
-        renderEntregaContent();
-        renderSidebar();
-
-        // Habilitar el botón siguiente y mostrar estado
-        enableNext();
-        showCompletionStatus('Pendiente de Revisión', 'warning');
-
-        console.log('Entrega completada. Botón Siguiente habilitado.');
     }
 
     // ==================== CERTIFICADO (H6.6) ====================
@@ -1383,136 +1460,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ==================== FUNCIONES MVP DE SIMULACIÓN ====================
-    // Funciones accesibles desde los botones de la interfaz para simulación
-
-    window.simularSubidaVideo = () => {
-        console.log('🎬 Simulando subida de video...');
-
-        // Guardar entrega simulada con nombre de archivo ficticio
-        CursosData.guardarEntrega(currentClaseId, 'video_practica_simulado.mp4');
-
-        // Actualizar estado en el progreso (NO completado, solo pendiente)
-        const student = CursosData.getStudent();
-        if (!student.progreso[currentCursoId].modulos[currentModuloId]) {
-            student.progreso[currentCursoId].modulos[currentModuloId] = { clases: {} };
-        }
-        student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] = {
-            completado: false,
-            estado: 'pendiente',
-            fecha: new Date().toISOString()
-        };
-        CursosData.saveStudent(student);
-
-        // Recargar contenido para mostrar el estado pendiente
-        renderEntregaContent();
-        renderSidebar();
-
-        // Habilitar el botón siguiente y mostrar estado
-        enableNext();
-        showCompletionStatus('Pendiente de Revisión', 'warning');
-
-        console.log('✅ Video simulado subido exitosamente');
-        console.log('⏳ Ahora espera a que el profesor revise y califique tu trabajo');
-    };
-
-    window.simularCalificacionAprobada = () => {
-        console.log('✅ Simulando calificación aprobada...');
-
-        const entregas = CursosData.getEntregas(currentClaseId);
-        if (entregas.length === 0) {
-            alert('Error: No hay entregas para aprobar');
-            console.error('No hay entregas para aprobar en esta clase');
-            return;
-        }
-
-        const indice = entregas.length - 1; // Última entrega
-        CursosData.actualizarEstadoEntrega(
-            currentClaseId,
-            indice,
-            'aprobada',
-            '¡Excelente trabajo! Tu práctica demuestra dominio de la técnica.'
-        );
-
-        console.log('✅ Entrega aprobada exitosamente');
-
-        // Recargar la clase actual
-        loadClase(currentModuloId, currentClaseId);
-    };
-
-    window.simularCalificacionRechazada = () => {
-        console.log('❌ Simulando calificación rechazada...');
-
-        const entregas = CursosData.getEntregas(currentClaseId);
-        if (entregas.length === 0) {
-            alert('Error: No hay entregas para rechazar');
-            console.error('No hay entregas para rechazar en esta clase');
-            return;
-        }
-
-        const indice = entregas.length - 1; // Última entrega
-        CursosData.actualizarEstadoEntrega(
-            currentClaseId,
-            indice,
-            'rechazada',
-            'Tu entrega necesita mejoras. Por favor revisa la técnica de trazado y asegúrate de seguir la dirección correcta del vello natural.'
-        );
-
-        console.log('❌ Entrega rechazada');
-
-        // Recargar la clase actual
-        loadClase(currentModuloId, currentClaseId);
-    };
-
-    // ==================== FUNCIONES DE SIMULACIÓN (PARA PRUEBAS) ====================
-    // Estas funciones están disponibles en la consola del navegador para simular
-    // aprobaciones/rechazos de entregas prácticas
-
-    window.simularAprobarEntrega = (claseId) => {
-        const entregas = CursosData.getEntregas(claseId || currentClaseId);
-        if (entregas.length === 0) {
-            console.error('No hay entregas para aprobar en esta clase');
-            return;
-        }
-        const indice = entregas.length - 1; // Última entrega
-        CursosData.actualizarEstadoEntrega(
-            claseId || currentClaseId,
-            indice,
-            'aprobada',
-            '¡Excelente trabajo! Tu entrega ha sido aprobada.'
-        );
-        console.log('✅ Entrega aprobada exitosamente');
-        // Recargar la clase actual
-        if (currentClase && currentClase.tipo === 'entrega') {
-            loadClase(currentModuloId, currentClaseId);
-        }
-    };
-
-    window.simularRechazarEntrega = (claseId, feedback) => {
-        const entregas = CursosData.getEntregas(claseId || currentClaseId);
-        if (entregas.length === 0) {
-            console.error('No hay entregas para rechazar en esta clase');
-            return;
-        }
-        const indice = entregas.length - 1; // Última entrega
-        CursosData.actualizarEstadoEntrega(
-            claseId || currentClaseId,
-            indice,
-            'rechazada',
-            feedback || 'Tu entrega necesita mejoras. Por favor revisa las instrucciones y vuelve a intentarlo.'
-        );
-        console.log('❌ Entrega rechazada');
-        // Recargar la clase actual
-        if (currentClase && currentClase.tipo === 'entrega') {
-            loadClase(currentModuloId, currentClaseId);
-        }
-    };
-
-    window.verEstadoEntregas = (claseId) => {
-        const entregas = CursosData.getEntregas(claseId || currentClaseId);
-        console.log('📋 Entregas para clase ID', claseId || currentClaseId, ':', entregas);
-        return entregas;
-    };
+    // ==================== FUNCIONES DE DEBUG (CONSOLA) ====================
+    // Funciones útiles para debugging disponibles en la consola del navegador
 
     window.resetearQuiz = (claseId) => {
         const student = CursosData.getStudent();
@@ -1523,20 +1472,18 @@ document.addEventListener('DOMContentLoaded', () => {
             student.progreso[currentCursoId].modulos[currentModuloId].clases[claseId || currentClaseId].completado = false;
         }
         CursosData.saveStudent(student);
-        console.log('🔄 Quiz reseteado');
+        console.log('Quiz reseteado');
         if (currentClase && currentClase.tipo === 'quiz') {
             loadClase(currentModuloId, currentClaseId);
         }
     };
 
-    console.log(`
-    🎓 FUNCIONES DE SIMULACIÓN DISPONIBLES:
-
-    - simularAprobarEntrega(claseId?) - Aprobar la última entrega de una clase
-    - simularRechazarEntrega(claseId?, feedback?) - Rechazar la última entrega
-    - verEstadoEntregas(claseId?) - Ver todas las entregas de una clase
-    - resetearQuiz(claseId?) - Resetear un quiz para poder volverlo a tomar
-
-    Nota: Si no se proporciona claseId, se usa la clase actual.
-    `);
+    window.verEstadoClase = () => {
+        console.log('Estado actual:', {
+            cursoId: currentCursoId,
+            moduloId: currentModuloId,
+            claseId: currentClaseId,
+            clase: currentClase
+        });
+    };
 });

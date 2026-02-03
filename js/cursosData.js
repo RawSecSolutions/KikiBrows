@@ -785,6 +785,13 @@ const CursosData = {
         // Verificar en Supabase
         const result = await CursosService.verificarAccesoCurso(cursoId, this._currentUserId);
         return result.tieneAcceso;
+    },
+
+    /**
+     * Obtener el ID del usuario actual
+     */
+    getCurrentUserId() {
+        return this._currentUserId;
     }
 };
 

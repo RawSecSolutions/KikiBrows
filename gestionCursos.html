@@ -35,86 +35,13 @@
                 </div>
 
                 <div class="cursos-grid" id="cursosGrid">
-                    
-                    <div class="curso-card border shadow-sm">
-                        <div class="curso-imagen bg-light d-flex align-items-center justify-content-center" style="height: 140px; position: relative;">
-                            <i class="fas fa-image fs-1 text-muted opacity-25"></i>
-
-                            <span class="badge bg-success position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">PUBLICADO</span>
-
-                            <a href="course-preview.html?id=1&preview=true" target="_blank" class="btn btn-sm btn-light position-absolute bottom-0 start-0 m-2 border fw-bold" title="Vista Previa">
-                                <i class="far fa-eye me-1"></i>VER
-                            </a>
-                            <a href="creaCurso.html?id=1" class="btn btn-sm btn-white position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #8A835A;" title="Editar">
-                                <i class="fas fa-pen"></i>
-                            </a>
+                    <!-- Cursos se cargan dinámicamente desde Supabase -->
+                    <div class="text-center py-5 w-100">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
                         </div>
-                        <div class="p-3">
-                            <h3 class="fs-6 fw-bold text-dark mb-1 text-truncate">Microblading Inicial</h3>
-                            <small class="text-muted"><i class="far fa-clock me-1"></i>15/01/24</small>
-                        </div>
+                        <p class="text-muted mt-2">Cargando cursos...</p>
                     </div>
-                    
-                    <div class="curso-card border shadow-sm">
-                        <div class="curso-imagen bg-light d-flex align-items-center justify-content-center" style="height: 140px; position: relative;">
-                            <i class="fas fa-image fs-1 text-muted opacity-25"></i>
-
-                            <span class="badge bg-success position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">PUBLICADO</span>
-
-                            <a href="course-preview.html?id=2&preview=true" target="_blank" class="btn btn-sm btn-light position-absolute bottom-0 start-0 m-2 border fw-bold">VER</a>
-                            <a href="creaCurso.html?id=2" class="btn btn-sm btn-white position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" style="color: #8A835A;"><i class="fas fa-pen"></i></a>
-                        </div>
-                        <div class="p-3">
-                            <h3 class="fs-6 fw-bold text-dark mb-1 text-truncate">Lifting de Pestañas</h3>
-                            <small class="text-muted"><i class="far fa-clock me-1"></i>20/02/24</small>
-                        </div>
-                    </div>
-
-                    <div class="curso-card border shadow-sm">
-                        <div class="curso-imagen bg-light d-flex align-items-center justify-content-center" style="height: 140px; position: relative;">
-                            <i class="fas fa-image fs-1 text-muted opacity-25"></i>
-
-                            <span class="badge bg-secondary position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">BORRADOR</span>
-
-                            <a href="course-preview.html?id=3&preview=true" target="_blank" class="btn btn-sm btn-light position-absolute bottom-0 start-0 m-2 border fw-bold">VER</a>
-                            <a href="creaCurso.html?id=3" class="btn btn-sm btn-white position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" style="color: #8A835A;"><i class="fas fa-pen"></i></a>
-                        </div>
-                        <div class="p-3">
-                            <h3 class="fs-6 fw-bold text-dark mb-1 text-truncate">Diseño de Cejas</h3>
-                            <small class="text-muted"><i class="far fa-clock me-1"></i>10/03/24</small>
-                        </div>
-                    </div>
-                    
-                    <div class="curso-card border shadow-sm">
-                        <div class="curso-imagen bg-light d-flex align-items-center justify-content-center" style="height: 140px; position: relative;">
-                            <i class="fas fa-image fs-1 text-muted opacity-25"></i>
-
-                            <span class="badge bg-success position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">PUBLICADO</span>
-
-                            <a href="#" class="btn btn-sm btn-light position-absolute bottom-0 start-0 m-2 border fw-bold">VER</a>
-                            <a href="#" class="btn btn-sm btn-white position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" style="color: #8A835A;"><i class="fas fa-pen"></i></a>
-                        </div>
-                        <div class="p-3">
-                            <h3 class="fs-6 fw-bold text-dark mb-1 text-truncate">Colorimetría</h3>
-                            <small class="text-muted"><i class="far fa-clock me-1"></i>05/04/24</small>
-                        </div>
-                    </div>
-
-                    <div class="curso-card border shadow-sm">
-                        <div class="curso-imagen bg-light d-flex align-items-center justify-content-center" style="height: 140px; position: relative;">
-                            <i class="fas fa-image fs-1 text-muted opacity-25"></i>
-
-                            <span class="badge bg-success position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">PUBLICADO</span>
-
-                            <a href="#" class="btn btn-sm btn-light position-absolute bottom-0 start-0 m-2 border fw-bold">VER</a>
-                            <a href="#" class="btn btn-sm btn-white position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" style="color: #8A835A;"><i class="fas fa-pen"></i></a>
-                        </div>
-                        <div class="p-3">
-                            <h3 class="fs-6 fw-bold text-dark mb-1 text-truncate">Extensiones Pelo a Pelo</h3>
-                            <small class="text-muted"><i class="far fa-clock me-1"></i>12/04/24</small>
-                        </div>
-                    </div>
-
                 </div>
 
                 <div class="d-flex justify-content-center mt-4">
@@ -135,6 +62,6 @@
     <script type="module" src="js/authGuardAdmin.js"></script>
     <script type="module" src="js/componenteAdmin.js"></script>
     <script src="js/dashboardAdmin.js"></script>
-    <script src="js/gestionCursos.js"></script>
+    <script type="module" src="js/gestionCursos.js"></script>
 </body>
 </html>
