@@ -54,6 +54,31 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let moduleCounter = 0;
 
+    // === HELPER VISUAL (Para arreglar el texto ilegible en preview) ===
+    function applyPreviewStyles(url) {
+        if (!imageUploadedDisplay) return;
+        
+        imageUploadedDisplay.classList.remove('d-none');
+        imageUploadedDisplay.style.backgroundImage = `url('${url}')`;
+        imageUploadedDisplay.style.backgroundSize = 'cover';
+        imageUploadedDisplay.style.backgroundPosition = 'center';
+        
+        // CORRECCIÓN VISUAL: Asegurar contraste
+        // Hacemos el texto blanco y le ponemos sombra para que se lea sobre cualquier imagen
+        imageUploadedDisplay.style.color = '#ffffff';
+        imageUploadedDisplay.style.textShadow = '0 2px 4px rgba(0,0,0,0.9)';
+        
+        // Aseguramos que los iconos también sean visibles
+        const icons = imageUploadedDisplay.querySelectorAll('i, span, p');
+        icons.forEach(icon => {
+            icon.style.color = '#ffffff';
+            icon.style.textShadow = '0 2px 4px rgba(0,0,0,0.9)';
+        });
+        
+        if (btnAddImage) btnAddImage.classList.add('d-none');
+        if (imageFileName) imageFileName.textContent = 'Imagen actual guardada';
+    }
+
     // ======================================================
     // 1. DETECTAR MODO (CREAR O EDITAR)
     // ======================================================
@@ -83,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await AdminCursosService.getCursoParaEditar(id);
             
             if (!result.success) {
+                console.error("Error BD:", result.error);
                 alert('Error al cargar el curso. Es posible que no exista.');
                 window.location.href = 'gestionCursos.html';
                 return;
@@ -100,30 +126,23 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (courseStatus) courseStatus.value = curso.estado || 'BORRADOR';
 
-            // Mostrar imagen existente
+            // Mostrar imagen existente con estilo corregido
             if (curso.portada_url) {
-                if (btnAddImage) btnAddImage.classList.add('d-none');
-                if (imageUploadedDisplay) {
-                    imageUploadedDisplay.classList.remove('d-none');
-                    // Establecer imagen de fondo
-                    imageUploadedDisplay.style.backgroundImage = `url('${curso.portada_url}')`;
-                    imageUploadedDisplay.style.backgroundSize = 'cover';
-                    imageUploadedDisplay.style.backgroundPosition = 'center';
-                }
-                if (imageFileName) imageFileName.textContent = 'Imagen actual guardada';
+                applyPreviewStyles(curso.portada_url);
             }
 
             // Cargar módulos existentes visualmente
             if (curso.modulos && curso.modulos.length > 0) {
-                // Ordenar por orden
-                curso.modulos.sort((a, b) => a.orden - b.orden);
+                // Ordenar por orden (aunque el servicio ya lo hace, doble seguridad)
+                curso.modulos.sort((a, b) => (a.orden || 0) - (b.orden || 0));
                 
                 curso.modulos.forEach(mod => {
                     agregarModuloAlDOM(mod.nombre, mod.id);
                 });
                 
                 // Actualizar contador para evitar colisiones de ID falsos
-                moduleCounter = Math.max(...curso.modulos.map(m => typeof m.id === 'number' ? m.id : 0), 0);
+                const maxId = curso.modulos.reduce((max, m) => Math.max(max, typeof m.id === 'number' ? m.id : 0), 0);
+                moduleCounter = maxId;
             }
 
             // Rehabilitar botón
@@ -170,16 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if(imageFileName) imageFileName.textContent = file.name;
             if(btnAddImage) btnAddImage.classList.add('d-none');
-            if(imageUploadedDisplay) {
-                imageUploadedDisplay.classList.remove('d-none');
-                
-                // Previsualización local inmediata
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imageUploadedDisplay.style.backgroundImage = `url('${e.target.result}')`;
-                }
-                reader.readAsDataURL(file);
+            
+            // Previsualización local inmediata con estilos corregidos
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                applyPreviewStyles(e.target.result);
             }
+            reader.readAsDataURL(file);
         });
     }
     
@@ -360,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!imageResult.success) {
                         throw new Error(imageResult.error || 'Error al subir la imagen');
                     }
+                    // CORREGIDO: Usamos 'portada_url'
                     courseData.portada_url = imageResult.url;
                 }
 

@@ -15,48 +15,29 @@ export const AdminCursosService = {
      */
     async subirVideo(file, cursoId, claseId = 'temp', onProgress = null) {
         try {
-            // Validar archivo
-            if (!file) {
-                return { success: false, error: 'No se proporcionó archivo' };
-            }
+            if (!file) return { success: false, error: 'No se proporcionó archivo' };
 
             const maxSize = 500 * 1024 * 1024; // 500MB
-            if (file.size > maxSize) {
-                return { success: false, error: 'El archivo excede los 500MB permitidos' };
-            }
+            if (file.size > maxSize) return { success: false, error: 'El archivo excede los 500MB permitidos' };
 
             const validTypes = ['video/mp4', 'video/webm'];
-            if (!validTypes.includes(file.type)) {
-                return { success: false, error: 'Formato no válido. Solo MP4 o WEBM' };
-            }
+            if (!validTypes.includes(file.type)) return { success: false, error: 'Formato no válido. Solo MP4 o WEBM' };
 
-            // Generar nombre único para el archivo
             const fileExt = file.name.split('.').pop();
             const timestamp = Date.now();
             const fileName = `${cursoId}/${claseId}_${timestamp}.${fileExt}`;
 
-            // Subir a Supabase Storage (bucket: 'videos')
             const { data, error } = await supabase.storage
                 .from('videos')
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+                .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
             if (error) throw error;
 
-            // Obtener URL pública
             const { data: publicUrlData } = supabase.storage
                 .from('videos')
                 .getPublicUrl(fileName);
 
-            console.log('Video subido:', publicUrlData.publicUrl);
-
-            return {
-                success: true,
-                url: publicUrlData.publicUrl,
-                path: fileName
-            };
+            return { success: true, url: publicUrlData.publicUrl, path: fileName };
 
         } catch (error) {
             console.error('Error al subir video:', error);
@@ -69,30 +50,21 @@ export const AdminCursosService = {
      */
     async subirImagenPortada(file) {
         try {
-            if (!file) {
-                return { success: false, error: 'No se proporcionó archivo' };
-            }
+            if (!file) return { success: false, error: 'No se proporcionó archivo' };
 
             const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-            if (!validTypes.includes(file.type)) {
-                return { success: false, error: 'Formato no válido. Solo PNG, JPG, WEBP' };
-            }
+            if (!validTypes.includes(file.type)) return { success: false, error: 'Formato no válido. Solo PNG, JPG, WEBP' };
 
             const maxSize = 2 * 1024 * 1024; // 2MB
-            if (file.size > maxSize) {
-                return { success: false, error: 'La imagen excede los 2MB permitidos' };
-            }
+            if (file.size > maxSize) return { success: false, error: 'La imagen excede los 2MB permitidos' };
 
             const fileExt = file.name.split('.').pop();
             const timestamp = Date.now();
             const fileName = `portadas/${timestamp}.${fileExt}`;
 
             const { data, error } = await supabase.storage
-                .from('curso-portadas') // Aseguramos el nombre correcto del bucket
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+                .from('curso-portadas')
+                .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
             if (error) throw error;
 
@@ -100,11 +72,7 @@ export const AdminCursosService = {
                 .from('curso-portadas')
                 .getPublicUrl(fileName);
 
-            return {
-                success: true,
-                url: publicUrlData.publicUrl,
-                path: fileName
-            };
+            return { success: true, url: publicUrlData.publicUrl, path: fileName };
 
         } catch (error) {
             console.error('Error al subir imagen de portada:', error);
@@ -117,28 +85,18 @@ export const AdminCursosService = {
      */
     async subirPDF(file, cursoId, claseId = 'temp') {
         try {
-            if (!file) {
-                return { success: false, error: 'No se proporcionó archivo' };
-            }
+            if (!file) return { success: false, error: 'No se proporcionó archivo' };
+            if (file.type !== 'application/pdf') return { success: false, error: 'El archivo debe ser PDF' };
 
-            if (file.type !== 'application/pdf') {
-                return { success: false, error: 'El archivo debe ser PDF' };
-            }
-
-            const maxSize = 50 * 1024 * 1024; // 50MB para PDFs
-            if (file.size > maxSize) {
-                return { success: false, error: 'El archivo excede los 50MB permitidos' };
-            }
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            if (file.size > maxSize) return { success: false, error: 'El archivo excede los 50MB permitidos' };
 
             const timestamp = Date.now();
             const fileName = `${cursoId}/${claseId}_${timestamp}.pdf`;
 
             const { data, error } = await supabase.storage
                 .from('documentos')
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+                .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
             if (error) throw error;
 
@@ -146,11 +104,7 @@ export const AdminCursosService = {
                 .from('documentos')
                 .getPublicUrl(fileName);
 
-            return {
-                success: true,
-                url: publicUrlData.publicUrl,
-                path: fileName
-            };
+            return { success: true, url: publicUrlData.publicUrl, path: fileName };
 
         } catch (error) {
             console.error('Error al subir PDF:', error);
@@ -165,7 +119,6 @@ export const AdminCursosService = {
      */
     async crearCurso(cursoData) {
         try {
-            // Mapeo explícito de columnas
             const payload = {
                 nombre: cursoData.nombre,
                 descripcion: cursoData.descripcion,
@@ -194,8 +147,6 @@ export const AdminCursosService = {
      */
     async actualizarCurso(cursoId, cursoData) {
         try {
-            // CORRECCIÓN CRÍTICA: Especificamos los campos exactos para evitar errores de schema
-            // y usamos 'dias_duracion_acceso' correctamente.
             const payload = {
                 nombre: cursoData.nombre,
                 descripcion: cursoData.descripcion,
@@ -204,7 +155,6 @@ export const AdminCursosService = {
                 dias_duracion_acceso: cursoData.dias_duracion_acceso
             };
 
-            // Solo incluimos la imagen si viene una nueva, para no borrar la existente
             if (cursoData.portada_url) {
                 payload.portada_url = cursoData.portada_url;
             }
@@ -227,7 +177,7 @@ export const AdminCursosService = {
     // ==================== GESTIÓN DE MÓDULOS ====================
 
     /**
-     * Crear un nuevo módulo
+     * Crear un nuevo módulo (CORREGIDO: Sin descripción)
      */
     async crearModulo(moduloData) {
         try {
@@ -236,7 +186,7 @@ export const AdminCursosService = {
                 .insert([{
                     curso_id: moduloData.curso_id,
                     nombre: moduloData.nombre,
-                    descripcion: moduloData.descripcion || null,
+                    // descripcion: moduloData.descripcion, // ELIMINADO
                     orden: moduloData.orden || 1
                 }])
                 .select()
@@ -251,13 +201,19 @@ export const AdminCursosService = {
     },
 
     /**
-     * Actualizar un módulo existente
+     * Actualizar un módulo existente (CORREGIDO: Sin descripción)
      */
     async actualizarModulo(moduloId, moduloData) {
         try {
+            // Aseguramos que solo enviamos campos válidos
+            const payload = {
+                nombre: moduloData.nombre,
+                orden: moduloData.orden
+            };
+
             const { data, error } = await supabase
                 .from('modulos')
-                .update(moduloData)
+                .update(payload)
                 .eq('id', moduloId)
                 .select()
                 .single();
@@ -450,7 +406,9 @@ export const AdminCursosService = {
      */
     async getCursoParaEditar(cursoId) {
         try {
-            // Pedimos explícitamente los campos para asegurar que traemos dias_duracion_acceso
+            // CORREGIDO:
+            // 1. NO pedimos modulos.descripcion (esto arregla el error de consola)
+            // 2. NO pedimos clases anidadas (evita errores si está vacío)
             const { data, error } = await supabase
                 .from('cursos')
                 .select(`
@@ -464,19 +422,7 @@ export const AdminCursosService = {
                     modulos (
                         id,
                         nombre,
-                        descripcion,
-                        orden,
-                        clases (
-                            id,
-                            nombre,
-                            descripcion,
-                            tipo,
-                            duracion,
-                            orden,
-                            contenido_url,
-                            contenido_texto,
-                            metadata
-                        )
+                        orden
                     )
                 `)
                 .eq('id', cursoId)
@@ -484,17 +430,15 @@ export const AdminCursosService = {
 
             if (error) throw error;
 
-            // Ordenar
             if (data && data.modulos) {
-                data.modulos.sort((a, b) => a.orden - b.orden);
-                data.modulos.forEach(mod => {
-                    if (mod.clases) mod.clases.sort((a, b) => a.orden - b.orden);
-                });
+                data.modulos.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+            } else {
+                if (data) data.modulos = [];
             }
 
             return { success: true, data };
         } catch (error) {
-            console.error('Error al obtener curso para editar:', error);
+            console.error('Error getCursoParaEditar:', error);
             return { success: false, error };
         }
     },
@@ -518,7 +462,6 @@ export const AdminCursosService = {
     }
 };
 
-// Hacer disponible globalmente para scripts no modulares
 window.AdminCursosService = AdminCursosService;
 
 export { supabase };
