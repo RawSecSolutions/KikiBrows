@@ -127,10 +127,10 @@ export const AdminCursosService = {
                 .insert([{
                     nombre: cursoData.nombre,
                     descripcion: cursoData.descripcion,
-                    portada: cursoData.portada || null,
+                    portada_url: cursoData.portada_url || null,
                     precio: cursoData.precio || 0,
                     estado: cursoData.estado || 'borrador',
-                    duracion_acceso: cursoData.duracion_acceso || 180
+                    dias_duracion_acceso: cursoData.dias_duracion_acceso || 180
                 }])
                 .select()
                 .single();

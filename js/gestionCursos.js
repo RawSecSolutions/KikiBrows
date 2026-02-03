@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function cargarCursos() {
         try {
             cursosGrid.innerHTML = `
-                <div class="text-center py-5 w-100">
+                <div class="col-12 d-flex flex-column align-items-center justify-content-center text-center py-5">
                     <div class="spinner-border text-secondary" role="status">
                         <span class="visually-hidden">Cargando...</span>
                     </div>
@@ -34,8 +34,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     nombre,
                     descripcion,
                     precio,
-                    imagen_url,
-                    publicado,
+                    portada_url,
+                    estado,
                     created_at,
                     modulos (id)
                 `)
@@ -48,8 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (totalCursos === 0) {
                 cursosGrid.innerHTML = `
-                    <div class="text-center py-5 w-100">
-                        <i class="fas fa-folder-open fs-1 text-muted mb-3"></i>
+                    <div class="col-12 d-flex flex-column align-items-center justify-content-center text-center py-5">
+                        <i class="fas fa-folder-open fs-1 text-muted mb-3 d-block"></i>
                         <p class="text-muted">No hay cursos creados aún.</p>
                         <a href="creaCurso.html" class="btn btn-outline-secondary">
                             <i class="fas fa-plus me-2"></i>Crear primer curso
@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Error cargando cursos:', error);
             cursosGrid.innerHTML = `
-                <div class="text-center py-5 w-100">
-                    <i class="fas fa-exclamation-triangle fs-1 text-danger mb-3"></i>
+                <div class="col-12 d-flex flex-column align-items-center justify-content-center text-center py-5">
+                    <i class="fas fa-exclamation-triangle fs-1 text-danger mb-3 d-block"></i>
                     <p class="text-danger">Error al cargar los cursos</p>
                     <button class="btn btn-outline-primary" onclick="location.reload()">
                         <i class="fas fa-sync me-2"></i>Reintentar
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (cursosToShow.length === 0) {
             cursosGrid.innerHTML = `
-                <div class="text-center py-5 w-100">
+                <div class="col-12 d-flex flex-column align-items-center justify-content-center text-center py-5">
                     <p class="text-muted">No hay cursos en esta página.</p>
                 </div>
             `;
@@ -101,12 +101,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 year: '2-digit'
             });
 
-            const estadoBadge = curso.publicado
+            const estadoBadge = curso.estado === 'publicado'
                 ? '<span class="badge bg-success position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">PUBLICADO</span>'
                 : '<span class="badge bg-secondary position-absolute top-0 start-0 m-2" style="font-size: 0.7rem; font-weight: 600;">BORRADOR</span>';
 
-            const imagenHTML = curso.imagen_url
-                ? `<img src="${curso.imagen_url}" alt="${curso.nombre}" class="w-100 h-100" style="object-fit: cover;">`
+            const imagenHTML = curso.portada_url
+                ? `<img src="${curso.portada_url}" alt="${curso.nombre}" class="w-100 h-100" style="object-fit: cover;">`
                 : '<i class="fas fa-image fs-1 text-muted opacity-25"></i>';
 
             const modulosCount = curso.modulos ? curso.modulos.length : 0;
