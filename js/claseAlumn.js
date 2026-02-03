@@ -5,16 +5,28 @@ document.addEventListener('DOMContentLoaded', () => {
     CursosData.init();
     CursosData.initStudent();
 
+    // Helper para parsear IDs (soporta tanto UUIDs como integers)
+    const parseId = (value) => {
+        if (!value) return null;
+        // Si es un UUID (contiene guiones), mantenerlo como string
+        if (typeof value === 'string' && value.includes('-')) {
+            return value;
+        }
+        // Si es un número o string numérico, parsearlo
+        const parsed = parseInt(value, 10);
+        return isNaN(parsed) ? value : parsed;
+    };
+
     // Estado global
     // Verificar si hay un parámetro de curso en la URL
     const urlParams = new URLSearchParams(window.location.search);
     const cursoIdFromUrl = urlParams.get('curso');
     let currentCursoId = cursoIdFromUrl
-        ? parseInt(cursoIdFromUrl)
-        : parseInt(localStorage.getItem('activeCourseId')) || 1;
+        ? parseId(cursoIdFromUrl)
+        : parseId(localStorage.getItem('activeCourseId')) || null;
 
-    let currentModuloId = parseInt(localStorage.getItem('activeModuloId')) || null;
-    let currentClaseId = parseInt(localStorage.getItem('activeClaseId')) || null;
+    let currentModuloId = parseId(localStorage.getItem('activeModuloId')) || null;
+    let currentClaseId = parseId(localStorage.getItem('activeClaseId')) || null;
     let currentClase = null;
     let videoWatchProgress = 0;
 
@@ -1115,12 +1127,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Obtener userId
+        // Obtener userId del usuario autenticado (UUID de Supabase Auth)
         const userId = CursosData.getCurrentUserId();
         if (!userId) {
             alert('Error: No se pudo identificar al usuario. Por favor recarga la página.');
             return;
         }
+
+        // Validar que tenemos los IDs necesarios para la ruta de Storage
+        // La ruta DEBE ser: ${cursoId}/${claseId}/${userId}/${archivo.name}
+        if (!currentCursoId) {
+            alert('Error: No se pudo identificar el curso. Por favor recarga la página.');
+            return;
+        }
+        if (!currentClaseId) {
+            alert('Error: No se pudo identificar la clase. Por favor recarga la página.');
+            return;
+        }
+
+        console.log('Subiendo entrega:', {
+            cursoId: currentCursoId,
+            claseId: currentClaseId,
+            userId: userId,
+            fileName: file.name
+        });
 
         // Mostrar interfaz de subida
         const uploadZone = document.getElementById('uploadZone');

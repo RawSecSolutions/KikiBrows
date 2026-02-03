@@ -370,29 +370,42 @@ export const CursosService = {
 
     /**
      * Subir una entrega práctica
-     * Path format: ${cursoId}/${claseId}/${userId}/${archivo.name}
+     * Path format: ${cursoId}/${claseId}/${userId}/${timestamp.ext}
+     *
+     * IMPORTANTE: Si la inserción en BD falla, se elimina el archivo del Storage
+     * para evitar archivos huérfanos (Caso 2 de seguridad)
      */
     async subirEntrega(claseId, file, usuarioId, cursoId) {
-        try {
-            // A. Subir archivo al Storage (Bucket 'entregas')
-            // Formato requerido por políticas: ${cursoId}/${claseId}/${userId}/${archivo.name}
-            const fileExt = file.name.split('.').pop();
-            const timestamp = Date.now();
-            const fileName = `${cursoId}/${claseId}/${usuarioId}/${timestamp}.${fileExt}`;
-            const filePath = fileName;
+        // Validar que todos los parámetros sean UUIDs válidos o valores correctos
+        if (!cursoId || !claseId || !usuarioId) {
+            return {
+                success: false,
+                error: { message: 'Faltan parámetros requeridos: cursoId, claseId o usuarioId' }
+            };
+        }
 
+        let filePath = null; // Para poder limpiar si falla
+
+        try {
+            // A. Construir el path con formato requerido por políticas de Storage
+            // Formato: ${cursoId}/${claseId}/${userId}/${timestamp}.${ext}
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const timestamp = Date.now();
+            filePath = `${cursoId}/${claseId}/${usuarioId}/${timestamp}.${fileExt}`;
+
+            // B. Subir archivo al Storage (Bucket 'entregas')
             const { error: uploadError } = await supabase.storage
                 .from('entregas')
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
 
-            // B. Obtener URL pública (o firmada)
+            // C. Obtener URL pública
             const { data: publicUrlData } = supabase.storage
                 .from('entregas')
                 .getPublicUrl(filePath);
 
-            // C. Contar intentos anteriores
+            // D. Contar intentos anteriores
             const { data: intentosAnteriores } = await supabase
                 .from('entregas')
                 .select('intento_numero')
@@ -405,7 +418,7 @@ export const CursosService = {
                 ? intentosAnteriores[0].intento_numero + 1
                 : 1;
 
-            // D. Guardar registro en la tabla 'entregas'
+            // E. Guardar registro en la tabla 'entregas'
             const { data, error: dbError } = await supabase
                 .from('entregas')
                 .insert([{
@@ -419,11 +432,28 @@ export const CursosService = {
                 .select()
                 .single();
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                // CASO 2: Si la inserción en BD falla, eliminar archivo huérfano del Storage
+                console.error('Error insertando en BD, eliminando archivo huérfano del Storage...');
+                await supabase.storage.from('entregas').remove([filePath]);
+                throw dbError;
+            }
+
             return { success: true, data, filePath };
 
         } catch (error) {
             console.error('Error subiendo entrega:', error);
+
+            // Limpieza adicional: si tenemos filePath y hubo error, intentar eliminar
+            if (filePath) {
+                try {
+                    await supabase.storage.from('entregas').remove([filePath]);
+                    console.log('Archivo huérfano eliminado del Storage');
+                } catch (cleanupError) {
+                    console.warn('No se pudo eliminar archivo huérfano:', cleanupError);
+                }
+            }
+
             return { success: false, error };
         }
     },
