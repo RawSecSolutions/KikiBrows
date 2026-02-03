@@ -1,5 +1,5 @@
 // js/renderCursosLanding.js - Renderiza dinámicamente los cursos en index.html
-// Conecta con Supabase para obtener cursos publicados
+// CORREGIDO: Ahora usa 'portada_url' que es el nombre real en Supabase
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -29,7 +29,7 @@ async function renderizarCursos() {
     `;
 
     try {
-        // Obtener cursos publicados desde Supabase
+        // CORRECCIÓN AQUÍ: Cambiado 'portada' por 'portada_url'
         const { data: cursosPublicados, error } = await supabase
             .from('cursos')
             .select('id, nombre, descripcion, portada_url, precio, estado')
@@ -140,7 +140,9 @@ function crearCarruselCursos(container, cursos) {
 }
 
 function crearTarjetaCursoHTML(curso) {
+    // CORRECCIÓN AQUÍ: Cambiado curso.portada por curso.portada_url
     const imagenUrl = curso.portada_url || 'img/curso-default.jpg';
+    
     const descripcionCorta = curso.descripcion && curso.descripcion.length > 100
         ? curso.descripcion.substring(0, 100) + '...'
         : (curso.descripcion || 'Sin descripción disponible');
@@ -162,7 +164,7 @@ function crearTarjetaCurso(curso) {
     card.className = 'producto-card';
     card.dataset.cursoId = curso.id;
 
-    // Imagen de portada (si existe, sino usa placeholder)
+    // CORRECCIÓN AQUÍ: Cambiado curso.portada por curso.portada_url
     const imagenUrl = curso.portada_url || 'img/curso-default.jpg';
 
     // Truncar descripción si es muy larga

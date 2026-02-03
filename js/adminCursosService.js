@@ -12,11 +12,6 @@ export const AdminCursosService = {
 
     /**
      * Subir video a Supabase Storage
-     * @param {File} file - Archivo de video
-     * @param {string} cursoId - ID del curso
-     * @param {string} claseId - ID de la clase (opcional, puede ser temporal)
-     * @param {function} onProgress - Callback para progreso (0-100)
-     * @returns {Promise<{success: boolean, url?: string, error?: any}>}
      */
     async subirVideo(file, cursoId, claseId = 'temp', onProgress = null) {
         try {
@@ -71,8 +66,6 @@ export const AdminCursosService = {
 
     /**
      * Subir imagen de portada a Supabase Storage
-     * @param {File} file - Archivo de imagen
-     * @returns {Promise<{success: boolean, url?: string, error?: any}>}
      */
     async subirImagenPortada(file) {
         try {
@@ -95,7 +88,7 @@ export const AdminCursosService = {
             const fileName = `portadas/${timestamp}.${fileExt}`;
 
             const { data, error } = await supabase.storage
-                .from('imagenes')
+                .from('curso-portadas') // Aseguramos el nombre correcto del bucket
                 .upload(fileName, file, {
                     cacheControl: '3600',
                     upsert: false
@@ -104,7 +97,7 @@ export const AdminCursosService = {
             if (error) throw error;
 
             const { data: publicUrlData } = supabase.storage
-                .from('imagenes')
+                .from('curso-portadas')
                 .getPublicUrl(fileName);
 
             return {
@@ -172,16 +165,19 @@ export const AdminCursosService = {
      */
     async crearCurso(cursoData) {
         try {
+            // Mapeo explícito de columnas
+            const payload = {
+                nombre: cursoData.nombre,
+                descripcion: cursoData.descripcion,
+                portada_url: cursoData.portada_url || null,
+                precio: cursoData.precio || 0,
+                estado: cursoData.estado || 'BORRADOR',
+                dias_duracion_acceso: cursoData.dias_duracion_acceso || 180
+            };
+
             const { data, error } = await supabase
                 .from('cursos')
-                .insert([{
-                    nombre: cursoData.nombre,
-                    descripcion: cursoData.descripcion,
-                    portada_url: cursoData.portada_url || null,
-                    precio: cursoData.precio || 0,
-                    estado: cursoData.estado || 'BORRADOR',
-                    dias_duracion_acceso: cursoData.dias_duracion_acceso || 180
-                }])
+                .insert([payload])
                 .select()
                 .single();
 
@@ -198,9 +194,24 @@ export const AdminCursosService = {
      */
     async actualizarCurso(cursoId, cursoData) {
         try {
+            // CORRECCIÓN CRÍTICA: Especificamos los campos exactos para evitar errores de schema
+            // y usamos 'dias_duracion_acceso' correctamente.
+            const payload = {
+                nombre: cursoData.nombre,
+                descripcion: cursoData.descripcion,
+                precio: cursoData.precio,
+                estado: cursoData.estado,
+                dias_duracion_acceso: cursoData.dias_duracion_acceso
+            };
+
+            // Solo incluimos la imagen si viene una nueva, para no borrar la existente
+            if (cursoData.portada_url) {
+                payload.portada_url = cursoData.portada_url;
+            }
+
             const { data, error } = await supabase
                 .from('cursos')
-                .update(cursoData)
+                .update(payload)
                 .eq('id', cursoId)
                 .select()
                 .single();
@@ -350,8 +361,6 @@ export const AdminCursosService = {
 
     /**
      * Crear clase con video (flujo completo)
-     * 1. Sube el video a Storage
-     * 2. Crea la clase con la URL del video
      */
     async crearClaseConVideo(claseData, videoFile, onProgress = null) {
         try {
@@ -376,7 +385,6 @@ export const AdminCursosService = {
             const claseResult = await this.crearClase(claseConVideo);
 
             if (!claseResult.success) {
-                // Si falla crear la clase, intentar eliminar el video subido
                 console.warn('Clase no creada, el video quedó huérfano:', uploadResult.path);
                 return { success: false, error: claseResult.error };
             }
@@ -400,7 +408,6 @@ export const AdminCursosService = {
      */
     async actualizarOrdenModulos(ordenArray) {
         try {
-            // ordenArray = [{id: 'uuid', orden: 1}, {id: 'uuid', orden: 2}, ...]
             const promises = ordenArray.map(item =>
                 supabase
                     .from('modulos')
@@ -443,10 +450,17 @@ export const AdminCursosService = {
      */
     async getCursoParaEditar(cursoId) {
         try {
+            // Pedimos explícitamente los campos para asegurar que traemos dias_duracion_acceso
             const { data, error } = await supabase
                 .from('cursos')
                 .select(`
-                    *,
+                    id, 
+                    nombre, 
+                    descripcion, 
+                    precio, 
+                    portada_url, 
+                    estado, 
+                    dias_duracion_acceso, 
                     modulos (
                         id,
                         nombre,

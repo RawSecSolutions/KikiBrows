@@ -1,6 +1,5 @@
 // js/coursePreview.js - Lógica para la página de preview de cursos
-// Conecta con Supabase para mostrar la estructura del curso
-// Usuarios sin acceso solo ven nombres, usuarios con acceso pueden ir al aula virtual
+// CORREGIDO: Usa 'portada_url' en lugar de 'portada'
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -22,8 +21,7 @@ function obtenerCursoIdDesdeUrl() {
         console.error('No se proporcionó un ID de curso en la URL');
         return null;
     }
-
-    return cursoId; // UUID como string
+    return cursoId;
 }
 
 function esModoPreview() {
@@ -62,9 +60,6 @@ function contarClasesTotales(modulos) {
     }, 0);
 }
 
-/**
- * Valida que el perfil del usuario esté completo (nombre y apellido)
- */
 function validarPerfilCompleto(usuario) {
     if (!usuario) return false;
     const nombreCompleto = usuario.nombre && usuario.nombre.trim() !== '';
@@ -84,7 +79,6 @@ async function verificarAccesoUsuario(cursoId) {
 
         usuarioActual = session.user;
 
-        // Obtener perfil
         const { data: profile } = await supabase
             .from('profiles')
             .select('first_name, last_name')
@@ -96,7 +90,6 @@ async function verificarAccesoUsuario(cursoId) {
             usuarioActual.apellido = profile.last_name;
         }
 
-        // Verificar si tiene transacción pagada para este curso
         const { data: transaccion, error } = await supabase
             .from('transacciones')
             .select('id, estado')
@@ -105,10 +98,6 @@ async function verificarAccesoUsuario(cursoId) {
             .eq('estado', 'PAGADO')
             .limit(1)
             .maybeSingle();
-
-        if (error) {
-            console.error('Error verificando acceso:', error);
-        }
 
         return {
             autenticado: true,
@@ -126,14 +115,14 @@ async function verificarAccesoUsuario(cursoId) {
 
 async function cargarInformacionCurso(cursoId) {
     try {
-        // Mostrar estado de carga
-        mostrarCargando();
+        mostrarCargando(); 
 
-        // Verificar acceso del usuario
+        // 1. Verificar acceso
         const acceso = await verificarAccesoUsuario(cursoId);
         tieneAcceso = acceso.tieneAcceso;
 
-        // Obtener datos básicos del curso
+        // 2. Obtener datos básicos del curso
+        // IMPORTANTE: Aquí pedimos 'portada_url' en vez de 'portada'
         const { data: curso, error: cursoError } = await supabase
             .from('cursos')
             .select('id, nombre, descripcion, portada_url, precio, estado, dias_duracion_acceso')
@@ -147,27 +136,25 @@ async function cargarInformacionCurso(cursoId) {
             return;
         }
 
-        // Verificar estado del curso
         const modoPreview = esModoPreview();
         if (!modoPreview && curso.estado !== 'PUBLICADO') {
-            mostrarError('Este curso no está disponible en este momento.');
+            mostrarError('Este curso no está disponible públicamente en este momento.');
             return;
         }
 
         cursoActual = curso;
 
-        // Obtener estructura usando la función RPC segura
+        // 3. Obtener estructura
         const { data: previewData, error: previewError } = await supabase
             .rpc('obtener_preview_curso', {
                 curso_id_input: cursoId
             });
 
         if (previewError) {
-            console.error('Error al obtener preview:', previewError);
-            // Continuar sin módulos si falla
+            console.error('Error al obtener estructura:', previewError);
         }
 
-        // Agrupar por módulo
+        // 4. Procesar datos
         const modulosMap = new Map();
         (previewData || []).forEach(row => {
             if (!modulosMap.has(row.modulo_nombre)) {
@@ -177,12 +164,14 @@ async function cargarInformacionCurso(cursoId) {
                     clases: []
                 });
             }
-            modulosMap.get(row.modulo_nombre).clases.push({
-                nombre: row.clase_nombre,
-                orden: row.clase_orden,
-                tipo: row.clase_tipo,
-                duracion: row.clase_duracion
-            });
+            if (row.clase_nombre) {
+                modulosMap.get(row.modulo_nombre).clases.push({
+                    nombre: row.clase_nombre,
+                    orden: row.clase_orden,
+                    tipo: row.clase_tipo,
+                    duracion: row.clase_duracion
+                });
+            }
         });
 
         const modulos = Array.from(modulosMap.values())
@@ -195,36 +184,53 @@ async function cargarInformacionCurso(cursoId) {
         cursoActual.modulos = modulos;
 
         console.log('Curso cargado:', cursoActual);
-
-        // Actualizar título de la página
         document.title = `${curso.nombre} - KIKIBROWS`;
 
-        // Cargar UI
+        // 5. Renderizar UI
         cargarHero(cursoActual);
         cargarMetaInfo(cursoActual);
         cargarModulos(cursoActual.modulos);
         configurarBotonCompra(cursoActual, acceso);
 
+        ocultarCargando();
+
     } catch (error) {
         console.error('Error al cargar curso:', error);
-        mostrarError('Error al cargar la información del curso.');
+        mostrarError('Hubo un problema al cargar la información del curso. Por favor intenta nuevamente.');
     }
 }
 
-// ==================== MOSTRAR CARGANDO ====================
+// ==================== GESTIÓN DE ESTADO DE CARGA ====================
 
 function mostrarCargando() {
-    const container = document.querySelector('.preview-main .container');
-    if (!container) return;
+    const loader = document.getElementById('globalLoader');
+    const content = document.getElementById('courseContent');
+    
+    if (loader) loader.style.display = 'block';
+    if (content) content.style.display = 'none';
+}
 
-    container.innerHTML = `
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <p class="mt-3 text-muted">Cargando información del curso...</p>
-        </div>
-    `;
+function ocultarCargando() {
+    const loader = document.getElementById('globalLoader');
+    const content = document.getElementById('courseContent');
+    
+    setTimeout(() => {
+        if (loader) loader.style.display = 'none';
+        if (content) {
+            content.style.display = 'block';
+            content.style.opacity = 0;
+            let op = 0.1;
+            content.style.display = 'block';
+            let timer = setInterval(function () {
+                if (op >= 1){
+                    clearInterval(timer);
+                }
+                content.style.opacity = op;
+                content.style.filter = 'alpha(opacity=' + op * 100 + ")";
+                op += op * 0.1;
+            }, 10);
+        }
+    }, 300);
 }
 
 // ==================== CARGAR HERO ====================
@@ -235,13 +241,14 @@ function cargarHero(curso) {
     const portadaEl = document.getElementById('heroPortada');
 
     if (nombreEl) nombreEl.textContent = curso.nombre;
-    if (descripcionEl) descripcionEl.textContent = curso.descripcion || 'Sin descripción disponible.';
+    if (descripcionEl) descripcionEl.textContent = curso.descripcion || '';
 
     if (portadaEl) {
+        // IMPORTANTE: Usamos curso.portada_url
         if (curso.portada_url) {
-            portadaEl.innerHTML = `<img src="${curso.portada_url}" alt="${curso.nombre}">`;
+            portadaEl.innerHTML = `<img src="${curso.portada_url}" alt="${curso.nombre}" style="width:100%; height:100%; object-fit:cover;">`;
         } else {
-            portadaEl.innerHTML = '<i class="fas fa-image"></i>';
+            portadaEl.innerHTML = '<div class="bg-light d-flex align-items-center justify-content-center h-100"><i class="fas fa-image fa-3x text-muted"></i></div>';
         }
     }
 }
@@ -274,10 +281,10 @@ function cargarModulos(modulos) {
 
     if (!modulos || modulos.length === 0) {
         container.innerHTML = `
-            <div class="no-modulos">
-                <i class="fas fa-folder-open"></i>
-                <h3>Sin módulos</h3>
-                <p>Este curso aún no tiene módulos configurados.</p>
+            <div class="no-modulos text-center py-4 text-muted">
+                <i class="fas fa-folder-open fa-2x mb-3"></i>
+                <h3>Próximamente</h3>
+                <p>El contenido de este curso se está preparando.</p>
             </div>
         `;
         return;
@@ -310,7 +317,6 @@ function crearModuloElement(modulo, clases, duracion, numero, expandido) {
         </div>
     `;
 
-    // Toggle
     const header = div.querySelector('.modulo-header');
     header.addEventListener('click', () => {
         header.classList.toggle('expanded');
@@ -322,17 +328,11 @@ function crearModuloElement(modulo, clases, duracion, numero, expandido) {
 
 function crearClaseHTML(clase) {
     const iconos = {
-        video: 'fa-play-circle',
-        VIDEO: 'fa-play-circle',
-        texto: 'fa-file-alt',
-        TEXTO: 'fa-file-alt',
-        pdf: 'fa-file-pdf',
-        PDF: 'fa-file-pdf',
-        quiz: 'fa-question-circle',
-        QUIZ: 'fa-question-circle',
-        entrega: 'fa-upload',
-        ENTREGA: 'fa-upload',
-        PRACTICA: 'fa-upload'
+        video: 'fa-play-circle', VIDEO: 'fa-play-circle',
+        texto: 'fa-file-alt', TEXTO: 'fa-file-alt',
+        pdf: 'fa-file-pdf', PDF: 'fa-file-pdf',
+        quiz: 'fa-question-circle', QUIZ: 'fa-question-circle',
+        entrega: 'fa-upload', ENTREGA: 'fa-upload', PRACTICA: 'fa-upload'
     };
 
     const tipo = clase.tipo || 'video';
@@ -355,22 +355,22 @@ function configurarBotonCompra(curso, acceso) {
     const btnComprar = document.getElementById('btnComprarCurso');
     if (!btnComprar) return;
 
-    // Si ya tiene acceso, cambiar el botón
+    btnComprar.removeAttribute('disabled');
+    btnComprar.innerHTML = `<i class="fas fa-shopping-cart me-2"></i>Comprar Curso`;
+
     if (acceso.tieneAcceso) {
         btnComprar.innerHTML = '<i class="fas fa-play me-2"></i>Ir al Aula Virtual';
-        btnComprar.classList.remove('btn-primary');
-        btnComprar.classList.add('btn-success');
+        btnComprar.classList.remove('btn-comprar-curso', 'btn-primary');
+        btnComprar.classList.add('btn', 'btn-success', 'w-100');
 
-        btnComprar.addEventListener('click', () => {
+        btnComprar.onclick = () => {
             localStorage.setItem('activeCourseId', curso.id);
             window.location.href = 'claseAlumn.html?curso=' + curso.id;
-        });
+        };
         return;
     }
 
-    // Configurar para compra
-    btnComprar.addEventListener('click', () => {
-        // Verificar si el usuario está autenticado
+    btnComprar.onclick = () => {
         if (!acceso.autenticado) {
             localStorage.setItem('redirectAfterLogin', window.location.href);
             alert('Debes iniciar sesión para comprar este curso.');
@@ -378,14 +378,8 @@ function configurarBotonCompra(curso, acceso) {
             return;
         }
 
-        // Verificar que el perfil esté completo
         if (!validarPerfilCompleto(usuarioActual)) {
-            const confirmar = confirm(
-                'Completa tu perfil antes de comprar\n\n' +
-                'Para poder generar tu certificado al finalizar el curso, necesitamos que completes tu perfil con tu nombre y apellido.\n\n' +
-                '¿Deseas completar tu perfil ahora?'
-            );
-
+            const confirmar = confirm('Para generar tu certificado necesitamos tu nombre completo. ¿Ir al perfil ahora?');
             if (confirmar) {
                 localStorage.setItem('redirectAfterLogin', window.location.href);
                 window.location.href = 'account.html';
@@ -393,9 +387,8 @@ function configurarBotonCompra(curso, acceso) {
             return;
         }
 
-        // Abrir portal de pago
         abrirPortalPago(curso);
-    });
+    };
 }
 
 // ==================== PORTAL DE PAGO ====================
@@ -404,18 +397,15 @@ function abrirPortalPago(curso) {
     const modal = document.getElementById('portalPagoModal');
     if (!modal) return;
 
-    // Cargar información del curso en el modal
     const portalNombre = document.getElementById('portalCursoNombre');
     const portalPrecio = document.getElementById('portalCursoPrecio');
 
     if (portalNombre) portalNombre.textContent = curso.nombre;
     if (portalPrecio) portalPrecio.textContent = formatearPrecio(curso.precio);
 
-    // Mostrar modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-
-    // Configurar eventos del modal
+    
     configurarEventosPortalPago(curso);
 }
 
@@ -426,108 +416,66 @@ function cerrarPortalPago() {
     modal.classList.remove('active');
     document.body.style.overflow = 'auto';
 
-    // Resetear secciones de pago
-    const seccionWebpay = document.getElementById('seccionWebpay');
-    const seccionMercadoPago = document.getElementById('seccionMercadoPago');
-    if (seccionWebpay) seccionWebpay.style.display = 'none';
-    if (seccionMercadoPago) seccionMercadoPago.style.display = 'none';
-
-    // Resetear botones de método de pago
-    document.querySelectorAll('.metodo-pago-btn').forEach(btn => {
-        btn.classList.remove('selected');
-    });
+    const webpay = document.getElementById('seccionWebpay');
+    const mp = document.getElementById('seccionMercadoPago');
+    if(webpay) webpay.style.display = 'none';
+    if(mp) mp.style.display = 'none';
+    
+    document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
 }
 
 function configurarEventosPortalPago(curso) {
-    // Botón cerrar
     const btnCerrar = document.getElementById('btnCerrarPortal');
-    if (btnCerrar) btnCerrar.onclick = cerrarPortalPago;
-
-    // Botón volver
     const btnVolver = document.getElementById('btnVolverCheckout');
-    if (btnVolver) btnVolver.onclick = cerrarPortalPago;
-
-    // Cerrar al hacer click en overlay
     const overlay = document.querySelector('.portal-pago-overlay');
+    
+    if (btnCerrar) btnCerrar.onclick = cerrarPortalPago;
+    if (btnVolver) btnVolver.onclick = cerrarPortalPago;
     if (overlay) overlay.onclick = cerrarPortalPago;
 
-    // Botón Webpay
     const btnWebpay = document.getElementById('btnWebpay');
+    const btnMercadoPago = document.getElementById('btnMercadoPago');
+
     if (btnWebpay) {
         btnWebpay.onclick = () => {
-            document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
             btnWebpay.classList.add('selected');
-
-            const seccionWebpay = document.getElementById('seccionWebpay');
-            const seccionMercadoPago = document.getElementById('seccionMercadoPago');
-            if (seccionWebpay) seccionWebpay.style.display = 'block';
-            if (seccionMercadoPago) seccionMercadoPago.style.display = 'none';
-
-            seccionWebpay?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            document.getElementById('seccionWebpay').style.display = 'block';
+            document.getElementById('seccionMercadoPago').style.display = 'none';
         };
     }
 
-    // Botón Mercado Pago
-    const btnMercadoPago = document.getElementById('btnMercadoPago');
     if (btnMercadoPago) {
         btnMercadoPago.onclick = () => {
-            document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
             btnMercadoPago.classList.add('selected');
-
-            const seccionWebpay = document.getElementById('seccionWebpay');
-            const seccionMercadoPago = document.getElementById('seccionMercadoPago');
-            if (seccionWebpay) seccionWebpay.style.display = 'none';
-            if (seccionMercadoPago) seccionMercadoPago.style.display = 'block';
-
-            seccionMercadoPago?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            document.getElementById('seccionWebpay').style.display = 'none';
+            document.getElementById('seccionMercadoPago').style.display = 'block';
         };
     }
-
-    // Formulario Webpay
+    
     const formWebpay = document.getElementById('formWebpay');
     if (formWebpay) {
         formWebpay.onsubmit = (e) => {
             e.preventDefault();
-            iniciarPagoWebpay(curso);
+            alert('Simulación: Redirigiendo a Webpay...');
+            procesarCompraExitosa(curso, 'Webpay Plus');
         };
     }
-
-    // Botón Mercado Pago pagar
+    
     const btnPagarMP = document.getElementById('btnPagarMercadoPago');
-    if (btnPagarMP) {
-        btnPagarMP.onclick = () => iniciarPagoMercadoPago(curso);
+    if(btnPagarMP) {
+        btnPagarMP.onclick = () => {
+            alert('Simulación: Redirigiendo a Mercado Pago...');
+            procesarCompraExitosa(curso, 'Mercado Pago');
+        };
     }
-}
-
-// ==================== INTEGRACIÓN DE PASARELAS DE PAGO ====================
-
-async function iniciarPagoWebpay(curso) {
-    console.log('Iniciando pago con Webpay para curso:', curso.nombre);
-
-    // SIMULACIÓN TEMPORAL
-    alert('Portal de pago de Webpay/Transbank.\n\nAquí se redirigirá a la pasarela de pago de Transbank.\n\nPor ahora es una simulación.');
-
-    await procesarCompraExitosa(curso, 'Webpay Plus');
-}
-
-async function iniciarPagoMercadoPago(curso) {
-    console.log('Iniciando pago con Mercado Pago para curso:', curso.nombre);
-
-    // SIMULACIÓN TEMPORAL
-    alert('Portal de pago de Mercado Pago.\n\nAquí se mostrará el checkout de Mercado Pago.\n\nPor ahora es una simulación.');
-
-    await procesarCompraExitosa(curso, 'Mercado Pago');
 }
 
 async function procesarCompraExitosa(curso, metodoPago) {
     try {
-        const fechaCompra = new Date();
-        const diasAcceso = curso.dias_duracion_acceso || 180;
-        const transaccionId = generarTransaccionId();
-        const codigoAutorizacion = generarCodigoAutorizacion();
-
-        // Registrar transacción en Supabase
-        const { data: transaccion, error } = await supabase
+        // Registrar en Supabase
+        const { error } = await supabase
             .from('transacciones')
             .insert([{
                 usuario_id: usuarioActual.id,
@@ -535,89 +483,45 @@ async function procesarCompraExitosa(curso, metodoPago) {
                 monto: curso.precio,
                 estado: 'PAGADO',
                 metodo_pago: metodoPago,
-                codigo_autorizacion: codigoAutorizacion
-            }])
-            .select()
-            .single();
+                codigo_autorizacion: Math.floor(Math.random() * 999999).toString()
+            }]);
 
-        if (error) {
-            console.error('Error al registrar transacción:', error);
-            // Continuar con el flujo de UI aunque falle el registro
-        }
+        if (error) console.error('Error registrando transacción:', error);
 
-        // Crear objeto de transacción para localStorage (página de confirmación)
         const transaccionLocal = {
             estado: 'PAGADO',
             cursoId: curso.id,
             cursoNombre: curso.nombre,
             monto: curso.precio,
-            metodoPago: metodoPago,
-            fecha: fechaCompra.toISOString(),
-            codigoAutorizacion: codigoAutorizacion,
-            transaccionId: transaccion?.id || transaccionId,
-            usuarioEmail: usuarioActual.email,
-            usuarioNombre: usuarioActual.nombre
+            fecha: new Date().toISOString(),
+            transaccionId: `TXN-${Date.now()}`
         };
-
         localStorage.setItem('ultimaTransaccion', JSON.stringify(transaccionLocal));
 
-        // También guardar en historial local
-        guardarTransaccionEnHistorial(transaccionLocal);
-
-        // Cerrar portal y redirigir
-        cerrarPortalPago();
         window.location.href = 'payment-confirmation.html';
 
-    } catch (error) {
-        console.error('Error procesando compra:', error);
-        alert('Hubo un error al procesar la compra. Por favor intenta nuevamente.');
+    } catch (e) {
+        console.error(e);
+        alert('Error procesando la compra.');
     }
-}
-
-// ==================== FUNCIONES AUXILIARES DE TRANSACCIONES ====================
-
-function generarTransaccionId() {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 10000);
-    return `TXN-${timestamp}-${random}`;
-}
-
-function generarCodigoAutorizacion() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-function guardarTransaccionEnHistorial(transaccion) {
-    const historial = JSON.parse(localStorage.getItem('kikibrows_transacciones')) || [];
-
-    historial.push({
-        id: transaccion.transaccionId,
-        producto: transaccion.cursoNombre,
-        valor: transaccion.monto,
-        usuario: transaccion.usuarioNombre || 'Usuario',
-        fecha: transaccion.fecha,
-        email: transaccion.usuarioEmail,
-        estado: transaccion.estado,
-        paymentStatus: transaccion.estado,
-        bank: transaccion.metodoPago,
-        paymentMethod: 'Débito/Crédito',
-        authCode: transaccion.codigoAutorizacion,
-        gatewayToken: transaccion.transaccionId
-    });
-
-    localStorage.setItem('kikibrows_transacciones', JSON.stringify(historial));
 }
 
 // ==================== MANEJO DE ERRORES ====================
 
 function mostrarError(mensaje) {
-    const container = document.querySelector('.preview-main .container');
+    const container = document.getElementById('mainContainer');
     if (!container) return;
+    
+    const loader = document.getElementById('globalLoader');
+    if(loader) loader.style.display = 'none';
 
     container.innerHTML = `
-        <div class="alert alert-danger text-center mt-5" role="alert">
-            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-            <h4>${mensaje}</h4>
-            <a href="index.html#cursos" class="btn btn-primary mt-3">
+        <div class="alert alert-danger text-center mt-5 p-5 shadow-sm" role="alert" style="border-radius: 15px;">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3 text-danger"></i>
+            <h4 class="alert-heading">¡Ups! Algo salió mal</h4>
+            <p>${mensaje}</p>
+            <hr>
+            <a href="index.html#cursos" class="btn btn-outline-danger mt-2">
                 <i class="fas fa-arrow-left me-2"></i>Volver a Cursos
             </a>
         </div>
@@ -636,7 +540,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Mostrar banner de previsualización si está en modo admin preview
     if (esModoPreview()) {
         const previewBanner = document.getElementById('previewBanner');
         if (previewBanner) {
