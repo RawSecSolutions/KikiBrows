@@ -32,7 +32,7 @@ async function renderizarCursos() {
         // Obtener cursos publicados desde Supabase
         const { data: cursosPublicados, error } = await supabase
             .from('cursos')
-            .select('id, nombre, descripcion, portada, precio, estado')
+            .select('id, nombre, descripcion, portada_url, precio, estado')
             .eq('estado', 'PUBLICADO')
             .order('created_at', { ascending: false });
 
@@ -140,7 +140,7 @@ function crearCarruselCursos(container, cursos) {
 }
 
 function crearTarjetaCursoHTML(curso) {
-    const imagenUrl = curso.portada || 'img/curso-default.jpg';
+    const imagenUrl = curso.portada_url || 'img/curso-default.jpg';
     const descripcionCorta = curso.descripcion && curso.descripcion.length > 100
         ? curso.descripcion.substring(0, 100) + '...'
         : (curso.descripcion || 'Sin descripción disponible');
@@ -163,7 +163,7 @@ function crearTarjetaCurso(curso) {
     card.dataset.cursoId = curso.id;
 
     // Imagen de portada (si existe, sino usa placeholder)
-    const imagenUrl = curso.portada || 'img/curso-default.jpg';
+    const imagenUrl = curso.portada_url || 'img/curso-default.jpg';
 
     // Truncar descripción si es muy larga
     const descripcionCorta = curso.descripcion && curso.descripcion.length > 100

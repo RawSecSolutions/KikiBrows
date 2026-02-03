@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="course-card ${isCompleted ? 'completed' : ''}">
                         ${completedBadge}
                         <div class="course-image">
-                            <img src="${curso.portada || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=200&fit=crop'}" alt="${curso.nombre}">
+                            <img src="${curso.portada_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=200&fit=crop'}" alt="${curso.nombre}">
                             <div class="course-overlay">
                                 <span class="duration-badge">
                                     <i class="fas fa-clock me-1"></i>${typeof CursosData !== 'undefined' ? CursosData.formatearDuracion(CursosData.calcularDuracionCurso(curso.id)) : ''}
