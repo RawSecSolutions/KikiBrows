@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIKIBROWS - Editar Módulo</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="../../../css/landing/fonts.css"> 
+    <link rel="stylesheet" href="../../../css/admin/dashboard/layoutAdmin.css">
+    <link rel="stylesheet" href="css/dashboardAdmin.css"> 
+    <link rel="stylesheet" href="../../../css/admin/cursos/gestorModulos.css"> 
+
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+</head>
+<body>
+    
+    <header id="navbar-global"></header>
+
+    <main class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                
+                <!-- Header -->
+                <div class="d-flex align-items-center mb-4">
+                    <a href="/pages/admin/cursos/creaCurso.html" class="btn btn-link text-secondary p-0 me-3" id="backToCourse">
+                        <i class="fas fa-arrow-left fa-lg"></i>
+                    </a>
+                    <div>
+                        <h1 class="page-title mb-0">Gestor de Cursos</h1>
+                        <small class="text-muted">Edición de módulo</small>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    
+                    <!-- Info del Módulo -->
+                    <div class="col-lg-5">
+                        <div class="card-section">
+                            <h2 class="section-title">Nombre del módulo</h2>
+                            
+                            <div class="mb-4">
+                                <input type="text" class="form-control input-kikibrows input-lg" id="moduleName" 
+                                       placeholder="Escribe el nombre del módulo" required>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Duración del módulo</label>
+                                <div class="duration-display" id="moduleDurationDisplay">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <span id="moduleDurationText">0 min</span>
+                                </div>
+                                <small class="text-muted">Calculada según las clases</small>
+                            </div>
+                            
+                            <button type="button" class="btn-confirmar" id="saveModuleInfo">
+                                <i class="fas fa-check me-2"></i>Confirmar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Clases del módulo -->
+                    <div class="col-lg-7">
+                        <div class="card-section">
+                            <h2 class="section-title">Clases del módulo</h2>
+                            
+                            <p class="text-muted small mb-3">
+                                Las clases pueden ser: video educativo, texto/lección teórica, recurso descargable (PDF), 
+                                quiz de evaluación o entrega práctica.
+                            </p>
+                            
+                            <!-- Loading state -->
+                            <div id="clasesLoading" class="text-center py-4">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="text-muted mt-2 mb-0">Cargando clases...</p>
+                            </div>
+                            
+                            <!-- Empty state -->
+                            <div id="clasesEmpty" class="text-center py-4 d-none">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No hay clases en este módulo.</p>
+                                <p class="text-muted small">Haz clic en "Crear" para agregar la primera clase.</p>
+                            </div>
+                            
+                            <!-- Lista de clases (se carga dinámicamente desde Supabase) -->
+                            <div id="clasesContainer" class="sortable-container d-none">
+                                <!-- Las clases se cargan dinámicamente -->
+                            </div>
+                            
+                            <!-- Botón Crear clase -->
+                            <button type="button" class="btn-crear-clase mt-3" id="addClaseBtn">
+                                <i class="fas fa-plus me-2"></i>Crear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botón de acción único -->
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="/pages/admin/cursos/creaCurso.html" class="btn-volver" id="btnVolverCurso">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al curso
+                            </a>
+                            <!-- Alerta de éxito inline -->
+                            <div class="alert alert-success mb-0 py-2 px-3 d-none" id="saveSuccessAlert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span id="saveSuccessMessage">Guardado exitosamente</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Crear/Seleccionar tipo de clase -->
+    <div class="modal fade" id="claseTypeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-kikibrows">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">¿Qué tipo de clase deseas crear?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="clase-type-grid">
+                        <button type="button" class="clase-type-btn" data-tipo="video">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Video Educativo</span>
+                        </button>
+                        <button type="button" class="clase-type-btn" data-tipo="texto">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Lección Teórica</span>
+                        </button>
+                        <button type="button" class="clase-type-btn" data-tipo="pdf">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Recurso PDF</span>
+                        </button>
+                        <button type="button" class="clase-type-btn" data-tipo="quiz">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Quiz</span>
+                        </button>
+                        <button type="button" class="clase-type-btn" data-tipo="entrega">
+                            <i class="fas fa-upload"></i>
+                            <span>Entrega Práctica</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Editar clase (genérico) -->
+    <div class="modal fade" id="editClaseModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-kikibrows">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="editClaseModalTitle">Editar Clase</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de la clase</label>
+                        <input type="text" class="form-control input-kikibrows" id="editClaseName" 
+                               placeholder="Ej: Introducción a la técnica">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Descripción (opcional)</label>
+                        <textarea class="form-control input-kikibrows" id="editClaseDesc" rows="2"
+                                  placeholder="Breve descripción"></textarea>
+                    </div>
+                    
+                    <!-- Contenido específico según tipo -->
+                    <div id="claseContentArea">
+                        <!-- Se llena dinámicamente según el tipo de clase -->
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-auto">
+                            <label class="form-label">Duración estimada</label>
+                            <div class="input-group" style="width: 150px;">
+                                <input type="number" class="form-control input-kikibrows" id="editClaseDuration" 
+                                       placeholder="5" min="1">
+                                <span class="input-group-text">min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-danger me-auto" id="deleteClaseBtn">
+                        <i class="fas fa-trash me-1"></i>Eliminar
+                    </button>
+                    <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-confirmar-sm" id="saveClaseBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar eliminar clase -->
+    <div class="modal fade" id="deleteClaseModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-kikibrows">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                    <h5>¿Eliminar esta clase?</h5>
+                    <p class="text-muted small mb-0">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteClase">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="videoPreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-kikibrows bg-black">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white" id="videoPreviewTitle">Vista Previa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="ratio ratio-16x9">
+                        <video id="videoPlayer" controls class="w-100 h-100 rounded">
+                            <source src="" type="video/mp4">
+                            Tu navegador no soporta video HTML5.
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../../../js/auth/authGuardAdmin.js"></script>
+    <script type="module" src="../../../js/admin/dashboard/componenteAdmin.js"></script>
+    <!-- Servicio de admin para subida de videos a Supabase -->
+    <script type="module" src="../../../js/admin/cursos/adminCursosService.js"></script>
+    <script type="module" src="../../../js/admin/cursos/gestorModulos.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Generación de Certificado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background-color: #8A835A;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #6a6340;
+        }
+        #log {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .info {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de Generación de Certificados</h1>
+    <p>Esta página te permite probar la funcionalidad de descarga de certificados.</p>
+
+    <button onclick="testPdfMake()">1. Test: Verificar pdfMake</button><br>
+    <button onclick="testCertificateGenerator()">2. Test: Verificar CertificateGenerator</button><br>
+    <button onclick="testSimplePdf()">3. Test: Generar PDF Simple</button><br>
+    <button onclick="testFullCertificate()">4. Test: Generar Certificado Completo</button><br>
+
+    <div id="log"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="../../js/certificados/certificateGenerator.js"></script>
+
+    <script>
+        const logDiv = document.getElementById('log');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function testPdfMake() {
+            log('=== Test 1: Verificar pdfMake ===', 'info');
+            if (typeof pdfMake !== 'undefined') {
+                log('✓ pdfMake está cargado correctamente', 'success');
+                log(`Versión: ${pdfMake.version || 'desconocida'}`, 'info');
+            } else {
+                log('✗ pdfMake NO está disponible', 'error');
+            }
+        }
+
+        function testCertificateGenerator() {
+            log('=== Test 2: Verificar CertificateGenerator ===', 'info');
+            if (window.CertificateGenerator) {
+                log('✓ CertificateGenerator está disponible', 'success');
+                log('Métodos disponibles:', 'info');
+                for (let method in window.CertificateGenerator) {
+                    if (typeof window.CertificateGenerator[method] === 'function') {
+                        log(`  - ${method}()`, 'info');
+                    }
+                }
+            } else {
+                log('✗ CertificateGenerator NO está disponible', 'error');
+            }
+        }
+
+        function testSimplePdf() {
+            log('=== Test 3: Generar PDF Simple ===', 'info');
+            try {
+                if (typeof pdfMake === 'undefined') {
+                    throw new Error('pdfMake no está disponible');
+                }
+
+                log('Creando documento simple...', 'info');
+                const docDefinition = {
+                    content: [
+                        { text: 'Test de PDF', style: 'header' },
+                        { text: 'Este es un PDF de prueba generado con pdfMake', margin: [0, 10, 0, 0] },
+                        { text: `Fecha: ${new Date().toLocaleString()}` }
+                    ],
+                    styles: {
+                        header: {
+                            fontSize: 18,
+                            bold: true
+                        }
+                    }
+                };
+
+                const pdfDoc = pdfMake.createPdf(docDefinition);
+                pdfDoc.download('test-simple.pdf');
+                log('✓ PDF simple generado y descargado', 'success');
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function testFullCertificate() {
+            log('=== Test 4: Generar Certificado Completo ===', 'info');
+            try {
+                if (!window.CertificateGenerator) {
+                    throw new Error('CertificateGenerator no está disponible');
+                }
+
+                const datosPrueba = {
+                    nombreAlumno: 'María',
+                    apellidoAlumno: 'García',
+                    nombreCurso: 'Lash Lifting Profesional',
+                    fechaCompletado: '23 de enero de 2026',
+                    codigoCertificado: 'KB-2026-002-001',
+                    nombreInstructor: 'Equipo KikiBrows'
+                };
+
+                log('Generando certificado con datos de prueba...', 'info');
+                log(`Alumno: ${datosPrueba.nombreAlumno} ${datosPrueba.apellidoAlumno}`, 'info');
+                log(`Curso: ${datosPrueba.nombreCurso}`, 'info');
+
+                const resultado = await window.CertificateGenerator.generarCertificado(datosPrueba);
+
+                if (resultado.success) {
+                    log(`✓ Certificado generado exitosamente: ${resultado.fileName}`, 'success');
+                } else {
+                    log(`✗ Error al generar certificado: ${resultado.error}`, 'error');
+                }
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
