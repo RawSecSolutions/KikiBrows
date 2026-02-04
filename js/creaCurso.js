@@ -1,4 +1,5 @@
 // js/creaCurso.js - Lógica para Creación y Edición de Curso
+// Actualizado: Calcula contenido total (suma de duraciones de clases)
 
 import { AdminCursosService } from './adminCursosService.js';
 
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const coursePriceInput = document.getElementById('coursePrice');
     const courseDurationInput = document.getElementById('courseAccessDuration');
     const courseStatus = document.getElementById('courseStatus');
+    const courseDurationText = document.getElementById('courseDurationText');
 
     // Imagen
     const imageInput = document.getElementById('courseImage');
@@ -64,11 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         imageUploadedDisplay.style.backgroundPosition = 'center';
         
         // CORRECCIÓN VISUAL: Asegurar contraste
-        // Hacemos el texto blanco y le ponemos sombra para que se lea sobre cualquier imagen
         imageUploadedDisplay.style.color = '#ffffff';
         imageUploadedDisplay.style.textShadow = '0 2px 4px rgba(0,0,0,0.9)';
         
-        // Aseguramos que los iconos también sean visibles
         const icons = imageUploadedDisplay.querySelectorAll('i, span, p');
         icons.forEach(icon => {
             icon.style.color = '#ffffff';
@@ -77,6 +77,82 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (btnAddImage) btnAddImage.classList.add('d-none');
         if (imageFileName) imageFileName.textContent = 'Imagen actual guardada';
+    }
+
+    // ======================================================
+    // NUEVO: CALCULAR CONTENIDO TOTAL DEL CURSO
+    // ======================================================
+    
+    /**
+     * Calcula la duración total del curso sumando las duraciones de todas las clases
+     * de todos los módulos
+     */
+    async function calcularContenidoTotal() {
+        if (!cursoIdEditar) {
+            // Si no hay curso guardado, mostrar 0
+            actualizarDisplayDuracion(0);
+            return;
+        }
+        
+        try {
+            // 1. Obtener todos los módulos del curso
+            const { data: modulos, error: errorModulos } = await AdminCursosService.supabase
+                .from('modulos')
+                .select('id')
+                .eq('curso_id', cursoIdEditar);
+            
+            if (errorModulos) throw errorModulos;
+            
+            if (!modulos || modulos.length === 0) {
+                actualizarDisplayDuracion(0);
+                return;
+            }
+            
+            // 2. Obtener los IDs de todos los módulos
+            const moduloIds = modulos.map(m => m.id);
+            
+            // 3. Obtener todas las clases de esos módulos y sumar duraciones
+            const { data: clases, error: errorClases } = await AdminCursosService.supabase
+                .from('clases')
+                .select('duracion')
+                .in('modulo_id', moduloIds);
+            
+            if (errorClases) throw errorClases;
+            
+            // 4. Sumar todas las duraciones
+            let totalMinutos = 0;
+            if (clases && clases.length > 0) {
+                totalMinutos = clases.reduce((sum, clase) => {
+                    return sum + (clase.duracion || 0);
+                }, 0);
+            }
+            
+            // 5. Actualizar el display
+            actualizarDisplayDuracion(totalMinutos);
+            
+        } catch (error) {
+            console.error('Error al calcular contenido total:', error);
+            actualizarDisplayDuracion(0);
+        }
+    }
+    
+    /**
+     * Actualiza el texto del display de duración con formato legible
+     */
+    function actualizarDisplayDuracion(totalMinutos) {
+        if (!courseDurationText) return;
+        
+        if (totalMinutos >= 60) {
+            const horas = Math.floor(totalMinutos / 60);
+            const minutos = totalMinutos % 60;
+            if (minutos > 0) {
+                courseDurationText.textContent = `${horas}h ${minutos}min`;
+            } else {
+                courseDurationText.textContent = `${horas}h`;
+            }
+        } else {
+            courseDurationText.textContent = `${totalMinutos} min`;
+        }
     }
 
     // ======================================================
@@ -120,11 +196,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (courseNameInput) courseNameInput.value = curso.nombre || '';
             if (courseDescInput) courseDescInput.value = curso.descripcion || '';
             if (coursePriceInput) coursePriceInput.value = curso.precio || 0;
-            
-            // CORREGIDO: Usamos la propiedad correcta 'dias_duracion_acceso'
             if (courseDurationInput) courseDurationInput.value = curso.dias_duracion_acceso || 180;
-            
             if (courseStatus) courseStatus.value = curso.estado || 'BORRADOR';
+            
+            // Carrusel
+            if (showInCarousel && curso.en_carrusel !== undefined) {
+                showInCarousel.checked = curso.en_carrusel;
+                if (carouselPosition) {
+                    carouselPosition.disabled = !curso.en_carrusel;
+                    if (curso.posicion_carrusel) {
+                        carouselPosition.value = curso.posicion_carrusel;
+                    }
+                }
+            }
 
             // Mostrar imagen existente con estilo corregido
             if (curso.portada_url) {
@@ -133,17 +217,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Cargar módulos existentes visualmente
             if (curso.modulos && curso.modulos.length > 0) {
-                // Ordenar por orden (aunque el servicio ya lo hace, doble seguridad)
                 curso.modulos.sort((a, b) => (a.orden || 0) - (b.orden || 0));
                 
                 curso.modulos.forEach(mod => {
                     agregarModuloAlDOM(mod.nombre, mod.id);
                 });
                 
-                // Actualizar contador para evitar colisiones de ID falsos
                 const maxId = curso.modulos.reduce((max, m) => Math.max(max, typeof m.id === 'number' ? m.id : 0), 0);
                 moduleCounter = maxId;
             }
+
+            // NUEVO: Calcular y mostrar contenido total
+            await calcularContenidoTotal();
 
             // Rehabilitar botón
             if(submitBtn) submitBtn.disabled = false;
@@ -190,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(imageFileName) imageFileName.textContent = file.name;
             if(btnAddImage) btnAddImage.classList.add('d-none');
             
-            // Previsualización local inmediata con estilos corregidos
             const reader = new FileReader();
             reader.onload = function(e) {
                 applyPreviewStyles(e.target.result);
@@ -215,12 +299,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // === LÓGICA DE CARRUSEL ===
+    
+    if (showInCarousel) {
+        showInCarousel.addEventListener('change', function() {
+            if (carouselPosition) {
+                carouselPosition.disabled = !this.checked;
+                if (this.checked && !carouselPosition.value) {
+                    carouselPosition.value = 1;
+                }
+            }
+        });
+    }
+    
     // === LÓGICA DE MÓDULOS (UI) ===
     
-    // Función helper para agregar el HTML del módulo
     function agregarModuloAlDOM(nombre, idReal = null) {
-        // Si no hay ID real, usamos el contador temporal negativo o incrementarlo
-        // Para simplificar, usamos moduleCounter si idReal es null
         if (!idReal) {
             moduleCounter++;
         }
@@ -230,13 +324,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const newModule = document.createElement('div');
         newModule.className = 'modulo-item';
         newModule.setAttribute('data-modulo-id', displayId);
-        newModule.setAttribute('draggable', 'true'); // Habilitar drag siempre
+        newModule.setAttribute('draggable', 'true');
         
-        // Link al gestor de módulos:
-        // Si ya existe (tiene ID real) -> Va a gestorModulos.html
-        // Si es nuevo (temp) -> Muestra aviso de que debe guardar primero
+        // Link al gestor de módulos - CORREGIDO: usar 'curso' en lugar de 'cursoId'
         const editButton = idReal 
-            ? `<a href="gestorModulos.html?id=${idReal}&cursoId=${cursoIdEditar}" class="btn-modulo-edit" title="Gestionar contenido"><i class="fas fa-layer-group"></i></a>`
+            ? `<a href="gestorModulos.html?id=${idReal}&curso=${cursoIdEditar}" class="btn-modulo-edit" title="Gestionar contenido"><i class="fas fa-layer-group"></i></a>`
             : `<button type="button" class="btn-modulo-edit text-muted" title="Guarda el curso para editar contenido" onclick="alert('Debes guardar el curso antes de agregar clases a este módulo.')"><i class="fas fa-save"></i></button>`;
 
         newModule.innerHTML = `
@@ -272,15 +364,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             moduleNameInput.classList.remove('is-invalid');
-            
-            // Agregar visualmente (sin ID real todavía)
             agregarModuloAlDOM(name, null);
-            
             moduleNameModal.hide();
         });
     }
 
-    // Drag and Drop (Mantenemos tu lógica original encapsulada)
+    // Drag and Drop
     if (modulosContainer) {
         initDragAndDrop(modulosContainer, '.modulo-item');
     }
@@ -288,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // === LÓGICA DE ELIMINAR MÓDULO ===
 
     if (modulosContainer) {
-        modulosContainer.addEventListener('click', (e) => {
+        modulosContainer.addEventListener('click', async (e) => {
             const deleteBtn = e.target.closest('.btn-modulo-delete');
             if (deleteBtn) {
                 e.preventDefault();
@@ -301,12 +390,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (confirmDeleteModulo) {
-        confirmDeleteModulo.addEventListener('click', () => {
+        confirmDeleteModulo.addEventListener('click', async () => {
             if (moduloToDelete) {
-                // Aquí podrías agregar lógica para borrar de BD si es necesario
-                // Por ahora solo visual
+                const moduloId = moduloToDelete.getAttribute('data-modulo-id');
+                
+                // Si es un módulo guardado (no temporal), eliminarlo de la BD
+                if (moduloId && !moduloId.startsWith('temp-')) {
+                    try {
+                        confirmDeleteModulo.disabled = true;
+                        confirmDeleteModulo.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Eliminando...';
+                        
+                        const result = await AdminCursosService.eliminarModulo(moduloId);
+                        
+                        if (!result.success) {
+                            console.error('Error al eliminar módulo:', result.error);
+                            alert('Error al eliminar el módulo');
+                            confirmDeleteModulo.disabled = false;
+                            confirmDeleteModulo.innerHTML = 'Eliminar';
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error al eliminar el módulo');
+                        confirmDeleteModulo.disabled = false;
+                        confirmDeleteModulo.innerHTML = 'Eliminar';
+                        return;
+                    }
+                }
+                
+                // Eliminar del DOM
                 moduloToDelete.remove();
                 moduloToDelete = null;
+                
+                // Recalcular contenido total después de eliminar
+                await calcularContenidoTotal();
+                
+                confirmDeleteModulo.disabled = false;
+                confirmDeleteModulo.innerHTML = 'Eliminar';
             }
             if (deleteModuloModal) {
                 deleteModuloModal.hide();
@@ -338,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Validar imagen: Requerida solo si NO hay una ya cargada visualmente
+            // Validar imagen
             const hasImageDisplayed = !imageUploadedDisplay.classList.contains('d-none');
             const hasNewFile = imageInput.files.length > 0;
 
@@ -354,21 +474,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Deshabilitar botón
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
 
             try {
-                // Preparar datos base con la variable correcta 'dias_duracion_acceso'
                 const courseData = {
                     nombre: document.getElementById('courseName').value.trim(),
                     descripcion: document.getElementById('courseDescription').value.trim(),
                     precio: parseFloat(document.getElementById('coursePrice').value) || 0,
                     dias_duracion_acceso: parseInt(document.getElementById('courseAccessDuration').value) || 180,
-                    estado: courseStatus.value
+                    estado: courseStatus.value,
+                    en_carrusel: showInCarousel ? showInCarousel.checked : false,
+                    posicion_carrusel: (showInCarousel && showInCarousel.checked && carouselPosition) 
+                        ? parseInt(carouselPosition.value) || 1 
+                        : null
                 };
 
-                // 1. Subir nueva imagen si el usuario seleccionó una
+                // Subir nueva imagen si el usuario seleccionó una
                 if (hasNewFile) {
                     console.log('Subiendo imagen de portada...');
                     const imageResult = await AdminCursosService.subirImagenPortada(imageInput.files[0]);
@@ -376,13 +498,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!imageResult.success) {
                         throw new Error(imageResult.error || 'Error al subir la imagen');
                     }
-                    // CORREGIDO: Usamos 'portada_url'
                     courseData.portada_url = imageResult.url;
                 }
 
                 let result;
 
-                // 2. ¿CREAR O ACTUALIZAR?
                 if (cursoIdEditar) {
                     // MODO EDICIÓN
                     console.log('Actualizando curso...', cursoIdEditar);
@@ -397,13 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(result.error?.message || result.error || 'Error en la operación');
                 }
 
-                // 3. GESTIÓN DE MÓDULOS (Básico)
-                // Si estamos creando, guardamos los módulos nuevos ahora que tenemos ID del curso
-                // Si estamos editando, asumimos que los módulos nuevos se deben crear
-                
+                // GESTIÓN DE MÓDULOS
                 const cursoIdFinal = cursoIdEditar || result.data.id;
                 
-                // Buscar módulos nuevos creados visualmente (IDs temporales 'temp-')
+                // Buscar módulos nuevos (IDs temporales)
                 const modulosVisuales = Array.from(modulosContainer.querySelectorAll('.modulo-item'));
                 const modulosNuevos = modulosVisuales.filter(el => {
                     const id = el.getAttribute('data-modulo-id');
@@ -415,7 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     for (let i = 0; i < modulosNuevos.length; i++) {
                         const el = modulosNuevos[i];
                         const nombre = el.querySelector('.modulo-name').textContent;
-                        // Calculamos orden basado en su posición en la lista
                         const orden = Array.from(modulosVisuales).indexOf(el) + 1;
                         
                         await AdminCursosService.crearModulo({
@@ -425,17 +541,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                     }
                 }
+                
+                // Actualizar orden de módulos existentes si se reordenaron
+                const modulosExistentes = modulosVisuales.filter(el => {
+                    const id = el.getAttribute('data-modulo-id');
+                    return id && !id.toString().startsWith('temp-');
+                });
+                
+                if (modulosExistentes.length > 0) {
+                    const ordenArray = modulosExistentes.map((el, index) => ({
+                        id: el.getAttribute('data-modulo-id'),
+                        orden: index + 1
+                    }));
+                    await AdminCursosService.actualizarOrdenModulos(ordenArray);
+                }
 
                 console.log('Proceso completado con éxito');
 
-                // Éxito
                 if(successAlert) {
                     successAlert.classList.remove('d-none');
                     const accion = cursoIdEditar ? 'actualizado' : 'creado';
                     successAlert.innerHTML = `<i class="fas fa-check-circle me-2"></i>Curso ${accion} exitosamente.`;
                 }
 
-                // Redirigir
                 setTimeout(() => {
                     window.location.href = 'gestionCursos.html';
                 }, 1500);
@@ -460,14 +588,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // === FUNCIÓN DRAG AND DROP (Tu código original intacto) ===
+    // === FUNCIÓN DRAG AND DROP ===
     function initDragAndDrop(container, itemSelector) {
         let draggedItem = null;
-        let touchDraggedItem = null;
-        let touchStartY = 0;
-        let touchCurrentY = 0;
 
-        // === EVENTOS MOUSE (Desktop) ===
         container.addEventListener('dragstart', (e) => {
             const item = e.target.closest(itemSelector);
             if (!item) return;
@@ -504,9 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         });
-
-        // Eventos táctiles omitidos por brevedad pero funcionan igual que tu original
-        // ... (Tu código de touch events aquí si lo necesitas explícitamente, o usa el bloque original)
     }
     
     function getDragAfterElement(container, y, itemSelector) {
@@ -523,6 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // === INICIAR ===
-    checkEditMode(); // <--- ESTO ES LO IMPORTANTE: VERIFICA SI HAY ID EN LA URL
+    checkEditMode();
     
 });

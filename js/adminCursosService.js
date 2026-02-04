@@ -8,6 +8,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 export const AdminCursosService = {
 
+    // Exponer cliente Supabase para consultas directas
+    supabase: supabase,
+
     // ==================== SUBIDA DE ARCHIVOS ====================
 
     /**
@@ -125,7 +128,9 @@ export const AdminCursosService = {
                 portada_url: cursoData.portada_url || null,
                 precio: cursoData.precio || 0,
                 estado: cursoData.estado || 'BORRADOR',
-                dias_duracion_acceso: cursoData.dias_duracion_acceso || 180
+                dias_duracion_acceso: cursoData.dias_duracion_acceso || 180,
+                en_carrusel: cursoData.en_carrusel || false,
+                posicion_carrusel: cursoData.posicion_carrusel || null
             };
 
             const { data, error } = await supabase
@@ -152,7 +157,9 @@ export const AdminCursosService = {
                 descripcion: cursoData.descripcion,
                 precio: cursoData.precio,
                 estado: cursoData.estado,
-                dias_duracion_acceso: cursoData.dias_duracion_acceso
+                dias_duracion_acceso: cursoData.dias_duracion_acceso,
+                en_carrusel: cursoData.en_carrusel || false,
+                posicion_carrusel: cursoData.posicion_carrusel || null
             };
 
             if (cursoData.portada_url) {
@@ -177,7 +184,7 @@ export const AdminCursosService = {
     // ==================== GESTIÓN DE MÓDULOS ====================
 
     /**
-     * Crear un nuevo módulo (CORREGIDO: Sin descripción)
+     * Crear un nuevo módulo
      */
     async crearModulo(moduloData) {
         try {
@@ -186,7 +193,6 @@ export const AdminCursosService = {
                 .insert([{
                     curso_id: moduloData.curso_id,
                     nombre: moduloData.nombre,
-                    // descripcion: moduloData.descripcion, // ELIMINADO
                     orden: moduloData.orden || 1
                 }])
                 .select()
@@ -201,15 +207,15 @@ export const AdminCursosService = {
     },
 
     /**
-     * Actualizar un módulo existente (CORREGIDO: Sin descripción)
+     * Actualizar un módulo existente
      */
     async actualizarModulo(moduloId, moduloData) {
         try {
-            // Aseguramos que solo enviamos campos válidos
-            const payload = {
-                nombre: moduloData.nombre,
-                orden: moduloData.orden
-            };
+            const payload = {};
+            
+            // Solo incluir campos que vienen en los datos
+            if (moduloData.nombre !== undefined) payload.nombre = moduloData.nombre;
+            if (moduloData.orden !== undefined) payload.orden = moduloData.orden;
 
             const { data, error } = await supabase
                 .from('modulos')
@@ -222,6 +228,25 @@ export const AdminCursosService = {
             return { success: true, data };
         } catch (error) {
             console.error('Error al actualizar módulo:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Obtener un módulo por ID
+     */
+    async getModulo(moduloId) {
+        try {
+            const { data, error } = await supabase
+                .from('modulos')
+                .select('id, nombre, curso_id, orden')
+                .eq('id', moduloId)
+                .single();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al obtener módulo:', error);
             return { success: false, error };
         }
     },
@@ -245,6 +270,25 @@ export const AdminCursosService = {
     },
 
     // ==================== GESTIÓN DE CLASES ====================
+
+    /**
+     * Obtener clases de un módulo
+     */
+    async getClasesPorModulo(moduloId) {
+        try {
+            const { data, error } = await supabase
+                .from('clases')
+                .select('*')
+                .eq('modulo_id', moduloId)
+                .order('orden', { ascending: true });
+
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error al obtener clases:', error);
+            return { success: false, error, data: [] };
+        }
+    },
 
     /**
      * Crear una nueva clase
@@ -402,13 +446,10 @@ export const AdminCursosService = {
     // ==================== OBTENER DATOS ====================
 
     /**
-     * Obtener un curso con sus módulos y clases para edición
+     * Obtener un curso con sus módulos para edición
      */
     async getCursoParaEditar(cursoId) {
         try {
-            // CORREGIDO:
-            // 1. NO pedimos modulos.descripcion (esto arregla el error de consola)
-            // 2. NO pedimos clases anidadas (evita errores si está vacío)
             const { data, error } = await supabase
                 .from('cursos')
                 .select(`
@@ -418,7 +459,9 @@ export const AdminCursosService = {
                     precio, 
                     portada_url, 
                     estado, 
-                    dias_duracion_acceso, 
+                    dias_duracion_acceso,
+                    en_carrusel,
+                    posicion_carrusel, 
                     modulos (
                         id,
                         nombre,
@@ -462,6 +505,7 @@ export const AdminCursosService = {
     }
 };
 
+// Exponer globalmente
 window.AdminCursosService = AdminCursosService;
 
 export { supabase };

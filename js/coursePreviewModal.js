@@ -1,14 +1,13 @@
 // js/coursePreviewModal.js - Versión corregida
-// Maneja la carga asíncrona y evita errores si los datos no están listos
+// CORREGIDO: Maneja cursoId como UUID (string), no como número
 
 // ==================== FUNCIONES AUXILIARES ====================
 
 function formatearPrecio(precio) {
-    return `$${(precio || 0).toLocaleString('es-CL')}`;
+    return `$ ${(precio || 0).toLocaleString('es-CL')}`;
 }
 
 function calcularDuracionTotal(cursoId) {
-    // Verificamos que CursosData tenga el método, si no devolvemos placeholder
     if (typeof CursosData.calcularDuracionCurso !== 'function') return '0 min';
     const duracion = CursosData.calcularDuracionCurso(cursoId);
     return CursosData.formatearDuracion(duracion);
@@ -24,13 +23,12 @@ function contarClasesTotales(modulos) {
 
 // ==================== CARGAR CURSO EN MODAL ====================
 
-// Hacemos la función ASYNC para poder esperar la carga de datos
 async function cargarCursoEnModal(cursoId) {
     const modalLoader = document.getElementById('modalLoader');
     const modalContent = document.getElementById('modalContent');
     const modalTitle = document.getElementById('coursePreviewModalLabel');
     
-    // 1. Mostrar estado de carga (Resetear UI)
+    // 1. Mostrar estado de carga
     if (modalLoader) modalLoader.style.display = 'block';
     if (modalContent) modalContent.style.display = 'none';
     if (modalTitle) modalTitle.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cargando...';
@@ -38,10 +36,10 @@ async function cargarCursoEnModal(cursoId) {
     try {
         // 2. Asegurar que los datos están cargados
         if (typeof CursosData.init === 'function') {
-            // AWAIT es la clave aquí: esperamos a que termine de cargar
             await CursosData.init();
         }
 
+        // CORREGIDO: cursoId ya viene como string (UUID), no convertir a número
         const curso = CursosData.getCurso(cursoId);
 
         if (!curso) {
@@ -70,6 +68,12 @@ async function cargarCursoEnModal(cursoId) {
 
         const precioEl = document.getElementById('coursePrice');
         if (precioEl) precioEl.textContent = formatearPrecio(curso.precio);
+
+        // Actualizar botón de compra con el ID correcto
+        const buyBtn = document.getElementById('buyNowBtn');
+        if (buyBtn) {
+            buyBtn.href = `checkout.html?curso=${cursoId}`;
+        }
 
         // Generar lista de contenido
         cargarModulosEnModal(cursoId, modulos);
@@ -112,13 +116,13 @@ function cargarModulosEnModal(cursoId, modulos) {
 
 function crearModuloElement(modulo, clases, duracion, index) {
     const moduloDiv = document.createElement('div');
-    moduloDiv.className = 'modulo-preview mb-3 border rounded overflow-hidden'; // Agregamos clases de estilo
+    moduloDiv.className = 'modulo-preview mb-3 border rounded overflow-hidden';
 
     const duracionFormateada = CursosData.formatearDuracion(duracion);
     const clasesCount = clases ? clases.length : 0;
 
-    // Usamos unique IDs para el collapse de Bootstrap
-    const collapseId = `moduloCollapse${modulo.id || index}`;
+    // Usamos el ID del módulo para el collapse (puede ser UUID)
+    const collapseId = `moduloCollapse_${modulo.id.toString().replace(/-/g, '_')}`;
     
     moduloDiv.innerHTML = `
         <div class="p-3 bg-white d-flex justify-content-between align-items-center cursor-pointer" 
@@ -175,7 +179,7 @@ function mostrarErrorEnModal(mensaje) {
     const contentList = document.getElementById('courseContentList');
     
     if (modalLoader) modalLoader.style.display = 'none';
-    if (modalContent) modalContent.style.display = 'block'; // Mostrar contenedor para ver el error
+    if (modalContent) modalContent.style.display = 'block';
 
     if (contentList) {
         contentList.innerHTML = `
@@ -194,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Delegación de eventos para los botones "Ver Curso"
     document.addEventListener('click', (e) => {
-        // Busca el botón clickeado o su padre más cercano
         const botonVer = e.target.closest('.btn-ver-curso');
 
         if (!botonVer) return;
@@ -202,26 +205,24 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         e.stopPropagation();
 
-        const card = botonVer.closest('.producto-card') || botonVer.closest('.card'); // Soporte para distintas estructuras
+        const card = botonVer.closest('.producto-card') || botonVer.closest('.card');
         if (!card) {
             console.error('No se encontró la tarjeta del producto');
             return;
         }
 
-        const cursoId = parseInt(card.dataset.cursoId);
+        // CORREGIDO: No convertir a número, mantener como string (UUID)
+        const cursoId = card.dataset.cursoId;
         
-        if (!cursoId || isNaN(cursoId)) {
+        if (!cursoId) {
             console.error('ID de curso inválido:', card.dataset.cursoId);
             return;
         }
 
-        // Mostrar el modal (Bootstrap)
         const modalElement = document.getElementById('coursePreviewModal');
         if (modalElement) {
             const modal = new bootstrap.Modal(modalElement);
             modal.show();
-            
-            // Cargar datos
             cargarCursoEnModal(cursoId);
         } else {
             console.error('El modal #coursePreviewModal no existe en el HTML.');
@@ -229,3 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Exportar función para uso externo
+window.cargarCursoEnModal = cargarCursoEnModal;

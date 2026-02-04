@@ -36,141 +36,85 @@
                     </div>
                 </div>
 
-                <form id="moduleEditForm">
-                    <div class="row g-4">
-                        
-                        <!-- Info del Módulo -->
-                        <div class="col-lg-5">
-                            <div class="card-section">
-                                <h2 class="section-title">Nombre del módulo</h2>
-                                
-                                <div class="mb-4">
-                                    <input type="text" class="form-control input-kikibrows input-lg" id="moduleName" 
-                                           placeholder="Escribe el nombre del módulo" required>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="form-label">Duración del módulo</label>
-                                    <div class="duration-display" id="moduleDurationDisplay">
-                                        <i class="fas fa-clock me-2"></i>
-                                        <span id="moduleDurationText">27 min</span>
-                                    </div>
-                                    <small class="text-muted">Calculada según las clases</small>
-                                </div>
-                                
-                                <button type="button" class="btn-confirmar" id="saveModuleInfo">
-                                    <i class="fas fa-check me-2"></i>Confirmar
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Clases del módulo -->
-                        <div class="col-lg-7">
-                            <div class="card-section">
-                                <h2 class="section-title">Clases del módulo</h2>
-                                
-                                <p class="text-muted small mb-3">
-                                    Las clases pueden ser: video educativo, texto/lección teórica, recurso descargable (PDF), 
-                                    quiz de evaluación o entrega práctica.
-                                </p>
-                                
-                                <!-- Lista de clases (drag and drop) -->
-                                <div id="clasesContainer" class="sortable-container">
-                                    <!-- Clase 1: Video -->
-                                    <div class="clase-item" data-clase-id="1" data-tipo="video" draggable="true">
-                                        <div class="drag-handle" title="Arrastra para reordenar">
-                                            <i class="fas fa-grip-vertical"></i>
-                                        </div>
-                                        <div class="clase-info">
-                                            <i class="fas fa-play-circle clase-icon text-primary"></i>
-                                            <span class="clase-name">Clase 1: Nombre de clase</span>
-                                            <span class="clase-duration">8 min.</span>
-                                        </div>
-                                        <div class="clase-actions">
-                                            <button type="button" class="btn-clase-edit" title="Editar">
-                                                <i class="fas fa-pen"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Clase 2: Video -->
-                                    <div class="clase-item" data-clase-id="2" data-tipo="video" draggable="true">
-                                        <div class="drag-handle" title="Arrastra para reordenar">
-                                            <i class="fas fa-grip-vertical"></i>
-                                        </div>
-                                        <div class="clase-info">
-                                            <i class="fas fa-play-circle clase-icon text-primary"></i>
-                                            <span class="clase-name">Clase 2: Nombre de clase</span>
-                                            <span class="clase-duration">9 min.</span>
-                                        </div>
-                                        <div class="clase-actions">
-                                            <button type="button" class="btn-clase-edit" title="Editar">
-                                                <i class="fas fa-pen"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Clase 3: PDF -->
-                                    <div class="clase-item" data-clase-id="3" data-tipo="pdf" draggable="true">
-                                        <div class="drag-handle" title="Arrastra para reordenar">
-                                            <i class="fas fa-grip-vertical"></i>
-                                        </div>
-                                        <div class="clase-info">
-                                            <i class="fas fa-file-pdf clase-icon text-danger"></i>
-                                            <span class="clase-name">Clase 3: Nombre de clase</span>
-                                            <span class="clase-duration">5 min.</span>
-                                        </div>
-                                        <div class="clase-actions">
-                                            <button type="button" class="btn-clase-edit" title="Editar">
-                                                <i class="fas fa-pen"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Clase 4: Entrega práctica -->
-                                    <div class="clase-item" data-clase-id="4" data-tipo="entrega" draggable="true">
-                                        <div class="drag-handle" title="Arrastra para reordenar">
-                                            <i class="fas fa-grip-vertical"></i>
-                                        </div>
-                                        <div class="clase-info">
-                                            <i class="fas fa-upload clase-icon text-warning"></i>
-                                            <span class="clase-name">Clase 4: Nombre de clase</span>
-                                            <span class="clase-duration">5 min.</span>
-                                        </div>
-                                        <div class="clase-actions">
-                                            <button type="button" class="btn-clase-edit" title="Editar">
-                                                <i class="fas fa-pen"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Botón Crear clase -->
-                                <button type="button" class="btn-crear-clase mt-3" id="addClaseBtn">
-                                    <i class="fas fa-plus me-2"></i>Crear
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Botones de acción -->
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between">
-                                <a href="creaCurso.html" class="btn-volver">
-                                    <i class="fas fa-arrow-left me-2"></i>Volver al curso
-                                </a>
-                                <button type="submit" class="btn-confirmar">
-                                    <i class="fas fa-save me-2"></i>Guardar módulo
-                                </button>
+                <div class="row g-4">
+                    
+                    <!-- Info del Módulo -->
+                    <div class="col-lg-5">
+                        <div class="card-section">
+                            <h2 class="section-title">Nombre del módulo</h2>
+                            
+                            <div class="mb-4">
+                                <input type="text" class="form-control input-kikibrows input-lg" id="moduleName" 
+                                       placeholder="Escribe el nombre del módulo" required>
                             </div>
                             
-                            <div class="alert alert-success mt-3 d-none" id="saveSuccessAlert">
+                            <div class="mb-4">
+                                <label class="form-label">Duración del módulo</label>
+                                <div class="duration-display" id="moduleDurationDisplay">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <span id="moduleDurationText">0 min</span>
+                                </div>
+                                <small class="text-muted">Calculada según las clases</small>
+                            </div>
+                            
+                            <button type="button" class="btn-confirmar" id="saveModuleInfo">
+                                <i class="fas fa-check me-2"></i>Confirmar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Clases del módulo -->
+                    <div class="col-lg-7">
+                        <div class="card-section">
+                            <h2 class="section-title">Clases del módulo</h2>
+                            
+                            <p class="text-muted small mb-3">
+                                Las clases pueden ser: video educativo, texto/lección teórica, recurso descargable (PDF), 
+                                quiz de evaluación o entrega práctica.
+                            </p>
+                            
+                            <!-- Loading state -->
+                            <div id="clasesLoading" class="text-center py-4">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="text-muted mt-2 mb-0">Cargando clases...</p>
+                            </div>
+                            
+                            <!-- Empty state -->
+                            <div id="clasesEmpty" class="text-center py-4 d-none">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No hay clases en este módulo.</p>
+                                <p class="text-muted small">Haz clic en "Crear" para agregar la primera clase.</p>
+                            </div>
+                            
+                            <!-- Lista de clases (se carga dinámicamente desde Supabase) -->
+                            <div id="clasesContainer" class="sortable-container d-none">
+                                <!-- Las clases se cargan dinámicamente -->
+                            </div>
+                            
+                            <!-- Botón Crear clase -->
+                            <button type="button" class="btn-crear-clase mt-3" id="addClaseBtn">
+                                <i class="fas fa-plus me-2"></i>Crear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botón de acción único -->
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="creaCurso.html" class="btn-volver" id="btnVolverCurso">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al curso
+                            </a>
+                            <!-- Alerta de éxito inline -->
+                            <div class="alert alert-success mb-0 py-2 px-3 d-none" id="saveSuccessAlert">
                                 <i class="fas fa-check-circle me-2"></i>
-                                Módulo guardado exitosamente
+                                <span id="saveSuccessMessage">Guardado exitosamente</span>
                             </div>
                         </div>
-                        
                     </div>
-                </form>
+                    
+                </div>
 
             </div>
         </div>
@@ -301,6 +245,6 @@
     <script type="module" src="js/componenteAdmin.js"></script>
     <!-- Servicio de admin para subida de videos a Supabase -->
     <script type="module" src="js/adminCursosService.js"></script>
-    <script src="js/gestorModulos.js"></script>
+    <script type="module" src="js/gestorModulos.js"></script>
 </body>
 </html>

@@ -1,11 +1,10 @@
 // js/cursosData.js - Objeto global CursosData para compatibilidad con código existente
 // Conecta con Supabase y cachea datos localmente para rendimiento
+// CORREGIDO: Eliminada referencia a modulos.descripcion que no existe en la tabla
 
 import { CursosService, supabase } from './cursosService.js';
 
 // ==================== CURSOSDATA GLOBAL ====================
-// Este objeto provee una interfaz síncrona sobre las operaciones asíncronas
-// cacheando los datos localmente para evitar llamadas repetidas
 
 const CursosData = {
     // Cache de datos
@@ -20,14 +19,13 @@ const CursosData = {
     _currentUserId: null,
     _cursosAdquiridos: [],
 
-    // Datos del estudiante (almacenados en localStorage para compatibilidad)
+    // Datos del estudiante
     _student: null,
 
     // ==================== INICIALIZACIÓN ====================
 
     /**
      * Inicializar datos de cursos desde Supabase
-     * Carga todos los cursos publicados con sus módulos y clases
      */
     async init() {
         if (this._initialized) return;
@@ -35,7 +33,7 @@ const CursosData = {
         try {
             console.log('CursosData: Inicializando datos desde Supabase...');
 
-            // Cargar todos los cursos publicados
+            // CORREGIDO: Eliminado 'descripcion' de modulos ya que no existe en la tabla
             const { data: cursos, error } = await supabase
                 .from('cursos')
                 .select(`
@@ -43,7 +41,6 @@ const CursosData = {
                     modulos (
                         id,
                         nombre,
-                        descripcion,
                         orden,
                         curso_id,
                         clases (
@@ -71,7 +68,7 @@ const CursosData = {
 
                 if (curso.modulos) {
                     // Ordenar módulos
-                    curso.modulos.sort((a, b) => a.orden - b.orden);
+                    curso.modulos.sort((a, b) => (a.orden || 0) - (b.orden || 0));
                     this._modulos[curso.id] = curso.modulos;
 
                     curso.modulos.forEach(modulo => {
@@ -79,7 +76,7 @@ const CursosData = {
 
                         if (modulo.clases) {
                             // Ordenar clases
-                            modulo.clases.sort((a, b) => a.orden - b.orden);
+                            modulo.clases.sort((a, b) => (a.orden || 0) - (b.orden || 0));
                             this._clases[modulo.id] = modulo.clases;
 
                             modulo.clases.forEach(clase => {
@@ -95,7 +92,6 @@ const CursosData = {
 
         } catch (error) {
             console.error('CursosData: Error al inicializar:', error);
-            // Intentar cargar desde localStorage como fallback
             this._loadFromLocalStorage();
         }
     },
@@ -107,22 +103,18 @@ const CursosData = {
         if (this._studentInitialized) return;
 
         try {
-            // Obtener usuario actual
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
                 this._currentUserId = session.user.id;
 
-                // Obtener perfil
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('first_name, last_name')
                     .eq('id', session.user.id)
                     .single();
 
-                // Cargar cursos adquiridos
                 await this._loadCursosAdquiridos();
 
-                // Inicializar o cargar datos del estudiante desde localStorage
                 this._student = this._loadStudentFromStorage() || {
                     id: session.user.id,
                     nombre: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : session.user.email.split('@')[0],
@@ -175,7 +167,6 @@ const CursosData = {
             console.log(`CursosData: ${this._cursosAdquiridos.length} cursos adquiridos`);
         } catch (error) {
             console.error('Error al cargar cursos adquiridos:', error);
-            // Fallback a localStorage
             const localData = localStorage.getItem('kikibrows_usuarios');
             if (localData) {
                 const usuarios = JSON.parse(localData);
@@ -189,25 +180,25 @@ const CursosData = {
 
     // ==================== CURSOS ====================
 
-    /**
-     * Obtener todos los cursos
-     */
     getAllCursos() {
         return this._cursos;
     },
 
-    /**
-     * Obtener un curso por ID
-     */
     getCurso(cursoId) {
+        // CORREGIDO: Soportar tanto string (UUID) como número
         return this._cursosById[cursoId] || null;
     },
 
     /**
-     * Obtener cursos adquiridos por el usuario actual
+     * Obtener cursos para el carrusel
      */
+    getCursosCarrusel() {
+        return this._cursos
+            .filter(curso => curso.en_carrusel === true && curso.estado === 'PUBLICADO')
+            .sort((a, b) => (a.posicion_carrusel || 999) - (b.posicion_carrusel || 999));
+    },
+
     getCursosAdquiridos() {
-        // Enriquecer con progreso y acceso
         return this._cursosAdquiridos.map(curso => {
             const progreso = this.calcularProgresoCurso(curso.id);
             const acceso = this._calcularAcceso(curso);
@@ -225,9 +216,6 @@ const CursosData = {
         });
     },
 
-    /**
-     * Calcular información de acceso al curso
-     */
     _calcularAcceso(curso) {
         const fechaCompra = new Date(curso.fechaCompra);
         const diasAcceso = curso.dias_duracion_acceso || 180;
@@ -256,23 +244,14 @@ const CursosData = {
 
     // ==================== MÓDULOS ====================
 
-    /**
-     * Obtener módulos de un curso
-     */
     getModulosByCurso(cursoId) {
         return this._modulos[cursoId] || [];
     },
 
-    /**
-     * Obtener un módulo por ID
-     */
     getModulo(moduloId) {
         return this._modulosById[moduloId] || null;
     },
 
-    /**
-     * Obtener módulos completados de un curso
-     */
     getModulosCompletados(cursoId) {
         const modulos = this.getModulosByCurso(cursoId);
         let completados = 0;
@@ -292,26 +271,16 @@ const CursosData = {
 
     // ==================== CLASES ====================
 
-    /**
-     * Obtener clases de un módulo
-     */
     getClasesByModulo(moduloId) {
         return this._clases[moduloId] || [];
     },
 
-    /**
-     * Obtener una clase por ID
-     */
     getClase(claseId) {
         return this._clasesById[claseId] || null;
     },
 
-    /**
-     * Obtener la última clase accedida en un curso
-     */
     getUltimaClase(cursoId) {
         if (!this._student?.progreso?.[cursoId]) {
-            // Si no hay progreso, devolver la primera clase
             const modulos = this.getModulosByCurso(cursoId);
             if (modulos.length > 0) {
                 const clases = this.getClasesByModulo(modulos[0].id);
@@ -334,9 +303,6 @@ const CursosData = {
 
     // ==================== DURACIÓN ====================
 
-    /**
-     * Calcular duración total de un curso
-     */
     calcularDuracionCurso(cursoId) {
         const modulos = this.getModulosByCurso(cursoId);
         let total = 0;
@@ -348,17 +314,11 @@ const CursosData = {
         return total;
     },
 
-    /**
-     * Calcular duración de un módulo
-     */
     calcularDuracionModulo(moduloId) {
         const clases = this.getClasesByModulo(moduloId);
         return clases.reduce((total, clase) => total + (clase.duracion || 5), 0);
     },
 
-    /**
-     * Formatear duración en minutos
-     */
     formatearDuracion(minutos) {
         if (!minutos || minutos <= 0) return '0 min';
         if (minutos < 60) return `${minutos} min`;
@@ -370,9 +330,6 @@ const CursosData = {
 
     // ==================== PROGRESO ====================
 
-    /**
-     * Calcular progreso de un curso
-     */
     calcularProgresoCurso(cursoId) {
         const modulos = this.getModulosByCurso(cursoId);
         let totalClases = 0;
@@ -399,9 +356,6 @@ const CursosData = {
         };
     },
 
-    /**
-     * Calcular progreso de un módulo
-     */
     calcularProgresoModulo(cursoId, moduloId) {
         const clases = this.getClasesByModulo(moduloId);
         let completadas = 0;
@@ -422,17 +376,11 @@ const CursosData = {
         };
     },
 
-    /**
-     * Obtener estado de una clase
-     */
     getEstadoClase(cursoId, moduloId, claseId) {
         const progreso = this._student?.progreso?.[cursoId]?.modulos?.[moduloId]?.clases?.[claseId];
         return progreso || { completado: false };
     },
 
-    /**
-     * Verificar si una clase está desbloqueada
-     */
     isClaseDesbloqueada(cursoId, moduloId, claseId) {
         const modulos = this.getModulosByCurso(cursoId);
 
@@ -441,12 +389,11 @@ const CursosData = {
 
             for (const clase of clases) {
                 if (clase.id === claseId) {
-                    return true; // Encontramos la clase, está desbloqueada
+                    return true;
                 }
 
                 const estado = this.getEstadoClase(cursoId, modulo.id, clase.id);
                 if (!estado.completado) {
-                    // Clase anterior no completada, la actual está bloqueada
                     return false;
                 }
             }
@@ -455,13 +402,9 @@ const CursosData = {
         return true;
     },
 
-    /**
-     * Marcar clase como completada
-     */
     marcarClaseCompletada(cursoId, moduloId, claseId) {
         if (!this._student) return;
 
-        // Inicializar estructura si no existe
         if (!this._student.progreso[cursoId]) {
             this._student.progreso[cursoId] = { modulos: {} };
         }
@@ -479,14 +422,9 @@ const CursosData = {
         this._student.progreso[cursoId].ultimaActividad = new Date().toISOString();
 
         this.saveStudent(this._student);
-
-        // También guardar en Supabase si está disponible
         this._guardarProgresoSupabase(cursoId, moduloId, claseId, true);
     },
 
-    /**
-     * Guardar progreso en Supabase
-     */
     async _guardarProgresoSupabase(cursoId, moduloId, claseId, completado) {
         if (!this._currentUserId) return;
 
@@ -502,31 +440,19 @@ const CursosData = {
 
     // ==================== ESTUDIANTE ====================
 
-    /**
-     * Obtener datos del estudiante
-     */
     getStudent() {
         return this._student;
     },
 
-    /**
-     * Obtener datos del estudiante (alias)
-     */
     getStudentData() {
         return this._student;
     },
 
-    /**
-     * Guardar datos del estudiante
-     */
     saveStudent(student) {
         this._student = student;
         localStorage.setItem('kikibrows_student', JSON.stringify(student));
     },
 
-    /**
-     * Cargar estudiante desde localStorage
-     */
     _loadStudentFromStorage() {
         try {
             const data = localStorage.getItem('kikibrows_student');
@@ -536,9 +462,6 @@ const CursosData = {
         }
     },
 
-    /**
-     * Crear estudiante por defecto
-     */
     _createDefaultStudent() {
         return {
             id: 'local-user',
@@ -550,18 +473,12 @@ const CursosData = {
         };
     },
 
-    /**
-     * Obtener última actividad de un curso
-     */
     _getUltimaActividad(cursoId) {
         return this._student?.progreso?.[cursoId]?.ultimaActividad || null;
     },
 
     // ==================== QUIZ ====================
 
-    /**
-     * Guardar intento de quiz
-     */
     guardarIntentoQuiz(claseId, respuestas, puntaje, aprobado) {
         if (!this._student.quizAttempts[claseId]) {
             this._student.quizAttempts[claseId] = [];
@@ -577,18 +494,12 @@ const CursosData = {
         this.saveStudent(this._student);
     },
 
-    /**
-     * Obtener intentos de quiz
-     */
     getIntentosQuiz(claseId) {
         return this._student?.quizAttempts?.[claseId] || [];
     },
 
     // ==================== ENTREGAS ====================
 
-    /**
-     * Guardar entrega
-     */
     guardarEntrega(claseId, fileName) {
         if (!this._student.entregas[claseId]) {
             this._student.entregas[claseId] = [];
@@ -603,24 +514,15 @@ const CursosData = {
         this.saveStudent(this._student);
     },
 
-    /**
-     * Obtener entregas de una clase
-     */
     getEntregas(claseId) {
         return this._student?.entregas?.[claseId] || [];
     },
 
-    /**
-     * Obtener última entrega de una clase
-     */
     getUltimaEntrega(claseId) {
         const entregas = this.getEntregas(claseId);
         return entregas.length > 0 ? entregas[entregas.length - 1] : null;
     },
 
-    /**
-     * Actualizar estado de entrega
-     */
     actualizarEstadoEntrega(claseId, indice, estado, feedback) {
         if (!this._student.entregas[claseId] || !this._student.entregas[claseId][indice]) {
             return;
@@ -630,16 +532,14 @@ const CursosData = {
         this._student.entregas[claseId][indice].feedback = feedback;
         this._student.entregas[claseId][indice].fechaRevision = new Date().toISOString();
 
-        // Si está aprobada, marcar la clase como completada
         if (estado === 'aprobada') {
-            // Buscar el módulo y curso de esta clase
             for (const cursoId of Object.keys(this._modulos)) {
                 const modulos = this._modulos[cursoId];
                 for (const modulo of modulos) {
                     const clases = this._clases[modulo.id] || [];
                     const claseEncontrada = clases.find(c => c.id === claseId);
                     if (claseEncontrada) {
-                        this.marcarClaseCompletada(parseInt(cursoId), modulo.id, claseId);
+                        this.marcarClaseCompletada(cursoId, modulo.id, claseId);
                         break;
                     }
                 }
@@ -651,21 +551,16 @@ const CursosData = {
 
     // ==================== CERTIFICADOS ====================
 
-    /**
-     * Verificar si puede obtener certificado
-     */
     puedeObtenerCertificado(cursoId) {
         const modulos = this.getModulosByCurso(cursoId);
 
-        // Verificar que todas las clases estén completadas
         for (const modulo of modulos) {
             const clases = this.getClasesByModulo(modulo.id);
 
             for (const clase of clases) {
                 const estado = this.getEstadoClase(cursoId, modulo.id, clase.id);
 
-                // Si es entrega, verificar estado específico
-                if (clase.tipo === 'entrega') {
+                if (clase.tipo === 'entrega' || clase.tipo === 'ENTREGA') {
                     const ultimaEntrega = this.getUltimaEntrega(clase.id);
 
                     if (!ultimaEntrega) {
@@ -705,9 +600,6 @@ const CursosData = {
         return { puede: true };
     },
 
-    /**
-     * Generar/registrar certificado
-     */
     generarCertificado(cursoId) {
         if (!this._student.certificados) {
             this._student.certificados = {};
@@ -721,9 +613,6 @@ const CursosData = {
         this.saveStudent(this._student);
     },
 
-    /**
-     * Generar código de certificado
-     */
     _generarCodigoCertificado(cursoId) {
         const timestamp = Date.now().toString(36).toUpperCase();
         const random = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -732,9 +621,6 @@ const CursosData = {
 
     // ==================== UTILIDADES ====================
 
-    /**
-     * Cargar datos desde localStorage (fallback)
-     */
     _loadFromLocalStorage() {
         try {
             const data = localStorage.getItem('kikibrows_cursos_cache');
@@ -743,7 +629,6 @@ const CursosData = {
                 this._cursos = parsed.cursos || [];
                 this._modulos = parsed.modulos || {};
                 this._clases = parsed.clases || {};
-                // Reconstruir índices
                 this._cursos.forEach(c => this._cursosById[c.id] = c);
                 Object.values(this._modulos).flat().forEach(m => this._modulosById[m.id] = m);
                 Object.values(this._clases).flat().forEach(c => this._clasesById[c.id] = c);
@@ -755,9 +640,6 @@ const CursosData = {
         }
     },
 
-    /**
-     * Guardar cache en localStorage
-     */
     _saveToLocalStorage() {
         try {
             const data = {
@@ -772,32 +654,22 @@ const CursosData = {
         }
     },
 
-    /**
-     * Verificar acceso a curso
-     */
     async verificarAccesoCurso(cursoId) {
         if (!this._currentUserId) return false;
 
-        // Verificar en cursos adquiridos cacheados
         const tiene = this._cursosAdquiridos.some(c => c.id === cursoId);
         if (tiene) return true;
 
-        // Verificar en Supabase
         const result = await CursosService.verificarAccesoCurso(cursoId, this._currentUserId);
         return result.tieneAcceso;
     },
 
-    /**
-     * Obtener el ID del usuario actual
-     */
     getCurrentUserId() {
         return this._currentUserId;
     }
 };
 
-// Hacer disponible globalmente
 window.CursosData = CursosData;
 
-// Exportar para uso como módulo
 export default CursosData;
 export { CursosData };
