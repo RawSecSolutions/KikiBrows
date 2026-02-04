@@ -587,11 +587,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             isCorrect: opt.querySelector('.option-correct-input').checked
                         });
                     });
-                    questions.push({ title: qTitle, points: parseInt(qPoints) || 0, options });
+                    questions.push({ title: qTitle, points: parseInt(qPoints) || 10, options });
                 });
-                
+
                 metadata = {
-                    passingScore: document.getElementById('quizPassingScore').value,
+                    passingScore: parseInt(document.getElementById('quizPassingScore').value) || 70,
                     instructions: document.getElementById('quizInstructions').value,
                     questions: questions
                 };
@@ -601,8 +601,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tipo === 'entrega') {
                 metadata = {
                     instructions: document.getElementById('entregaInstructions').value,
-                    points: document.getElementById('entregaPoints').value,
-                    passingScore: document.getElementById('entregaPassing').value
+                    points: parseInt(document.getElementById('entregaPoints').value) || 100,
+                    passingScore: parseInt(document.getElementById('entregaPassing').value) || 70
                 };
             }
             

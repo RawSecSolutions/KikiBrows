@@ -561,12 +561,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderQuizContent(forceRetry = false) {
         // Intentar cargar preguntas desde metadata JSONB de la clase
         let questions = [];
-        let passingScore = currentClase.passingScore || 70;
+        let passingScore = 70;
 
-        if (currentClase.metadata && currentClase.metadata.preguntas) {
-            // Cargar desde metadata de Supabase
+        if (currentClase.metadata && currentClase.metadata.questions && currentClase.metadata.questions.length > 0) {
+            // Cargar desde metadata de Supabase (formato de gestorModulos.js)
+            passingScore = parseInt(currentClase.metadata.passingScore) || 70;
+
+            questions = currentClase.metadata.questions.map((q, idx) => ({
+                id: idx + 1,
+                pregunta: q.title,
+                opciones: q.options.map(o => o.text),
+                correcta: q.options.findIndex(o => o.isCorrect === true),
+                puntos: q.points || 10
+            }));
+
+            console.log('Quiz cargado desde metadata:', questions.length, 'preguntas, passingScore:', passingScore);
+        } else if (currentClase.metadata && currentClase.metadata.preguntas) {
+            // Formato alternativo (compatibilidad con estructura antigua)
             const config = currentClase.metadata.configuracion || {};
-            passingScore = config.porcentaje_aprobacion || 70;
+            passingScore = parseInt(config.porcentaje_aprobacion) || 70;
 
             questions = currentClase.metadata.preguntas.map(p => ({
                 id: p.id,
@@ -576,10 +589,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 puntos: p.puntos || 10
             }));
 
-            console.log('Quiz cargado desde metadata:', questions.length, 'preguntas');
+            console.log('Quiz cargado desde metadata (formato antiguo):', questions.length, 'preguntas');
         } else {
             // Fallback a preguntas hardcodeadas para compatibilidad
             questions = quizQuestions[currentClaseId] || quizQuestions[4];
+            console.log('Quiz cargado desde fallback hardcodeado');
         }
         const totalPoints = questions.reduce((sum, q) => sum + q.puntos, 0);
         const intentos = CursosData.getIntentosQuiz(currentClaseId);
