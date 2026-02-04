@@ -6,83 +6,19 @@
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+    PASSWORD_CONFIG,
+    validatePasswordStrength,
+    calculatePasswordStrength,
+    updatePasswordStrengthIndicator as updateIndicator,
+    updateRequirements,
+    createAttemptsManager
+} from './utils/passwordValidator.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- CONFIGURACION DE SEGURIDAD ---
-const PASSWORD_CONFIG = {
-    minLength: 8,
-    maxLength: 128,
-    requireUppercase: true,
-    requireLowercase: true,
-    requireNumbers: true,
-    requireSpecialChars: false,
-    maxAttempts: 5,
-    lockoutDuration: 15 * 60 * 1000 // 15 minutos
-};
-
-// Lista de contrasenas comunes a evitar
-const COMMON_PASSWORDS = [
-    'password', '12345678', '123456789', 'qwerty', 'abc123',
-    'monkey', '1234567', 'letmein', 'trustno1', 'dragon',
-    'baseball', 'iloveyou', 'master', 'sunshine', 'ashley',
-    'bailey', 'passw0rd', 'shadow', '123123', '654321',
-    'contrasena', 'kikibrows', 'password1', 'qwerty123', 'admin123'
-];
-
-// --- GESTION DE INTENTOS FALLIDOS ---
-let failedAttempts = {
-    count: 0,
-    lastAttempt: null,
-    lockedUntil: null
-};
-
-// Cargar intentos desde sessionStorage
-function loadAttempts() {
-    const stored = sessionStorage.getItem('adminPasswordAttempts');
-    if (stored) {
-        failedAttempts = JSON.parse(stored);
-    }
-}
-
-function saveAttempts() {
-    sessionStorage.setItem('adminPasswordAttempts', JSON.stringify(failedAttempts));
-}
-
-function isLocked() {
-    loadAttempts();
-    if (failedAttempts.lockedUntil) {
-        const now = Date.now();
-        if (now < failedAttempts.lockedUntil) {
-            const minutesLeft = Math.ceil((failedAttempts.lockedUntil - now) / 60000);
-            return { locked: true, minutesLeft };
-        } else {
-            failedAttempts.count = 0;
-            failedAttempts.lockedUntil = null;
-            saveAttempts();
-        }
-    }
-    return { locked: false };
-}
-
-function registerFailedAttempt() {
-    loadAttempts();
-    failedAttempts.count++;
-    failedAttempts.lastAttempt = Date.now();
-
-    if (failedAttempts.count >= PASSWORD_CONFIG.maxAttempts) {
-        failedAttempts.lockedUntil = Date.now() + PASSWORD_CONFIG.lockoutDuration;
-        saveAttempts();
-        return true;
-    }
-    saveAttempts();
-    return false;
-}
-
-function resetAttempts() {
-    failedAttempts = { count: 0, lastAttempt: null, lockedUntil: null };
-    saveAttempts();
-}
+// Gestor de intentos fallidos
+const attemptsManager = createAttemptsManager('adminPasswordAttempts');
 
 // --- ELEMENTOS DEL DOM ---
 let form, currentPasswordInput, newPasswordInput, confirmPasswordInput;
@@ -107,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
 
     // Verificar si esta bloqueado
-    const lockStatus = isLocked();
+    const lockStatus = attemptsManager.isLocked();
     if (lockStatus.locked) {
         disableForm(lockStatus.minutesLeft);
     }
@@ -132,7 +68,6 @@ async function loadAdminData() {
             .single();
 
         if (error) {
-            console.error('Error al cargar perfil:', error);
             return;
         }
 
@@ -165,7 +100,7 @@ async function loadAdminData() {
         if (sidebarRole) sidebarRole.textContent = roleLabel;
 
     } catch (err) {
-        console.error('Error:', err);
+        // Error silencioso
     }
 }
 
@@ -177,7 +112,7 @@ function setupEventListeners() {
     if (newPasswordInput) {
         newPasswordInput.addEventListener('input', () => {
             const password = newPasswordInput.value;
-            updatePasswordStrengthIndicator(password);
+            updateIndicator(password, passwordStrengthContainer);
             updateRequirements(password);
             validatePasswordMatch();
             clearFieldError(newPasswordInput);
@@ -243,7 +178,7 @@ async function handleFormSubmit(e) {
     if (errorContainer) errorContainer.innerHTML = '';
 
     // Verificar bloqueo
-    const lockStatus = isLocked();
+    const lockStatus = attemptsManager.isLocked();
     if (lockStatus.locked) {
         showFormError(`Demasiados intentos fallidos. Intenta de nuevo en ${lockStatus.minutesLeft} minutos.`);
         disableForm(lockStatus.minutesLeft);
@@ -302,8 +237,8 @@ async function handleFormSubmit(e) {
 
         if (signInError) {
             // Contrasena incorrecta
-            const isNowLocked = registerFailedAttempt();
-            const attemptsLeft = PASSWORD_CONFIG.maxAttempts - failedAttempts.count;
+            const isNowLocked = attemptsManager.registerFailed();
+            const attemptsLeft = attemptsManager.getAttemptsLeft();
 
             if (isNowLocked) {
                 showFormError(`Contrasena actual incorrecta. Has excedido el limite de intentos. Bloqueado por ${PASSWORD_CONFIG.lockoutDuration / 60000} minutos.`);
@@ -340,7 +275,7 @@ async function handleFormSubmit(e) {
         }
 
         // 4. Exito - resetear intentos
-        resetAttempts();
+        attemptsManager.reset();
 
         // 5. Mostrar mensaje de exito
         showSuccessMessage();
@@ -356,7 +291,6 @@ async function handleFormSubmit(e) {
         }, 3000);
 
     } catch (err) {
-        console.error('Error:', err);
         showFormError('Ocurrio un error inesperado. Por favor, intenta de nuevo.');
         submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Cambiar Contrasena';
         submitBtn.disabled = false;

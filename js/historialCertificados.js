@@ -51,7 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Guardar los cambios
         CursosData.saveStudent(student);
-        console.log('Certificados de demo agregados correctamente');
     }
 
     // Agregar certificados de demo al cargar la página
@@ -145,7 +144,6 @@ function verCertificado(id) {
 
 async function descargarCertificado(cursoId) {
     try {
-        console.log('Iniciando descarga de certificado para curso:', cursoId);
 
         // Verificar que pdfMake esté disponible
         if (typeof pdfMake === 'undefined') {
@@ -176,11 +174,8 @@ async function descargarCertificado(cursoId) {
             return;
         }
 
-        console.log('Datos del curso obtenidos:', curso.nombre);
-
         // Obtener datos del usuario actual (con apellido)
         const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
-        console.log('Datos del usuario:', usuarioActual);
 
         // Generar código de certificado
         const codigoCertificado = window.CertificateGenerator.generarCodigoCertificado(
@@ -204,19 +199,13 @@ async function descargarCertificado(cursoId) {
             nombreInstructor: curso.instructor || 'Equipo KikiBrows'
         };
 
-        console.log('Generando certificado con datos:', datosCertificado);
-
         // Generar el PDF
         const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
 
-        if (resultado.success) {
-            console.log('Certificado generado exitosamente:', resultado.fileName);
-        } else {
-            console.error('Error al generar certificado:', resultado.error);
+        if (!resultado.success) {
             alert('Error al generar el certificado: ' + resultado.error);
         }
     } catch (error) {
-        console.error('Error al descargar certificado:', error);
         alert('Error al generar el certificado: ' + error.message);
     }
 }

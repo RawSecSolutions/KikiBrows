@@ -1,5 +1,5 @@
 // js/componenteAdmin.js
-import { supabase } from './sessionManager.js';
+import { supabase, logout } from './sessionManager.js';
 
 // --- FUNCIÓN PARA RENDERIZAR SIDEBAR ---
 function renderSidebar(adminName, roleLabel) {
@@ -114,25 +114,13 @@ const renderNavbarAdmin = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // --- LISTENER LOGOUT ---
+        // --- LISTENER LOGOUT (usa sessionManager centralizado) ---
         const logoutBtn = document.getElementById('btn-logout-admin');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 logoutBtn.innerText = "Saliendo...";
-
-                try {
-                    await supabase.auth.signOut();
-                } catch (error) {
-                    console.error('Error cerrando sesión:', error);
-                }
-
-                localStorage.removeItem('isLoggedIn');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('usuarioActual');
-                localStorage.removeItem('userRole');
-
-                window.location.href = 'index.html';
+                await logout('index.html');
             });
         }
 

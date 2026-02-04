@@ -158,11 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedSlot.estado = 'full';
         }
 
-        // Simular envío de correo con link de Zoom
-        console.log('📧 Correo enviado a:', userEmail);
-        console.log('🔗 Link de Zoom:', selectedSlot.zoomJoin);
-        console.log('👤 Nombre:', userName);
-        console.log('📚 Curso:', curso);
+        // En produccion, aqui se enviaria el correo con el link de Zoom
+        // Los datos sensibles no se loguean por seguridad
 
         // En producción, aquí harías:
         // fetch('/api/reservations', {

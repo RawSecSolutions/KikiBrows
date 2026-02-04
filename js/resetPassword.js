@@ -1,32 +1,20 @@
 /**
  * js/resetPassword.js
- * Maneja el flujo seguro de reseteo de contraseña desde enlace de email
- * Utiliza tokens de Supabase para validación segura
+ * Maneja el flujo seguro de reseteo de contrasena desde enlace de email
+ * Utiliza tokens de Supabase para validacion segura
  */
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+    PASSWORD_CONFIG,
+    validatePasswordStrength,
+    calculatePasswordStrength,
+    updatePasswordStrengthIndicator as updateIndicator,
+    updateRequirements
+} from './utils/passwordValidator.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// --- CONFIGURACIÓN DE SEGURIDAD ---
-const PASSWORD_CONFIG = {
-    minLength: 8,
-    maxLength: 128,
-    requireUppercase: true,
-    requireLowercase: true,
-    requireNumbers: true,
-    requireSpecialChars: false
-};
-
-// Lista de contraseñas comunes a evitar
-const COMMON_PASSWORDS = [
-    'password', '12345678', '123456789', 'qwerty', 'abc123',
-    'monkey', '1234567', 'letmein', 'trustno1', 'dragon',
-    'baseball', 'iloveyou', 'master', 'sunshine', 'ashley',
-    'bailey', 'passw0rd', 'shadow', '123123', '654321',
-    'contraseña', 'kikibrows', 'password1', 'qwerty123'
-];
 
 // --- ELEMENTOS DEL DOM ---
 let loadingView, errorView, formContainer, successView;
@@ -66,7 +54,6 @@ async function verifyRecoverySession() {
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-            console.error('Error al obtener sesión:', error);
             showErrorView('Error al verificar el enlace. Por favor, solicita uno nuevo.');
             return;
         }
@@ -115,8 +102,7 @@ async function verifyRecoverySession() {
                 });
 
                 if (sessionError) {
-                    console.error('Error al establecer sesión:', sessionError);
-                    showErrorView('El enlace de recuperación ha expirado o no es válido.');
+                    showErrorView('El enlace de recuperacion ha expirado o no es valido.');
                     return;
                 }
 
@@ -143,8 +129,7 @@ async function verifyRecoverySession() {
             }
         }
     } catch (err) {
-        console.error('Error en verificación:', err);
-        showErrorView('Ocurrió un error al procesar tu solicitud.');
+        showErrorView('Ocurrio un error al procesar tu solicitud.');
     }
 }
 
@@ -152,11 +137,11 @@ async function verifyRecoverySession() {
  * Configura los event listeners del formulario
  */
 function setupEventListeners() {
-    // Validación en tiempo real de nueva contraseña
+    // Validacion en tiempo real de nueva contrasena
     if (newPasswordInput) {
         newPasswordInput.addEventListener('input', () => {
             const password = newPasswordInput.value;
-            updatePasswordStrengthIndicator(password);
+            updateIndicator(password, passwordStrengthContainer);
             updateRequirements(password);
             validatePasswordMatch();
             clearFieldError(newPasswordInput);
@@ -241,15 +226,13 @@ async function handleFormSubmit(e) {
         });
 
         if (error) {
-            console.error('Error al actualizar contraseña:', error);
-
-            // Manejar errores específicos
+            // Manejar errores especificos
             if (error.message.includes('should be different')) {
-                showFormError('La nueva contraseña debe ser diferente a la anterior.');
+                showFormError('La nueva contrasena debe ser diferente a la anterior.');
             } else if (error.message.includes('expired') || error.message.includes('invalid')) {
-                showErrorView('El enlace de recuperación ha expirado. Por favor, solicita uno nuevo.');
+                showErrorView('El enlace de recuperacion ha expirado. Por favor, solicita uno nuevo.');
             } else {
-                showFormError('Error al actualizar la contraseña: ' + error.message);
+                showFormError('Error al actualizar la contrasena: ' + error.message);
             }
 
             submitBtn.innerHTML = 'Guardar Contraseña';
@@ -264,9 +247,8 @@ async function handleFormSubmit(e) {
         showSuccessView();
 
     } catch (err) {
-        console.error('Error:', err);
-        showFormError('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
-        submitBtn.innerHTML = 'Guardar Contraseña';
+        showFormError('Ocurrio un error inesperado. Por favor, intenta de nuevo.');
+        submitBtn.innerHTML = 'Guardar Contrasena';
         submitBtn.disabled = false;
     }
 }

@@ -1,12 +1,14 @@
 // js/componentes.js
 
 let supabase = null;
+let logoutFn = null;
 
 // Intentar cargar la configuración de Supabase y sessionManager
 const initSupabase = async () => {
     try {
         const sessionManager = await import('./sessionManager.js');
         supabase = sessionManager.supabase;
+        logoutFn = sessionManager.logout;
         return true;
     } catch (error) {
         console.warn('Supabase config not available, running in offline mode');
@@ -100,27 +102,23 @@ const renderNavbar = async () => {
     if (navbarContainer) {
         navbarContainer.innerHTML = navbarHTML;
 
-        // --- LÓGICA DE CIERRE DE SESIÓN ---
+        // --- LOGICA DE CIERRE DE SESION (usa sessionManager centralizado) ---
         const logoutBtn = document.getElementById('btn-logout');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 logoutBtn.innerText = "Cerrando...";
 
-                if (supabase) {
-                    try {
-                        await supabase.auth.signOut();
-                    } catch (err) {
-                        console.error("Error logout:", err);
-                    }
+                if (logoutFn) {
+                    await logoutFn('login.html');
+                } else {
+                    // Fallback si no hay funcion de logout disponible
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('userName');
+                    localStorage.removeItem('usuarioActual');
+                    localStorage.removeItem('userRole');
+                    window.location.href = 'login.html';
                 }
-
-                localStorage.removeItem('isLoggedIn');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('usuarioActual');
-                localStorage.removeItem('userRole');
-
-                window.location.href = 'login.html';
             });
         }
     }

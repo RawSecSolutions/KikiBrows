@@ -1,232 +1,24 @@
 /**
  * js/changePassword.js
- * Módulo seguro para cambio de contraseña
- * Implementa prácticas de seguridad estándar de OWASP
- * Usa Supabase para autenticación y actualización de contraseña
+ * Modulo seguro para cambio de contrasena
+ * Implementa practicas de seguridad estandar de OWASP
+ * Usa Supabase para autenticacion y actualizacion de contrasena
  */
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+    PASSWORD_CONFIG,
+    validatePasswordStrength,
+    calculatePasswordStrength,
+    updatePasswordStrengthIndicator,
+    createAttemptsManager
+} from './utils/passwordValidator.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- CONFIGURACIÓN DE SEGURIDAD ---
-const PASSWORD_CONFIG = {
-    minLength: 8,
-    maxLength: 128,
-    requireUppercase: true,
-    requireLowercase: true,
-    requireNumbers: true,
-    requireSpecialChars: false, // Solo requerido para admin
-    // Rate limiting: máximo de intentos
-    maxAttempts: 5,
-    lockoutDuration: 15 * 60 * 1000, // 15 minutos en milisegundos
-};
-
-// Lista de contraseñas comunes a evitar (top 20 más comunes)
-const COMMON_PASSWORDS = [
-    'password', '12345678', '123456789', 'qwerty', 'abc123',
-    'monkey', '1234567', 'letmein', 'trustno1', 'dragon',
-    'baseball', 'iloveyou', 'master', 'sunshine', 'ashley',
-    'bailey', 'passw0rd', 'shadow', '123123', '654321'
-];
-
-// --- GESTIÓN DE INTENTOS FALLIDOS (Rate Limiting) ---
-let changePasswordAttempts = {
-    count: 0,
-    lastAttempt: null,
-    lockedUntil: null
-};
-
-/**
- * Verifica si el usuario está bloqueado por demasiados intentos
- */
-function isUserLocked() {
-    if (changePasswordAttempts.lockedUntil) {
-        const now = Date.now();
-        if (now < changePasswordAttempts.lockedUntil) {
-            const minutesLeft = Math.ceil((changePasswordAttempts.lockedUntil - now) / 60000);
-            return {
-                locked: true,
-                minutesLeft: minutesLeft
-            };
-        } else {
-            // Desbloquear usuario
-            changePasswordAttempts.count = 0;
-            changePasswordAttempts.lockedUntil = null;
-        }
-    }
-    return { locked: false };
-}
-
-/**
- * Registra un intento fallido
- */
-function registerFailedAttempt() {
-    changePasswordAttempts.count++;
-    changePasswordAttempts.lastAttempt = Date.now();
-
-    if (changePasswordAttempts.count >= PASSWORD_CONFIG.maxAttempts) {
-        changePasswordAttempts.lockedUntil = Date.now() + PASSWORD_CONFIG.lockoutDuration;
-        return true; // Usuario bloqueado
-    }
-    return false;
-}
-
-/**
- * Resetea los intentos fallidos (en caso de éxito)
- */
-function resetAttempts() {
-    changePasswordAttempts = {
-        count: 0,
-        lastAttempt: null,
-        lockedUntil: null
-    };
-}
-
-// --- VALIDACIONES DE CONTRASEÑA ---
-
-/**
- * Valida que la contraseña cumpla con los requisitos de seguridad
- * @param {string} password - Contraseña a validar
- * @returns {Object} - { valid: boolean, errors: string[] }
- */
-function validatePasswordStrength(password) {
-    const errors = [];
-
-    if (!password || typeof password !== 'string') {
-        return { valid: false, errors: ['La contraseña es requerida'] };
-    }
-
-    // Longitud
-    if (password.length < PASSWORD_CONFIG.minLength) {
-        errors.push(`La contraseña debe tener al menos ${PASSWORD_CONFIG.minLength} caracteres`);
-    }
-
-    if (password.length > PASSWORD_CONFIG.maxLength) {
-        errors.push(`La contraseña no debe exceder ${PASSWORD_CONFIG.maxLength} caracteres`);
-    }
-
-    // Mayúsculas
-    if (PASSWORD_CONFIG.requireUppercase && !/[A-Z]/.test(password)) {
-        errors.push('Debe contener al menos una letra mayúscula');
-    }
-
-    // Minúsculas
-    if (PASSWORD_CONFIG.requireLowercase && !/[a-z]/.test(password)) {
-        errors.push('Debe contener al menos una letra minúscula');
-    }
-
-    // Números
-    if (PASSWORD_CONFIG.requireNumbers && !/\d/.test(password)) {
-        errors.push('Debe contener al menos un número');
-    }
-
-    // Caracteres especiales
-    if (PASSWORD_CONFIG.requireSpecialChars && !/[\W_]/.test(password)) {
-        errors.push('Debe contener al menos un carácter especial (!@#$%^&*()_+-=[]{}|;:,.<>?)');
-    }
-
-    // Contraseñas comunes
-    if (COMMON_PASSWORDS.includes(password.toLowerCase())) {
-        errors.push('Esta contraseña es demasiado común. Por favor, elige una más segura');
-    }
-
-    // Secuencias simples
-    if (/(.)\1{2,}/.test(password)) {
-        errors.push('No uses secuencias repetitivas (ej: aaa, 111)');
-    }
-
-    return {
-        valid: errors.length === 0,
-        errors: errors
-    };
-}
-
-/**
- * Calcula la fortaleza de la contraseña (0-100)
- * @param {string} password - Contraseña a evaluar
- * @returns {Object} - { score: number, level: string, color: string }
- */
-function calculatePasswordStrength(password) {
-    if (!password) {
-        return { score: 0, level: 'Ninguna', color: '#dc3545' };
-    }
-
-    let score = 0;
-
-    // Longitud (max 30 puntos)
-    if (password.length >= 8) score += 10;
-    if (password.length >= 12) score += 10;
-    if (password.length >= 16) score += 10;
-
-    // Variedad de caracteres (max 40 puntos)
-    if (/[a-z]/.test(password)) score += 10;
-    if (/[A-Z]/.test(password)) score += 10;
-    if (/\d/.test(password)) score += 10;
-    if (/[\W_]/.test(password)) score += 10;
-
-    // Complejidad adicional (max 30 puntos)
-    const uniqueChars = new Set(password).size;
-    if (uniqueChars >= 6) score += 10;
-    if (uniqueChars >= 10) score += 10;
-    if (!/(.)\1{2,}/.test(password)) score += 10; // Sin repeticiones
-
-    // Determinar nivel y color
-    let level, color;
-    if (score < 30) {
-        level = 'Muy débil';
-        color = '#dc3545';
-    } else if (score < 50) {
-        level = 'Débil';
-        color = '#fd7e14';
-    } else if (score < 70) {
-        level = 'Media';
-        color = '#ffc107';
-    } else if (score < 90) {
-        level = 'Fuerte';
-        color = '#28a745';
-    } else {
-        level = 'Muy fuerte';
-        color = '#20c997';
-    }
-
-    return { score, level, color };
-}
-
-/**
- * Actualiza el indicador visual de fortaleza de contraseña
- * @param {string} password - Contraseña a evaluar
- * @param {string} elementId - ID del elemento contenedor del indicador
- */
-function updatePasswordStrengthIndicator(password, elementId = 'password-strength') {
-    const container = document.getElementById(elementId);
-    if (!container) return;
-
-    const strength = calculatePasswordStrength(password);
-
-    // Actualizar barra de progreso
-    const progressBar = container.querySelector('.progress-bar');
-    const strengthText = container.querySelector('.strength-text');
-
-    if (progressBar) {
-        progressBar.style.width = `${strength.score}%`;
-        progressBar.style.backgroundColor = strength.color;
-        progressBar.setAttribute('aria-valuenow', strength.score);
-    }
-
-    if (strengthText) {
-        strengthText.textContent = strength.level;
-        strengthText.style.color = strength.color;
-    }
-
-    // Mostrar el indicador si hay texto
-    if (password.length > 0) {
-        container.classList.remove('d-none');
-    } else {
-        container.classList.add('d-none');
-    }
-}
+// Gestor de intentos fallidos
+const attemptsManager = createAttemptsManager('changePasswordAttempts');
 
 // --- FUNCIONES DE CAMBIO DE CONTRASEÑA CON SUPABASE ---
 
@@ -258,8 +50,7 @@ async function verifyCurrentPassword(currentPassword) {
 
         return { valid: true, email: email, error: null };
     } catch (error) {
-        console.error('Error verificando contraseña:', error);
-        return { valid: false, email: null, error: 'Error al verificar la contraseña' };
+        return { valid: false, email: null, error: 'Error al verificar la contrasena' };
     }
 }
 
@@ -276,19 +67,15 @@ async function updatePassword(newPassword) {
         });
 
         if (updateError) {
-            console.error('Error al actualizar contraseña:', updateError);
-
             if (updateError.message.includes('should be different')) {
-                return { success: false, error: 'La nueva contraseña debe ser diferente a las anteriores.' };
+                return { success: false, error: 'La nueva contrasena debe ser diferente a las anteriores.' };
             }
-            return { success: false, error: 'Error al actualizar la contraseña: ' + updateError.message };
+            return { success: false, error: 'Error al actualizar la contrasena: ' + updateError.message };
         }
 
-        console.log(`Contraseña actualizada correctamente a las ${new Date().toISOString()}`);
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error al actualizar contraseña:', error);
-        return { success: false, error: 'Error inesperado al actualizar la contraseña' };
+        return { success: false, error: 'Error inesperado al actualizar la contrasena' };
     }
 }
 
@@ -300,12 +87,12 @@ async function updatePassword(newPassword) {
 async function handlePasswordChange(data) {
     const { currentPassword, newPassword, confirmPassword } = data;
 
-    // 1. Verificar si el usuario está bloqueado
-    const lockStatus = isUserLocked();
+    // 1. Verificar si el usuario esta bloqueado
+    const lockStatus = attemptsManager.isLocked();
     if (lockStatus.locked) {
         return {
             success: false,
-            message: `Demasiados intentos fallidos. Inténtalo de nuevo en ${lockStatus.minutesLeft} minutos.`,
+            message: `Demasiados intentos fallidos. Intentalo de nuevo en ${lockStatus.minutesLeft} minutos.`,
             locked: true
         };
     }
@@ -344,23 +131,23 @@ async function handlePasswordChange(data) {
         };
     }
 
-    // 6. Verificar contraseña actual con Supabase
+    // 6. Verificar contrasena actual con Supabase
     const verifyResult = await verifyCurrentPassword(currentPassword);
     if (!verifyResult.valid) {
-        const isLocked = registerFailedAttempt();
-        const attemptsLeft = PASSWORD_CONFIG.maxAttempts - changePasswordAttempts.count;
+        const isLocked = attemptsManager.registerFailed();
+        const attemptsLeft = attemptsManager.getAttemptsLeft();
 
         if (isLocked) {
             return {
                 success: false,
-                message: `${verifyResult.error || 'Contraseña actual incorrecta'}. Has excedido el límite de intentos. Bloqueado por ${PASSWORD_CONFIG.lockoutDuration / 60000} minutos.`,
+                message: `${verifyResult.error || 'Contrasena actual incorrecta'}. Has excedido el limite de intentos. Bloqueado por ${PASSWORD_CONFIG.lockoutDuration / 60000} minutos.`,
                 locked: true
             };
         }
 
         return {
             success: false,
-            message: `${verifyResult.error || 'Contraseña actual incorrecta'}. Te quedan ${attemptsLeft} intentos.`
+            message: `${verifyResult.error || 'Contrasena actual incorrecta'}. Te quedan ${attemptsLeft} intentos.`
         };
     }
 
@@ -374,7 +161,7 @@ async function handlePasswordChange(data) {
     }
 
     // 8. Resetear intentos fallidos
-    resetAttempts();
+    attemptsManager.reset();
 
     // 9. Éxito
     return {
@@ -388,10 +175,10 @@ async function handlePasswordChange(data) {
  */
 async function logoutAndRedirect() {
     try {
-        // Cerrar sesión en Supabase
+        // Cerrar sesion en Supabase
         await supabase.auth.signOut();
     } catch (error) {
-        console.error('Error cerrando sesión:', error);
+        // Error silencioso, procedemos con el logout local
     }
 
     // Limpiar datos de sesión locales
@@ -542,8 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (error) {
-                console.error('Error en el cambio de contraseña:', error);
-                showErrorMessage('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
+                showErrorMessage('Ocurrio un error inesperado. Por favor, intenta de nuevo.');
 
                 // Restaurar botón
                 if (submitBtn) {
