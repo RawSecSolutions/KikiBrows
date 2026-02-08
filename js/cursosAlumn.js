@@ -65,8 +65,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             let buttonText = 'Continuar';
             let buttonIcon = 'fa-play';
             let buttonClass = 'btn-kiki';
+            let buttonDisabled = false;
 
-            if (isCompleted) {
+            if (curso.accesoExpirado) {
+                buttonText = 'Acceso Expirado';
+                buttonIcon = 'fa-lock';
+                buttonClass = 'btn-secondary';
+                buttonDisabled = true;
+            } else if (isCompleted) {
                 buttonText = 'Revisar Contenido';
                 buttonIcon = 'fa-eye';
                 buttonClass = 'btn-kiki-secondary';
@@ -154,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             })()}
 
                             <!-- Botón de acción -->
-                            <button class="btn ${buttonClass} w-100" onclick="goToCourse(${curso.id})">
+                            <button class="btn ${buttonClass} w-100" ${buttonDisabled ? 'disabled' : `onclick="goToCourse('${curso.id}')"`}>
                                 <i class="fas ${buttonIcon} me-2"></i>${buttonText}
                             </button>
                         </div>

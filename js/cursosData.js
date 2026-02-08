@@ -136,13 +136,14 @@ const CursosData = {
     },
 
     /**
-     * Cargar cursos adquiridos del usuario
+     * Cargar cursos adquiridos del usuario (transacciones + inscripciones)
      */
     async _loadCursosAdquiridos() {
         if (!this._currentUserId) return;
 
         try {
-            const { data, error } = await supabase
+            // 1. Cursos por transacción (compra)
+            const { data: transData, error: transError } = await supabase
                 .from('transacciones')
                 .select(`
                     id,
@@ -154,17 +155,55 @@ const CursosData = {
                 .eq('usuario_id', this._currentUserId)
                 .eq('estado', 'PAGADO');
 
-            if (error) throw error;
+            if (transError) throw transError;
 
-            this._cursosAdquiridos = (data || [])
+            const cursosComprados = (transData || [])
                 .filter(t => t.cursos)
                 .map(t => ({
                     ...t.cursos,
                     fechaCompra: t.fecha_compra,
-                    transaccionId: t.id
+                    transaccionId: t.id,
+                    origenAcceso: 'COMPRA'
                 }));
 
-            console.log(`CursosData: ${this._cursosAdquiridos.length} cursos adquiridos`);
+            // 2. Cursos por inscripción (asignación admin / regalo)
+            const { data: inscData, error: inscError } = await supabase
+                .from('inscripciones')
+                .select(`
+                    id,
+                    curso_id,
+                    estado,
+                    fecha_expiracion,
+                    created_at,
+                    origen_acceso,
+                    cursos (*)
+                `)
+                .eq('usuario_id', this._currentUserId)
+                .eq('estado', 'ACTIVO');
+
+            if (inscError) {
+                console.warn('Error al cargar inscripciones:', inscError);
+            }
+
+            const cursosInscritos = (inscData || [])
+                .filter(i => i.cursos)
+                .map(i => ({
+                    ...i.cursos,
+                    fechaCompra: i.created_at,
+                    fechaExpiracionDirecta: i.fecha_expiracion,
+                    inscripcionId: i.id,
+                    origenAcceso: i.origen_acceso || 'ASIGNACION_ADMIN'
+                }));
+
+            // 3. Merge sin duplicados (prioridad: compra sobre inscripción)
+            const cursosMap = new Map();
+            cursosComprados.forEach(c => cursosMap.set(c.id, c));
+            cursosInscritos.forEach(c => {
+                if (!cursosMap.has(c.id)) cursosMap.set(c.id, c);
+            });
+
+            this._cursosAdquiridos = Array.from(cursosMap.values());
+            console.log(`CursosData: ${this._cursosAdquiridos.length} cursos adquiridos (${cursosComprados.length} comprados, ${cursosInscritos.length} inscritos)`);
         } catch (error) {
             console.error('Error al cargar cursos adquiridos:', error);
             const localData = localStorage.getItem('kikibrows_usuarios');
@@ -217,16 +256,24 @@ const CursosData = {
     },
 
     _calcularAcceso(curso) {
-        const fechaCompra = new Date(curso.fechaCompra);
-        const diasAcceso = curso.dias_duracion_acceso || 180;
-        const fechaExpiracion = new Date(fechaCompra);
-        fechaExpiracion.setDate(fechaExpiracion.getDate() + diasAcceso);
+        let fechaExpiracion;
+
+        if (curso.fechaExpiracionDirecta) {
+            // Inscripción admin: usar fecha_expiracion directa de la tabla
+            fechaExpiracion = new Date(curso.fechaExpiracionDirecta);
+        } else {
+            // Compra: calcular desde fecha_compra + dias_duracion_acceso
+            const fechaCompra = new Date(curso.fechaCompra);
+            const diasAcceso = curso.dias_duracion_acceso || 180;
+            fechaExpiracion = new Date(fechaCompra);
+            fechaExpiracion.setDate(fechaExpiracion.getDate() + diasAcceso);
+        }
 
         const ahora = new Date();
         const diasRestantes = Math.ceil((fechaExpiracion - ahora) / (1000 * 60 * 60 * 24));
 
         return {
-            fechaCompra: fechaCompra.toISOString().split('T')[0],
+            fechaCompra: curso.fechaCompra ? new Date(curso.fechaCompra).toISOString().split('T')[0] : null,
             fechaExpiracion: fechaExpiracion.toISOString().split('T')[0],
             fechaExpiracionFormato: fechaExpiracion.toLocaleDateString('es-CL', {
                 day: 'numeric',
@@ -657,9 +704,14 @@ const CursosData = {
     async verificarAccesoCurso(cursoId) {
         if (!this._currentUserId) return false;
 
-        const tiene = this._cursosAdquiridos.some(c => c.id === cursoId);
-        if (tiene) return true;
+        // Verificar en cache local (incluye compras + inscripciones)
+        const cursoLocal = this._cursosAdquiridos.find(c => c.id === cursoId);
+        if (cursoLocal) {
+            const acceso = this._calcularAcceso(cursoLocal);
+            return !acceso.expirado;
+        }
 
+        // Fallback: verificar en Supabase
         const result = await CursosService.verificarAccesoCurso(cursoId, this._currentUserId);
         return result.tieneAcceso;
     },

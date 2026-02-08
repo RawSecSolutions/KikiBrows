@@ -90,6 +90,7 @@ async function verificarAccesoUsuario(cursoId) {
             usuarioActual.apellido = profile.last_name;
         }
 
+        // Verificar acceso por transacción (compra)
         const { data: transaccion, error } = await supabase
             .from('transacciones')
             .select('id, estado')
@@ -99,10 +100,28 @@ async function verificarAccesoUsuario(cursoId) {
             .limit(1)
             .maybeSingle();
 
+        if (transaccion) {
+            return { autenticado: true, tieneAcceso: true, transaccion };
+        }
+
+        // Verificar acceso por inscripción (asignación admin / regalo)
+        const { data: inscripcion } = await supabase
+            .from('inscripciones')
+            .select('id, estado, fecha_expiracion')
+            .eq('curso_id', cursoId)
+            .eq('usuario_id', session.user.id)
+            .eq('estado', 'ACTIVO')
+            .limit(1)
+            .maybeSingle();
+
+        const inscripcionActiva = inscripcion && (
+            !inscripcion.fecha_expiracion || new Date(inscripcion.fecha_expiracion) > new Date()
+        );
+
         return {
             autenticado: true,
-            tieneAcceso: !!transaccion,
-            transaccion
+            tieneAcceso: !!inscripcionActiva,
+            transaccion: inscripcion
         };
 
     } catch (error) {
@@ -474,8 +493,8 @@ function configurarEventosPortalPago(curso) {
 
 async function procesarCompraExitosa(curso, metodoPago) {
     try {
-        // Registrar en Supabase
-        const { error } = await supabase
+        // Registrar transacción en Supabase
+        const { data: transResult, error } = await supabase
             .from('transacciones')
             .insert([{
                 usuario_id: usuarioActual.id,
@@ -484,9 +503,31 @@ async function procesarCompraExitosa(curso, metodoPago) {
                 estado: 'PAGADO',
                 metodo_pago: metodoPago,
                 codigo_autorizacion: Math.floor(Math.random() * 999999).toString()
-            }]);
+            }])
+            .select('id')
+            .single();
 
         if (error) console.error('Error registrando transacción:', error);
+
+        // Crear inscripción con fecha de expiración
+        const diasAcceso = curso.dias_duracion_acceso || 180;
+        const fechaExp = new Date();
+        fechaExp.setDate(fechaExp.getDate() + diasAcceso);
+
+        const inscripcionData = {
+            usuario_id: usuarioActual.id,
+            curso_id: curso.id,
+            origen_acceso: 'COMPRA',
+            estado: 'ACTIVO',
+            fecha_expiracion: fechaExp.toISOString()
+        };
+        if (transResult?.id) inscripcionData.transaccion_id = transResult.id;
+
+        const { error: inscError } = await supabase
+            .from('inscripciones')
+            .insert([inscripcionData]);
+
+        if (inscError) console.warn('Error creando inscripción:', inscError);
 
         const transaccionLocal = {
             estado: 'PAGADO',
