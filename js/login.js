@@ -242,7 +242,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (profileError || !profile) {
                     console.error('No se encontró perfil para el usuario:', profileError);
                     await supabase.auth.signOut();
-                    mostrarError('No se encontró tu perfil de usuario. Contacta soporte.');
+
+                    // Mensaje más específico según el tipo de error
+                    let msgError = 'No se encontró tu perfil de usuario. Contacta soporte.';
+                    if (profileError?.code === '42P17') {
+                        msgError = 'Error de configuración en la base de datos. Contacta al administrador.';
+                    }
+
+                    mostrarError(msgError);
                     btnSubmit.innerHTML = textoOriginal;
                     btnSubmit.disabled = false;
                     return;
@@ -365,7 +372,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (profileError || !profile) {
                     console.error('No se encontró perfil para el usuario:', profileError);
                     await supabase.auth.signOut();
-                    mostrarErrorCodigo('No se encontró tu perfil de usuario. Contacta soporte.');
+
+                    let msgError = 'No se encontró tu perfil de usuario. Contacta soporte.';
+                    if (profileError?.code === '42P17') {
+                        msgError = 'Error de configuración en la base de datos. Contacta al administrador.';
+                    }
+
+                    mostrarErrorCodigo(msgError);
                     btnValidarCodigo.innerHTML = textoOriginal;
                     btnValidarCodigo.disabled = false;
                     return;
