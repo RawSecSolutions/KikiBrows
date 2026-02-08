@@ -238,10 +238,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     .eq('id', user.id)
                     .single();
 
-                if (profileError) console.warn('Error obteniendo perfil:', profileError);
+                // Si no existe el perfil, no permitir el acceso
+                if (profileError || !profile) {
+                    console.error('No se encontró perfil para el usuario:', profileError);
+                    await supabase.auth.signOut();
+                    mostrarError('No se encontró tu perfil de usuario. Contacta soporte.');
+                    btnSubmit.innerHTML = textoOriginal;
+                    btnSubmit.disabled = false;
+                    return;
+                }
 
                 // Verificar si el usuario está bloqueado
-                if (profile?.is_blocked) {
+                if (profile.is_blocked) {
                     await supabase.auth.signOut();
                     mostrarError('Tu cuenta ha sido bloqueada. Contacta soporte.');
                     btnSubmit.innerHTML = textoOriginal;
@@ -251,30 +259,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Guardar datos en localStorage para compatibilidad
                 localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', profile?.first_name || email.split('@')[0]);
-                localStorage.setItem('userRole', profile?.role || 'student');
+                localStorage.setItem('userName', profile.first_name || email.split('@')[0]);
+                localStorage.setItem('userRole', profile.role || 'student');
 
                 const usuarioActual = {
                     id: user.id,
                     email: user.email,
-                    nombre: profile?.first_name || '',
-                    apellido: profile?.last_name || '',
-                    role: profile?.role || 'student'
+                    nombre: profile.first_name || '',
+                    apellido: profile.last_name || '',
+                    role: profile.role || 'student'
                 };
                 localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
-                // VERIFICAR SI HAY UNA REDIRECCIÓN PENDIENTE
-                const redirectUrl = localStorage.getItem('redirectAfterLogin');
+                // REDIRECCIÓN SEGÚN ROL
+                const isAdmin = profile.role === 'admin' || profile.role === 'superadmin';
 
+                // Si hay redirección pendiente, solo usarla si es coherente con el rol
+                const redirectUrl = localStorage.getItem('redirectAfterLogin');
                 if (redirectUrl) {
                     localStorage.removeItem('redirectAfterLogin');
-                    window.location.href = redirectUrl;
-                    return;
+                    const isAdminPage = redirectUrl.includes('admin') || redirectUrl.includes('usersGest') || redirectUrl.includes('gestionCursos') || redirectUrl.includes('creaCurso') || redirectUrl.includes('gestorModulos') || redirectUrl.includes('revYFeedback');
+                    if (!isAdminPage || isAdmin) {
+                        window.location.href = redirectUrl;
+                        return;
+                    }
                 }
 
-                // REDIRECCIÓN SEGÚN ROL
                 let destino = '';
-                if (profile?.role === 'admin' || profile?.role === 'superadmin') {
+                if (isAdmin) {
                     destino = 'adminPanel.html';
                 } else {
                     destino = 'index.html';
@@ -349,19 +361,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     .eq('id', user.id)
                     .single();
 
-                if (profileError) console.warn('Error obteniendo perfil:', profileError);
+                // Si no existe el perfil, no permitir el acceso
+                if (profileError || !profile) {
+                    console.error('No se encontró perfil para el usuario:', profileError);
+                    await supabase.auth.signOut();
+                    mostrarErrorCodigo('No se encontró tu perfil de usuario. Contacta soporte.');
+                    btnValidarCodigo.innerHTML = textoOriginal;
+                    btnValidarCodigo.disabled = false;
+                    return;
+                }
 
                 // Guardar datos en localStorage
                 localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', profile?.first_name || email.split('@')[0]);
-                localStorage.setItem('userRole', profile?.role || 'student');
+                localStorage.setItem('userName', profile.first_name || email.split('@')[0]);
+                localStorage.setItem('userRole', profile.role || 'student');
 
                 const usuarioActual = {
                     id: user.id,
                     email: user.email,
-                    nombre: profile?.first_name || '',
-                    apellido: profile?.last_name || '',
-                    role: profile?.role || 'student'
+                    nombre: profile.first_name || '',
+                    apellido: profile.last_name || '',
+                    role: profile.role || 'student'
                 };
                 localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
@@ -378,12 +398,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Redirigir según el rol del usuario
+                const isAdmin = profile.role === 'admin' || profile.role === 'superadmin';
                 setTimeout(() => {
                     const redirectUrl = localStorage.getItem('redirectAfterLogin');
                     if (redirectUrl) {
                         localStorage.removeItem('redirectAfterLogin');
-                        window.location.href = redirectUrl;
-                    } else if (profile?.role === 'admin' || profile?.role === 'superadmin') {
+                        const isAdminPage = redirectUrl.includes('admin') || redirectUrl.includes('usersGest') || redirectUrl.includes('gestionCursos') || redirectUrl.includes('creaCurso') || redirectUrl.includes('gestorModulos') || redirectUrl.includes('revYFeedback');
+                        if (!isAdminPage || isAdmin) {
+                            window.location.href = redirectUrl;
+                            return;
+                        }
+                    }
+                    if (isAdmin) {
                         window.location.href = 'adminPanel.html';
                     } else {
                         window.location.href = 'index.html';
