@@ -90,6 +90,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    function calcularFechaExpiracion(cursoId) {
+        const curso = coursesDB.find(c => c.id === cursoId);
+        if (!curso || !curso.dias_duracion_acceso) return null;
+        const fecha = new Date();
+        fecha.setDate(fecha.getDate() + curso.dias_duracion_acceso);
+        return fecha.toISOString();
+    }
+
     function getBadge(role) {
         if (role === 'superadmin') return '<span class="badge bg-dark">Super Admin</span>';
         if (role === 'admin') return '<span class="badge bg-primary">Admin</span>';
@@ -361,14 +369,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 );
 
                 if (!yaInscrito) {
+                    const inscripcionData = {
+                        usuario_id: id,
+                        curso_id: selectedCourse,
+                        origen_acceso: 'ASIGNACION_ADMIN',
+                        estado: 'ACTIVO'
+                    };
+                    const fechaExp = calcularFechaExpiracion(selectedCourse);
+                    if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
+
                     const { error: inscripError } = await supabase
                         .from('inscripciones')
-                        .insert({
-                            usuario_id: id,
-                            curso_id: selectedCourse,
-                            origen_acceso: 'ASIGNACION_ADMIN',
-                            estado: 'ACTIVO'
-                        });
+                        .insert(inscripcionData);
 
                     if (inscripError) {
                         console.warn('Error asignando curso:', inscripError);
@@ -444,14 +456,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Asignar curso si se seleccionó uno (regalo/asignación admin)
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
+                    const inscripcionData = {
+                        usuario_id: authData.user.id,
+                        curso_id: selectedCourse,
+                        origen_acceso: 'ASIGNACION_ADMIN',
+                        estado: 'ACTIVO'
+                    };
+                    const fechaExp = calcularFechaExpiracion(selectedCourse);
+                    if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
+
                     const { error: inscripError } = await supabase
                         .from('inscripciones')
-                        .insert({
-                            usuario_id: authData.user.id,
-                            curso_id: selectedCourse,
-                            origen_acceso: 'ASIGNACION_ADMIN',
-                            estado: 'ACTIVO'
-                        });
+                        .insert(inscripcionData);
 
                     if (inscripError) {
                         console.warn('Error asignando curso al nuevo usuario:', inscripError);
