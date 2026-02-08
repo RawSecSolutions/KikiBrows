@@ -18,6 +18,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const roleFilter = document.getElementById('role-filter');
     const courseSelect = document.getElementById('userCourse');
 
+    // Obtener usuario actual para evitar auto-bloqueo y cargar email
+    let currentUserId = null;
+    let currentUserEmail = null;
+    const { data: { user: currentAuthUser } } = await supabase.auth.getUser();
+    if (currentAuthUser) {
+        currentUserId = currentAuthUser.id;
+        currentUserEmail = currentAuthUser.email;
+    }
+
     // --- 1. CARGA DE DATOS DESDE SUPABASE ---
 
     async function fetchUsers() {
@@ -215,10 +224,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('modalUserTitle').textContent = 'Editar Usuario';
         document.getElementById('userId').value = user.id;
         document.getElementById('userName').value = getUserName(user);
-        document.getElementById('userEmail').value = user.email || '';
+        // Si es el usuario actual y no tiene email en profiles, usar el de auth
+        const emailValue = user.email || (user.id === currentUserId ? currentUserEmail : '') || '';
+        document.getElementById('userEmail').value = emailValue;
 
         // Cargar estado de bloqueo
-        document.getElementById('userBlocked').checked = user.is_blocked || false;
+        const blockedCheckbox = document.getElementById('userBlocked');
+        blockedCheckbox.checked = user.is_blocked || false;
+
+        // No permitir bloquearse a sí mismo
+        const blockGroup = blockedCheckbox.closest('.mb-3');
+        if (user.id === currentUserId) {
+            blockedCheckbox.disabled = true;
+            blockGroup.style.opacity = '0.5';
+            blockGroup.title = 'No puedes bloquearte a ti mismo';
+        } else {
+            blockedCheckbox.disabled = false;
+            blockGroup.style.opacity = '1';
+            blockGroup.title = '';
+        }
 
         // Cargar Curso Asignado
         const userInscrip = inscripcionesDB.find(i =>
@@ -256,7 +280,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('userForm').reset();
             document.getElementById('userId').value = '';
             courseSelect.value = '';
-            document.getElementById('userBlocked').checked = false;
+            const blockedCheckbox = document.getElementById('userBlocked');
+            blockedCheckbox.checked = false;
+            blockedCheckbox.disabled = false;
+            const blockGroup = blockedCheckbox.closest('.mb-3');
+            blockGroup.style.opacity = '1';
+            blockGroup.title = '';
 
             const roleSelect = document.getElementById('userRole');
             roleSelect.innerHTML = `
@@ -293,6 +322,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             // --- EDICIÓN ---
             const user = usersDB.find(u => u.id === id);
             if (!user) return;
+
+            // No permitir bloquearse a sí mismo
+            if (user.id === currentUserId && blocked) {
+                alert('No puedes bloquearte a ti mismo');
+                return;
+            }
 
             // Si cambió el estado de bloqueo, usar RPC
             if (user.is_blocked !== blocked) {
@@ -332,10 +367,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            const password = document.getElementById('userPassword').value;
+            if (!password || password.length < 6) {
+                alert('La contraseña es obligatoria y debe tener al menos 6 caracteres');
+                return;
+            }
+
             // Crear usuario vía Supabase Auth (signup)
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: email,
-                password: 'Kiki1234',
+                password: password,
                 options: {
                     data: {
                         first_name: firstName,
