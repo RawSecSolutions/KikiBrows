@@ -60,7 +60,12 @@ async function checkAuth() {
         localStorage.removeItem('userName');
         localStorage.removeItem('usuarioActual');
         localStorage.removeItem('userRole');
-        alert('No se encontró tu perfil de usuario. Contacta soporte.');
+
+        let msg = 'No se encontró tu perfil de usuario. Contacta soporte.';
+        if (error?.code === '42P17') {
+            msg = 'Error de configuración en la base de datos. Contacta al administrador.';
+        }
+        alert(msg);
         window.location.href = 'login.html';
         return null;
     }

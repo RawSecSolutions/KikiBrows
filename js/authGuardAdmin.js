@@ -53,7 +53,12 @@ async function checkAdminAuth() {
         // Si no existe el perfil, cerrar sesión y redirigir
         if (error || !profile) {
             console.error('AuthGuard: No se encontró perfil para el usuario:', error);
-            alert('No se encontró tu perfil de usuario. Contacta soporte.');
+
+            let msg = 'No se encontró tu perfil de usuario. Contacta soporte.';
+            if (error?.code === '42P17') {
+                msg = 'Error de configuración en la base de datos. Contacta al administrador.';
+            }
+            alert(msg);
             handleLogout();
             return null;
         }
