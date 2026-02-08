@@ -50,18 +50,24 @@ async function checkAdminAuth() {
             .eq('id', session.user.id)
             .single();
 
-        if (error) console.warn('Error obteniendo perfil:', error);
+        // Si no existe el perfil, cerrar sesión y redirigir
+        if (error || !profile) {
+            console.error('AuthGuard: No se encontró perfil para el usuario:', error);
+            alert('No se encontró tu perfil de usuario. Contacta soporte.');
+            handleLogout();
+            return null;
+        }
 
         // Verificar bloqueo
-        if (profile?.is_blocked) {
+        if (profile.is_blocked) {
             alert('Tu cuenta ha sido bloqueada. Contacta soporte.');
             handleLogout();
             return null;
         }
 
         // Verificar rol de admin
-        if (profile?.role !== 'admin' && profile?.role !== 'superadmin') {
-            console.warn(`AuthGuard: Rol '${profile?.role}' no autorizado.`);
+        if (profile.role !== 'admin' && profile.role !== 'superadmin') {
+            console.warn(`AuthGuard: Rol '${profile.role}' no autorizado.`);
             window.location.href = 'index.html'; // Expulsar a home
             return null;
         }
@@ -111,14 +117,14 @@ function handleLogout() {
 
 function updateLocalStorage(session, profile) {
     localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
-    localStorage.setItem('userRole', profile?.role || 'student');
+    localStorage.setItem('userName', profile.first_name || session.user.email.split('@')[0]);
+    localStorage.setItem('userRole', profile.role || 'student');
     const usuarioActual = {
         id: session.user.id,
         email: session.user.email,
-        nombre: profile?.first_name || '',
-        apellido: profile?.last_name || '',
-        role: profile?.role || 'student'
+        nombre: profile.first_name || '',
+        apellido: profile.last_name || '',
+        role: profile.role || 'student'
     };
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 }

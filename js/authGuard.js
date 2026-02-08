@@ -52,12 +52,21 @@ async function checkAuth() {
         .eq('id', session.user.id)
         .single();
 
-    if (error) {
-        console.warn('Error obteniendo perfil:', error);
+    // Si no existe el perfil, cerrar sesión y redirigir
+    if (error || !profile) {
+        console.error('No se encontró perfil para el usuario:', error);
+        await supabase.auth.signOut();
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('usuarioActual');
+        localStorage.removeItem('userRole');
+        alert('No se encontró tu perfil de usuario. Contacta soporte.');
+        window.location.href = 'login.html';
+        return null;
     }
 
     // Verificar si el usuario está bloqueado
-    if (profile?.is_blocked) {
+    if (profile.is_blocked) {
         await supabase.auth.signOut();
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userName');
@@ -70,15 +79,15 @@ async function checkAuth() {
 
     // Actualizar localStorage con datos actualizados
     localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('userName', profile?.first_name || session.user.email.split('@')[0]);
-    localStorage.setItem('userRole', profile?.role || 'student');
+    localStorage.setItem('userName', profile.first_name || session.user.email.split('@')[0]);
+    localStorage.setItem('userRole', profile.role || 'student');
 
     const usuarioActual = {
         id: session.user.id,
         email: session.user.email,
-        nombre: profile?.first_name || '',
-        apellido: profile?.last_name || '',
-        role: profile?.role || 'student'
+        nombre: profile.first_name || '',
+        apellido: profile.last_name || '',
+        role: profile.role || 'student'
     };
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
@@ -95,7 +104,7 @@ async function checkAdminAuth() {
 
     const { profile } = result;
 
-    if (profile?.role !== 'admin' && profile?.role !== 'superadmin') {
+    if (profile.role !== 'admin' && profile.role !== 'superadmin') {
         alert('No tienes permisos para acceder a esta página.');
         window.location.href = 'index.html';
         return null;
