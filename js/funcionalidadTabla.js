@@ -90,6 +90,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    function calcularFechaExpiracion(cursoId) {
+        const curso = coursesDB.find(c => c.id === cursoId);
+        if (!curso || !curso.dias_duracion_acceso) return null;
+        const fecha = new Date();
+        fecha.setDate(fecha.getDate() + curso.dias_duracion_acceso);
+        return fecha.toISOString();
+    }
+
     function getBadge(role) {
         if (role === 'superadmin') return '<span class="badge bg-dark">Super Admin</span>';
         if (role === 'admin') return '<span class="badge bg-primary">Admin</span>';
@@ -351,6 +359,39 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            // Asignar curso si se seleccionó uno (regalo/asignación admin)
+            const selectedCourse = courseSelect.value;
+            if (selectedCourse) {
+                // Verificar si ya tiene inscripción para este curso
+                const yaInscrito = inscripcionesDB.some(i =>
+                    (i.usuario_id === id || i.user_id === id || i.perfil_id === id) &&
+                    (i.curso_id === selectedCourse || i.course_id === selectedCourse)
+                );
+
+                if (!yaInscrito) {
+                    const inscripcionData = {
+                        usuario_id: id,
+                        curso_id: selectedCourse,
+                        origen_acceso: 'ASIGNACION_ADMIN',
+                        estado: 'ACTIVO'
+                    };
+                    const fechaExp = calcularFechaExpiracion(selectedCourse);
+                    if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
+
+                    const { error: inscripError } = await supabase
+                        .from('inscripciones')
+                        .insert(inscripcionData);
+
+                    if (inscripError) {
+                        console.warn('Error asignando curso:', inscripError);
+                        showToast('Perfil actualizado, pero hubo un error al asignar el curso.');
+                        await loadAllData();
+                        userModal.hide();
+                        return;
+                    }
+                }
+            }
+
             // Actualizar datos locales
             const index = usersDB.findIndex(u => u.id === id);
             if (index !== -1) {
@@ -359,7 +400,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!roleEl.disabled) usersDB[index].role = roleEl.value;
             }
 
-            showToast('Datos actualizados.');
+            // Recargar inscripciones para reflejar cambios
+            if (selectedCourse) {
+                await fetchInscripciones();
+            }
+
+            showToast(selectedCourse ? 'Datos actualizados con curso asignado.' : 'Datos actualizados.');
         } else {
             // --- CREACIÓN ---
             if (!email) {
@@ -406,9 +452,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (profileError) {
                     console.warn('Error actualizando perfil del nuevo usuario:', profileError);
                 }
+
+                // Asignar curso si se seleccionó uno (regalo/asignación admin)
+                const selectedCourse = courseSelect.value;
+                if (selectedCourse) {
+                    const inscripcionData = {
+                        usuario_id: authData.user.id,
+                        curso_id: selectedCourse,
+                        origen_acceso: 'ASIGNACION_ADMIN',
+                        estado: 'ACTIVO'
+                    };
+                    const fechaExp = calcularFechaExpiracion(selectedCourse);
+                    if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
+
+                    const { error: inscripError } = await supabase
+                        .from('inscripciones')
+                        .insert(inscripcionData);
+
+                    if (inscripError) {
+                        console.warn('Error asignando curso al nuevo usuario:', inscripError);
+                        showToast('Usuario creado, pero hubo un error al asignar el curso.');
+                        await loadAllData();
+                        userModal.hide();
+                        return;
+                    }
+                }
             }
 
-            showToast('Usuario creado. Se envió email de verificación.');
+            showToast(courseSelect.value ? 'Usuario creado con curso asignado.' : 'Usuario creado. Se envió email de verificación.');
             await loadAllData(); // Recargar todos los datos
             userModal.hide();
             return;

@@ -122,6 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Verificar si el acceso al curso ha expirado
+        const cursosAdquiridos = CursosData.getCursosAdquiridos();
+        const cursoAdquirido = cursosAdquiridos.find(c => c.id === currentCursoId);
+        if (cursoAdquirido && cursoAdquirido.accesoExpirado) {
+            alert('Tu acceso a este curso ha expirado.');
+            window.location.href = 'cursosAlumn.html';
+            return;
+        }
+
         // Actualizar localStorage con el curso actual
         localStorage.setItem('activeCourseId', currentCursoId);
 
