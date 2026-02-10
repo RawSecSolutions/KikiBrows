@@ -23,7 +23,7 @@
 
         <main class="p-4 w-100" id="dashboard-content">
             <div class="account-card p-4 h-100">
-                
+
                 <div class="d-flex align-items-center mb-4 gap-3">
                     <div class="d-flex align-items-center justify-content-center rounded p-2" style="background-color: #D4E1C5; width: 50px; height: 50px;">
                         <i class="fas fa-clipboard-check fs-2" style="color: #8A835A;"></i>
@@ -37,38 +37,42 @@
                 </div>
 
                 <div class="revision-table-container">
+                    <!-- Header de la tabla -->
                     <div class="row g-0 mb-3 fw-bold p-2 rounded" style="background-color: #D4E1C5;">
                         <div class="col-1 text-center">#</div>
                         <div class="col-3">Curso</div>
-                        <div class="col-3">Módulo</div>
+                        <div class="col-3">Clase</div>
                         <div class="col-2">Fecha</div>
                         <div class="col-2">Usuario</div>
-                        <div class="col-1 text-center">Estado</div> 
+                        <div class="col-1 text-center">Estado</div>
                     </div>
 
-                    <a href="#" class="row g-0 align-items-center p-3 mb-2 rounded text-decoration-none text-dark border" style="background-color: rgba(255,255,255,0.6);" data-bs-toggle="modal" data-bs-target="#revisionModal">
-                        <div class="col-1 text-center fw-bold">1</div>
-                        <div class="col-3 text-truncate">Microblading Avanzado</div>
-                        <div class="col-3 text-truncate">Práctica: Diseño</div>
-                        <div class="col-2">01/08/2025</div>
-                        <div class="col-2">Ana García</div>
-                        <div class="col-1 text-center"><span class="badge bg-warning text-dark">Pendiente</span></div>
-                    </a>
-
-                    <div class="d-flex justify-content-center mt-4">
-                        <nav aria-label="Paginación">
-                            <ul class="pagination">
-                                <li class="page-item active"><a class="page-link text-white" href="#" style="background-color: #8A835A; border-color: #8A835A;">1</a></li>
-                                <li class="page-item"><a class="page-link text-success" href="#">2</a></li>
-                            </ul>
-                        </nav>
+                    <!-- Loading indicator -->
+                    <div id="loading-indicator" class="text-center py-4">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="text-muted mt-2">Cargando entregas...</p>
                     </div>
+
+                    <!-- Empty state -->
+                    <div id="empty-state-revisiones" class="d-none text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted fst-italic">No hay entregas pendientes de revisión.</p>
+                    </div>
+
+                    <!-- Rows dinámicas -->
+                    <div id="entregas-table-body"></div>
+
+                    <!-- Paginación dinámica -->
+                    <div id="pagination-container" class="d-flex justify-content-center mt-4"></div>
 
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Modal de Revisión -->
     <div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content account-card border-0 p-3">
@@ -77,30 +81,17 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body pt-4">
-            
-            <p><strong>Entrega:</strong> <span id="modal-curso-modulo">Microblading - Módulo 1</span></p>
-            <p><strong>Enviado por:</strong> <span id="modal-usuario">Ana García</span> el <span id="modal-fecha">01/08/2025</span></p>
+
+            <p><strong>Entrega:</strong> <span id="modal-curso-modulo"></span></p>
+            <p><strong>Enviado por:</strong> <span id="modal-usuario"></span> el <span id="modal-fecha"></span></p>
 
             <div class="row mt-4">
                 <div class="col-lg-7">
-                    <div class="visualizador-container" style="width: 100%; height: auto; background: #000; border-radius: 8px; overflow: hidden;">
-
-                        <video
-                            id="videoPlayer"
-                            width="100%"
-                            height="100%"
-                            controls
-                            controlsList="nodownload"
-                            preload="metadata">
-
-                            <source src="https://tu-proyecto.supabase.co/storage/v1/object/public/entregas/video-ana.mp4" type="video/mp4">
-
-                            Tu navegador no soporta la reproducción de video.
-                        </video>
-
+                    <div id="visualizador-container" style="width: 100%; min-height: 300px; background: #000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <p class="text-muted">Selecciona una entrega para ver el archivo.</p>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-5">
                     <form id="revision-form">
                         <div class="mb-3">
@@ -116,7 +107,7 @@
                             </select>
                         </div>
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn text-white fw-bold" style="background-color: #8A835A;">
+                            <button type="submit" id="submit-calificacion-btn" class="btn text-white fw-bold" style="background-color: #8A835A;">
                                 <i class="fas fa-check-circle me-2"></i> Calificar
                             </button>
                         </div>
@@ -133,7 +124,7 @@
     <script type="module" src="js/authGuardAdmin.js"></script>
     <script type="module" src="js/componenteAdmin.js"></script>
     <script src="js/dashboardAdmin.js"></script>
-    <script src="js/revisionesAdmin.js"></script>
+    <script type="module" src="js/revisionesAdmin.js"></script>
 
 </body>
 </html>

@@ -188,14 +188,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Ir al curso
-    window.goToCourse = (cursoId) => {
+    window.goToCourse = async (cursoId) => {
         // Guardar curso activo y última posición
         localStorage.setItem('activeCourseId', cursoId);
         if (typeof CursosData !== 'undefined') {
-            const ultimaClase = CursosData.getUltimaClase(cursoId);
-            if (ultimaClase) {
-                localStorage.setItem('activeClaseId', ultimaClase.claseId);
-                localStorage.setItem('activeModuloId', ultimaClase.moduloId);
+            // Intentar obtener última clase desde Supabase (progreso_clases)
+            const ultimaSupabase = await CursosData.getUltimaClaseDesdeSupabase(cursoId);
+            if (ultimaSupabase) {
+                localStorage.setItem('activeClaseId', ultimaSupabase.claseId);
+                localStorage.setItem('activeModuloId', ultimaSupabase.moduloId);
+            } else {
+                // Fallback local
+                const ultimaClase = CursosData.getUltimaClase(cursoId);
+                if (ultimaClase) {
+                    localStorage.setItem('activeClaseId', ultimaClase.claseId);
+                    localStorage.setItem('activeModuloId', ultimaClase.moduloId);
+                }
             }
         }
         window.location.href = 'claseAlumn.html';
