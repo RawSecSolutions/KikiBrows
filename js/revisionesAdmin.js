@@ -76,26 +76,29 @@ const RevisionesAdmin = {
     async loadEntregas() {
         this.showLoading(true);
 
-        const estadoFilter = this.currentTab === 'PENDIENTE' ? 'PENDIENTE' : null;
+        try {
+            const estadoFilter = this.currentTab === 'PENDIENTE'
+                ? 'PENDIENTE'
+                : ['APROBADA', 'RECHAZADA'];
 
-        const result = await CursosService.getEntregasAdmin(
-            estadoFilter,
-            this.currentPage,
-            this.perPage
-        );
+            const result = await CursosService.getEntregasAdmin(
+                estadoFilter,
+                this.currentPage,
+                this.perPage
+            );
 
-        if (result.success) {
-            // Para tab finalizadas, filtrar solo APROBADA y RECHAZADA
-            if (this.currentTab === 'FINALIZADA') {
-                this.entregas = result.data.filter(e => e.estado === 'APROBADA' || e.estado === 'RECHAZADA');
-            } else {
+            if (result.success) {
                 this.entregas = result.data;
+                this.totalItems = result.count || this.entregas.length;
+            } else {
+                this.entregas = [];
+                this.totalItems = 0;
+                console.error('Error cargando entregas:', result.error);
             }
-            this.totalItems = result.count || this.entregas.length;
-        } else {
+        } catch (error) {
             this.entregas = [];
             this.totalItems = 0;
-            console.error('Error cargando entregas:', result.error);
+            console.error('Error inesperado cargando entregas:', error);
         }
 
         this.renderTable();
