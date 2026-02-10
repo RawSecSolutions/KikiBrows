@@ -739,7 +739,7 @@ export const CursosService = {
                             )
                         )
                     ),
-                    profiles:usuario_id (
+                    profiles (
                         id,
                         first_name,
                         last_name
