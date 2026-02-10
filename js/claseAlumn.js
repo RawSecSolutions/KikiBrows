@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicialización
     init();
 
-    function init() {
+    async function init() {
         const curso = CursosData.getCurso(currentCursoId);
         if (!curso) {
             window.location.href = 'cursosAlumn.html';
@@ -131,6 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Cargar progreso desde Supabase (progreso_clases) para tener datos actualizados
+        await CursosData.cargarProgresoDesdeSupabase(currentCursoId);
+
         // Actualizar localStorage con el curso actual
         localStorage.setItem('activeCourseId', currentCursoId);
 
@@ -138,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         courseName.textContent = curso.nombre;
         document.title = `${curso.nombre} | KIKIBROWS`;
 
-        // Si no hay clase seleccionada, obtener la última
+        // Si no hay clase seleccionada, obtener la última (desde datos ya sincronizados)
         if (!currentClaseId || !currentModuloId) {
             const ultima = CursosData.getUltimaClase(currentCursoId);
             if (ultima) {
@@ -209,7 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const estado = CursosData.getEstadoClase(currentCursoId, modulo.id, clase.id);
                 const isDesbloqueada = CursosData.isClaseDesbloqueada(currentCursoId, modulo.id, clase.id);
                 const isActive = clase.id === currentClaseId;
-                const ultimaEntrega = clase.tipo === 'entrega' ? CursosData.getUltimaEntrega(clase.id) : null;
+                const tipoNorm = (clase.tipo || '').toLowerCase();
+                const ultimaEntrega = (tipoNorm === 'entrega' || tipoNorm === 'practica') ? CursosData.getUltimaEntrega(clase.id) : null;
 
                 let statusIcon = '<i class="far fa-circle"></i>';
                 let statusClass = '';
@@ -288,25 +292,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getTypeIcon(tipo) {
+        const tipoLower = (tipo || '').toLowerCase();
         const icons = {
             video: 'fa-play-circle',
             texto: 'fa-file-alt',
             pdf: 'fa-file-pdf',
             quiz: 'fa-question-circle',
-            entrega: 'fa-upload'
+            entrega: 'fa-upload',
+            practica: 'fa-upload'
         };
-        return icons[tipo] || 'fa-file';
+        return icons[tipoLower] || 'fa-file';
     }
 
     function getTypeBadge(tipo) {
+        const tipoLower = (tipo || '').toLowerCase();
         const badges = {
             video: 'VIDEO',
             texto: 'LECTURA',
             pdf: 'PDF',
             quiz: 'CUESTIONARIO',
-            entrega: 'ENTREGA PRÁCTICA'
+            entrega: 'ENTREGA PRÁCTICA',
+            practica: 'ENTREGA PRÁCTICA'
         };
-        return badges[tipo] || tipo.toUpperCase();
+        return badges[tipoLower] || tipo.toUpperCase();
     }
 
     // ==================== CARGA DE CONTENIDO ====================
@@ -336,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSidebar();
 
         // Actualizar header
-        contentTypeBadge.textContent = getTypeBadge(currentClase.tipo);
+        contentTypeBadge.textContent = getTypeBadge(currentClase.tipo || '');
         contentTitle.textContent = currentClase.nombre;
 
         // Reset estado de navegación
@@ -360,8 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
         student.progreso[currentCursoId].ultimoModuloId = moduloId;
         CursosData.saveStudent(student);
 
-        // Cargar contenido según tipo
-        switch (currentClase.tipo) {
+        // Cargar contenido según tipo (normalizado a minúsculas)
+        const tipoClase = (currentClase.tipo || '').toLowerCase();
+        switch (tipoClase) {
             case 'video':
                 renderVideoContent();
                 break;
@@ -372,9 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderPDFContent();
                 break;
             case 'quiz':
-                renderQuizContent();
+                await renderQuizContent();
                 break;
             case 'entrega':
+            case 'practica':
                 await renderEntregaContent();
                 break;
             default:
@@ -471,6 +481,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (video) {
             videoWatchProgress = 0;
 
+            // Restaurar posición de reproducción (retomar donde quedó)
+            const savedSecond = CursosData.getSegundoActual(currentCursoId, currentModuloId, currentClaseId);
+            if (savedSecond > 0) {
+                video.addEventListener('loadedmetadata', () => {
+                    if (savedSecond < video.duration) {
+                        video.currentTime = savedSecond;
+                    }
+                }, { once: true });
+            }
+
+            // Guardar segundo_actual cada 10 segundos
+            let lastSavedSecond = 0;
             video.addEventListener('timeupdate', () => {
                 if (video.duration) {
                     const progress = (video.currentTime / video.duration) * 100;
@@ -480,7 +502,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (videoWatchProgress >= 90 && !isClaseCompleted()) {
                         markAsCompleted();
                     }
+
+                    // Guardar segundo_actual cada 10 segundos de reproducción
+                    const currentSecond = Math.floor(video.currentTime);
+                    if (currentSecond - lastSavedSecond >= 10) {
+                        lastSavedSecond = currentSecond;
+                        CursosData.guardarSegundoActual(currentCursoId, currentModuloId, currentClaseId, currentSecond);
+                    }
                 }
+            });
+
+            // Guardar segundo cuando se pausa el video
+            video.addEventListener('pause', () => {
+                const currentSecond = Math.floor(video.currentTime);
+                CursosData.guardarSegundoActual(currentCursoId, currentModuloId, currentClaseId, currentSecond);
             });
 
             video.addEventListener('ended', () => {
@@ -567,7 +602,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== CONTENIDO: QUIZ (H6.4) ====================
 
-    function renderQuizContent(forceRetry = false) {
+    async function renderQuizContent(forceRetry = false) {
+        // Cargar intentos desde Supabase si no están en local
+        const localIntentos = CursosData.getIntentosQuiz(currentClaseId);
+        if (localIntentos.length === 0) {
+            await CursosData.cargarIntentosQuizDesdeSupabase(currentClaseId);
+        }
+
         // Intentar cargar preguntas desde metadata JSONB de la clase
         let questions = [];
         let passingScore = 70;
@@ -812,7 +853,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bootstrap.Modal.getInstance(document.getElementById('quizResultsModal')).hide();
     };
 
-    window.retryQuiz = () => {
+    window.retryQuiz = async () => {
         const modal = bootstrap.Modal.getInstance(document.getElementById('quizResultsModal'));
         if (modal) modal.hide();
 
@@ -833,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Renderizar el quiz de nuevo con forceRetry = true
-        renderQuizContent(true);
+        await renderQuizContent(true);
 
         // Scroll al inicio del content-wrapper (más compatible con Android)
         setTimeout(() => {
@@ -1462,7 +1503,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function navigateNext() {
         // Marcar como completado si es texto/pdf y no está marcado
-        if (['texto', 'pdf'].includes(currentClase?.tipo) && !isClaseCompleted()) {
+        const tipoActual = (currentClase?.tipo || '').toLowerCase();
+        if (['texto', 'pdf'].includes(tipoActual) && !isClaseCompleted()) {
             markAsCompleted();
         }
 

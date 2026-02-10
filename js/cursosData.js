@@ -125,8 +125,13 @@ const CursosData = {
                     certificados: {}
                 };
 
+                // Cargar progreso desde Supabase para todos los cursos adquiridos
+                for (const curso of this._cursosAdquiridos) {
+                    await this.cargarProgresoDesdeSupabase(curso.id);
+                }
+
                 this._studentInitialized = true;
-                console.log('CursosData: Estudiante inicializado');
+                console.log('CursosData: Estudiante inicializado con progreso de Supabase');
             }
         } catch (error) {
             console.error('CursosData: Error al inicializar estudiante:', error);
@@ -327,25 +332,29 @@ const CursosData = {
     },
 
     getUltimaClase(cursoId) {
-        if (!this._student?.progreso?.[cursoId]) {
-            const modulos = this.getModulosByCurso(cursoId);
-            if (modulos.length > 0) {
-                const clases = this.getClasesByModulo(modulos[0].id);
-                if (clases.length > 0) {
-                    return {
-                        moduloId: modulos[0].id,
-                        claseId: clases[0].id
-                    };
-                }
-            }
-            return null;
+        // Primero buscar en el progreso local (ya sincronizado desde Supabase en initStudent)
+        if (this._student?.progreso?.[cursoId]?.ultimaClaseId) {
+            const progreso = this._student.progreso[cursoId];
+            return {
+                moduloId: progreso.ultimoModuloId || null,
+                claseId: progreso.ultimaClaseId || null,
+                segundoActual: this.getSegundoActual(cursoId, progreso.ultimoModuloId, progreso.ultimaClaseId)
+            };
         }
 
-        const progreso = this._student.progreso[cursoId];
-        return {
-            moduloId: progreso.ultimoModuloId || null,
-            claseId: progreso.ultimaClaseId || null
-        };
+        // Fallback: primera clase del primer módulo
+        const modulos = this.getModulosByCurso(cursoId);
+        if (modulos.length > 0) {
+            const clases = this.getClasesByModulo(modulos[0].id);
+            if (clases.length > 0) {
+                return {
+                    moduloId: modulos[0].id,
+                    claseId: clases[0].id,
+                    segundoActual: 0
+                };
+            }
+        }
+        return null;
     },
 
     // ==================== DURACIÓN ====================
@@ -472,17 +481,122 @@ const CursosData = {
         this._guardarProgresoSupabase(cursoId, moduloId, claseId, true);
     },
 
-    async _guardarProgresoSupabase(cursoId, moduloId, claseId, completado) {
+    async _guardarProgresoSupabase(cursoId, moduloId, claseId, completado, segundoActual) {
         if (!this._currentUserId) return;
 
         try {
-            await CursosService.guardarProgreso(cursoId, moduloId, claseId, this._currentUserId, {
-                completado,
-                porcentaje: completado ? 100 : 0
-            });
+            const estado = {
+                completado
+            };
+            if (segundoActual !== undefined) {
+                estado.segundoActual = segundoActual;
+            }
+            await CursosService.guardarProgreso(cursoId, moduloId, claseId, this._currentUserId, estado);
         } catch (error) {
             console.error('Error al guardar progreso en Supabase:', error);
         }
+    },
+
+    /**
+     * Cargar progreso del alumno desde progreso_clases de Supabase
+     * y reconstruir el objeto _student.progreso local
+     */
+    async cargarProgresoDesdeSupabase(cursoId) {
+        if (!this._currentUserId) return;
+
+        try {
+            const result = await CursosService.getProgresoCurso(cursoId, this._currentUserId);
+            if (!result.success || !result.data) return;
+
+            if (!this._student) return;
+            if (!this._student.progreso[cursoId]) {
+                this._student.progreso[cursoId] = { modulos: {} };
+            }
+
+            result.data.forEach(pc => {
+                const claseId = pc.clase_id;
+                const moduloId = pc.clases?.modulo_id;
+                if (!moduloId) return;
+
+                if (!this._student.progreso[cursoId].modulos[moduloId]) {
+                    this._student.progreso[cursoId].modulos[moduloId] = { clases: {} };
+                }
+
+                this._student.progreso[cursoId].modulos[moduloId].clases[claseId] = {
+                    completado: pc.completada,
+                    fecha: pc.fecha_completado || pc.ultimo_acceso,
+                    segundoActual: pc.segundo_actual || 0
+                };
+
+                // Actualizar última clase accedida
+                if (!this._student.progreso[cursoId]._ultimoAcceso ||
+                    new Date(pc.ultimo_acceso) > new Date(this._student.progreso[cursoId]._ultimoAcceso)) {
+                    this._student.progreso[cursoId].ultimaClaseId = claseId;
+                    this._student.progreso[cursoId].ultimoModuloId = moduloId;
+                    this._student.progreso[cursoId].ultimaActividad = pc.ultimo_acceso;
+                    this._student.progreso[cursoId]._ultimoAcceso = pc.ultimo_acceso;
+                }
+            });
+
+            this.saveStudent(this._student);
+            console.log(`CursosData: Progreso cargado desde Supabase para curso ${cursoId}`);
+        } catch (error) {
+            console.error('Error al cargar progreso desde Supabase:', error);
+        }
+    },
+
+    /**
+     * Obtener última clase desde Supabase (RPC) para retomar curso
+     */
+    async getUltimaClaseDesdeSupabase(cursoId) {
+        if (!this._currentUserId) return null;
+
+        try {
+            const result = await CursosService.getUltimaClaseCurso(cursoId, this._currentUserId);
+            if (result.success && result.data) {
+                return {
+                    claseId: result.data.clase_id,
+                    moduloId: result.data.modulo_id,
+                    nombreClase: result.data.nombre_clase,
+                    nombreModulo: result.data.nombre_modulo,
+                    segundoActual: result.data.segundo_actual,
+                    completada: result.data.completada
+                };
+            }
+            return null;
+        } catch (error) {
+            console.error('Error al obtener última clase desde Supabase:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Guardar segundo actual del video en progreso_clases (para reanudar)
+     */
+    guardarSegundoActual(cursoId, moduloId, claseId, segundoActual) {
+        if (!this._student) return;
+
+        if (!this._student.progreso[cursoId]) {
+            this._student.progreso[cursoId] = { modulos: {} };
+        }
+        if (!this._student.progreso[cursoId].modulos[moduloId]) {
+            this._student.progreso[cursoId].modulos[moduloId] = { clases: {} };
+        }
+
+        const claseProgreso = this._student.progreso[cursoId].modulos[moduloId].clases[claseId] || {};
+        claseProgreso.segundoActual = segundoActual;
+        this._student.progreso[cursoId].modulos[moduloId].clases[claseId] = claseProgreso;
+
+        this.saveStudent(this._student);
+        // Sync async to Supabase
+        this._guardarProgresoSupabase(cursoId, moduloId, claseId, claseProgreso.completado || false, segundoActual);
+    },
+
+    /**
+     * Obtener segundo actual guardado para una clase
+     */
+    getSegundoActual(cursoId, moduloId, claseId) {
+        return this._student?.progreso?.[cursoId]?.modulos?.[moduloId]?.clases?.[claseId]?.segundoActual || 0;
     },
 
     // ==================== ESTUDIANTE ====================
@@ -531,6 +645,8 @@ const CursosData = {
             this._student.quizAttempts[claseId] = [];
         }
 
+        const intentoNumero = this._student.quizAttempts[claseId].length + 1;
+
         this._student.quizAttempts[claseId].push({
             fecha: new Date().toISOString(),
             respuestas,
@@ -539,10 +655,50 @@ const CursosData = {
         });
 
         this.saveStudent(this._student);
+
+        // Sync to Supabase intentos_quiz
+        this._guardarIntentoQuizSupabase(claseId, respuestas, puntaje, aprobado, intentoNumero);
+    },
+
+    async _guardarIntentoQuizSupabase(claseId, respuestas, puntaje, aprobado, intentoNumero) {
+        if (!this._currentUserId) return;
+
+        try {
+            await CursosService.guardarIntentoQuiz(claseId, this._currentUserId, {
+                intentoNumero,
+                calificacion: puntaje,
+                aprobado,
+                respuestas
+            });
+        } catch (error) {
+            console.error('Error al guardar intento quiz en Supabase:', error);
+        }
     },
 
     getIntentosQuiz(claseId) {
         return this._student?.quizAttempts?.[claseId] || [];
+    },
+
+    /**
+     * Cargar intentos de quiz desde Supabase para una clase
+     */
+    async cargarIntentosQuizDesdeSupabase(claseId) {
+        if (!this._currentUserId) return;
+
+        try {
+            const result = await CursosService.getIntentosQuiz(claseId, this._currentUserId);
+            if (result.success && result.data && result.data.length > 0) {
+                this._student.quizAttempts[claseId] = result.data.map(intento => ({
+                    fecha: intento.created_at,
+                    respuestas: intento.respuestas_usuario,
+                    puntaje: intento.calificacion,
+                    aprobado: intento.aprobado
+                }));
+                this.saveStudent(this._student);
+            }
+        } catch (error) {
+            console.error('Error al cargar intentos quiz desde Supabase:', error);
+        }
     },
 
     // ==================== ENTREGAS ====================
@@ -607,7 +763,7 @@ const CursosData = {
             for (const clase of clases) {
                 const estado = this.getEstadoClase(cursoId, modulo.id, clase.id);
 
-                if (clase.tipo === 'entrega' || clase.tipo === 'ENTREGA') {
+                if (clase.tipo === 'entrega' || clase.tipo === 'ENTREGA' || clase.tipo === 'PRACTICA') {
                     const ultimaEntrega = this.getUltimaEntrega(clase.id);
 
                     if (!ultimaEntrega) {
@@ -618,7 +774,9 @@ const CursosData = {
                         };
                     }
 
-                    if (ultimaEntrega.estado === 'pendiente') {
+                    const estadoNorm = (ultimaEntrega.estado || '').toLowerCase();
+
+                    if (estadoNorm === 'pendiente') {
                         return {
                             puede: false,
                             razon: 'pendiente',
@@ -626,7 +784,7 @@ const CursosData = {
                         };
                     }
 
-                    if (ultimaEntrega.estado === 'rechazada') {
+                    if (estadoNorm === 'rechazada') {
                         return {
                             puede: false,
                             razon: 'entrega',

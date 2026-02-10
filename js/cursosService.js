@@ -554,52 +554,37 @@ export const CursosService = {
         }
     },
 
-    // ==================== PROGRESO ====================
+    // ==================== PROGRESO (progreso_clases) ====================
 
     /**
-     * Guardar progreso de una clase
+     * Guardar/actualizar progreso de una clase en progreso_clases
+     * Usa UPSERT gracias al UNIQUE(usuario_id, clase_id)
      */
     async guardarProgreso(cursoId, moduloId, claseId, usuarioId, estado) {
         try {
-            // Primero verificar si ya existe un registro
-            const { data: existente } = await supabase
-                .from('progreso_usuario')
-                .select('id')
-                .eq('usuario_id', usuarioId)
-                .eq('clase_id', claseId)
-                .single();
+            const updateData = {
+                usuario_id: usuarioId,
+                clase_id: claseId,
+                completada: estado.completado || false,
+                ultimo_acceso: new Date().toISOString()
+            };
 
-            let result;
-            if (existente) {
-                // Actualizar
-                result = await supabase
-                    .from('progreso_usuario')
-                    .update({
-                        completado: estado.completado,
-                        porcentaje: estado.porcentaje || 0,
-                        ultima_actividad: new Date().toISOString()
-                    })
-                    .eq('id', existente.id)
-                    .select()
-                    .single();
-            } else {
-                // Insertar
-                result = await supabase
-                    .from('progreso_usuario')
-                    .insert([{
-                        usuario_id: usuarioId,
-                        curso_id: cursoId,
-                        modulo_id: moduloId,
-                        clase_id: claseId,
-                        completado: estado.completado,
-                        porcentaje: estado.porcentaje || 0
-                    }])
-                    .select()
-                    .single();
+            if (estado.completado) {
+                updateData.fecha_completado = new Date().toISOString();
             }
 
-            if (result.error) throw result.error;
-            return { success: true, data: result.data };
+            if (estado.segundoActual !== undefined) {
+                updateData.segundo_actual = estado.segundoActual;
+            }
+
+            const { data, error } = await supabase
+                .from('progreso_clases')
+                .upsert(updateData, { onConflict: 'usuario_id,clase_id' })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { success: true, data };
         } catch (error) {
             console.error('Error al guardar progreso:', error);
             return { success: false, error };
@@ -607,21 +592,224 @@ export const CursosService = {
     },
 
     /**
-     * Obtener progreso del usuario en un curso
+     * Obtener todo el progreso del usuario en un curso
+     * Hace join con clases -> modulos para filtrar por curso_id
      */
     async getProgresoCurso(cursoId, usuarioId) {
         try {
             const { data, error } = await supabase
-                .from('progreso_usuario')
-                .select('*')
-                .eq('curso_id', cursoId)
-                .eq('usuario_id', usuarioId);
+                .from('progreso_clases')
+                .select(`
+                    id,
+                    clase_id,
+                    completada,
+                    segundo_actual,
+                    fecha_completado,
+                    ultimo_acceso,
+                    clases!inner (
+                        id,
+                        modulo_id,
+                        modulos!inner (
+                            id,
+                            curso_id
+                        )
+                    )
+                `)
+                .eq('usuario_id', usuarioId)
+                .eq('clases.modulos.curso_id', cursoId);
 
             if (error) throw error;
             return { success: true, data };
         } catch (error) {
             console.error('Error al obtener progreso:', error);
             return { success: false, error, data: [] };
+        }
+    },
+
+    /**
+     * Obtener la última clase accedida en un curso (para "Reanudar Curso")
+     * Usa la función RPC de Supabase
+     */
+    async getUltimaClaseCurso(cursoId, usuarioId) {
+        try {
+            const { data, error } = await supabase
+                .rpc('obtener_ultima_clase_curso', {
+                    p_curso_id: cursoId,
+                    p_usuario_id: usuarioId
+                });
+
+            if (error) throw error;
+            return { success: true, data: data && data.length > 0 ? data[0] : null };
+        } catch (error) {
+            console.error('Error al obtener última clase:', error);
+            return { success: false, error, data: null };
+        }
+    },
+
+    /**
+     * Calcular % progreso de un curso via RPC
+     */
+    async calcularProgresoCursoRPC(cursoId, usuarioId) {
+        try {
+            const { data, error } = await supabase
+                .rpc('calcular_progreso_curso', {
+                    p_curso_id: cursoId,
+                    p_usuario_id: usuarioId
+                });
+
+            if (error) throw error;
+            return { success: true, porcentaje: data || 0 };
+        } catch (error) {
+            console.error('Error al calcular progreso:', error);
+            return { success: false, error, porcentaje: 0 };
+        }
+    },
+
+    // ==================== INTENTOS QUIZ (intentos_quiz) ====================
+
+    /**
+     * Guardar un intento de quiz en Supabase
+     */
+    async guardarIntentoQuiz(claseId, usuarioId, intentoData) {
+        try {
+            const { data, error } = await supabase
+                .from('intentos_quiz')
+                .insert([{
+                    usuario_id: usuarioId,
+                    clase_id: claseId,
+                    intento_numero: intentoData.intentoNumero || 1,
+                    calificacion: intentoData.calificacion,
+                    aprobado: intentoData.aprobado,
+                    respuestas_usuario: intentoData.respuestas
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al guardar intento quiz:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Obtener intentos de quiz de un usuario para una clase
+     */
+    async getIntentosQuiz(claseId, usuarioId) {
+        try {
+            const { data, error } = await supabase
+                .from('intentos_quiz')
+                .select('*')
+                .eq('clase_id', claseId)
+                .eq('usuario_id', usuarioId)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error al obtener intentos quiz:', error);
+            return { success: false, error, data: [] };
+        }
+    },
+
+    // ==================== ENTREGAS ADMIN ====================
+
+    /**
+     * Obtener todas las entregas pendientes (para admin)
+     * Incluye datos del curso, módulo, clase y usuario
+     */
+    async getEntregasAdmin(estado = null, page = 1, perPage = 10) {
+        try {
+            let query = supabase
+                .from('entregas')
+                .select(`
+                    *,
+                    clases!inner (
+                        id,
+                        nombre,
+                        modulo_id,
+                        modulos!inner (
+                            id,
+                            nombre,
+                            curso_id,
+                            cursos!inner (
+                                id,
+                                nombre
+                            )
+                        )
+                    ),
+                    profiles:usuario_id (
+                        id,
+                        first_name,
+                        last_name
+                    )
+                `, { count: 'exact' });
+
+            if (estado) {
+                query = query.eq('estado', estado);
+            }
+
+            const from = (page - 1) * perPage;
+            const to = from + perPage - 1;
+
+            query = query
+                .order('fecha_entrega', { ascending: false })
+                .range(from, to);
+
+            const { data, error, count } = await query;
+
+            if (error) throw error;
+            return { success: true, data: data || [], count: count || 0 };
+        } catch (error) {
+            console.error('Error al obtener entregas admin:', error);
+            return { success: false, error, data: [], count: 0 };
+        }
+    },
+
+    /**
+     * Calificar una entrega (admin)
+     * Actualiza estado, feedback, calificacion y fecha_revision
+     */
+    async calificarEntrega(entregaId, calificacionData) {
+        try {
+            const updateData = {
+                estado: calificacionData.estado,
+                feedback_instructor: calificacionData.feedback || null,
+                calificacion: calificacionData.calificacion || null,
+                fecha_revision: new Date().toISOString()
+            };
+
+            const { data, error } = await supabase
+                .from('entregas')
+                .update(updateData)
+                .eq('id', entregaId)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al calificar entrega:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Contar entregas pendientes (para dashboard admin)
+     */
+    async contarEntregasPendientes() {
+        try {
+            const { count, error } = await supabase
+                .from('entregas')
+                .select('id', { count: 'exact', head: true })
+                .eq('estado', 'PENDIENTE');
+
+            if (error) throw error;
+            return { success: true, count: count || 0 };
+        } catch (error) {
+            console.error('Error al contar entregas pendientes:', error);
+            return { success: false, error, count: 0 };
         }
     },
 
