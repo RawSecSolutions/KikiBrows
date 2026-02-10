@@ -747,7 +747,11 @@ export const CursosService = {
                 `, { count: 'exact' });
 
             if (estado) {
-                query = query.eq('estado', estado);
+                if (Array.isArray(estado)) {
+                    query = query.in('estado', estado);
+                } else {
+                    query = query.eq('estado', estado);
+                }
             }
 
             const from = (page - 1) * perPage;
