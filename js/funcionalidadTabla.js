@@ -90,6 +90,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    async function waitForProfile(userId, maxRetries = 10, delayMs = 500) {
+        for (let i = 0; i < maxRetries; i++) {
+            const { data } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', userId)
+                .maybeSingle();
+
+            if (data) return true;
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+        return false;
+    }
+
     function calcularFechaExpiracion(cursoId) {
         const curso = coursesDB.find(c => c.id === cursoId);
         if (!curso || !curso.dias_duracion_acceso) return null;
@@ -437,20 +451,45 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Actualizar perfil creado por trigger con los datos correctos
+            // Esperar a que el trigger de Supabase cree el perfil en la tabla profiles
             if (authData.user) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .update({
-                        first_name: firstName,
-                        last_name: lastName,
-                        role: roleEl.value,
-                        is_blocked: blocked
-                    })
-                    .eq('id', authData.user.id);
+                const profileExists = await waitForProfile(authData.user.id);
 
-                if (profileError) {
-                    console.warn('Error actualizando perfil del nuevo usuario:', profileError);
+                if (!profileExists) {
+                    console.warn('El perfil no fue creado por el trigger a tiempo, creándolo manualmente...');
+                    const { error: insertProfileError } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: authData.user.id,
+                            email: email,
+                            first_name: firstName,
+                            last_name: lastName,
+                            role: roleEl.value,
+                            is_blocked: blocked
+                        });
+
+                    if (insertProfileError) {
+                        console.error('Error creando perfil manualmente:', insertProfileError);
+                        showToast('Usuario creado en auth, pero hubo un error al crear el perfil.');
+                        await loadAllData();
+                        userModal.hide();
+                        return;
+                    }
+                } else {
+                    // El perfil fue creado por el trigger, actualizarlo con los datos correctos
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .update({
+                            first_name: firstName,
+                            last_name: lastName,
+                            role: roleEl.value,
+                            is_blocked: blocked
+                        })
+                        .eq('id', authData.user.id);
+
+                    if (profileError) {
+                        console.warn('Error actualizando perfil del nuevo usuario:', profileError);
+                    }
                 }
 
                 // Asignar curso si se seleccionó uno (regalo/asignación admin)
