@@ -433,34 +433,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Crear usuario vía Supabase Auth (signup)
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        first_name: firstName,
-                        last_name: lastName,
-                        role: roleEl.value
-                    }
-                }
+            // Crear usuario via RPC (sin envio de email de confirmacion)
+            const { data: newUserId, error: rpcError } = await supabase.rpc('admin_create_user', {
+                p_email: email,
+                p_password: password,
+                p_first_name: firstName,
+                p_last_name: lastName,
+                p_role: roleEl.value
             });
 
-            if (authError) {
-                alert('Error al crear usuario: ' + authError.message);
+            if (rpcError) {
+                alert('Error al crear usuario: ' + rpcError.message);
                 return;
             }
 
-            // Esperar a que el trigger de Supabase cree el perfil en la tabla profiles
-            if (authData.user) {
-                const profileExists = await waitForProfile(authData.user.id);
+            if (newUserId) {
+                // Esperar a que el trigger cree el perfil o crearlo manualmente
+                const profileExists = await waitForProfile(newUserId);
 
                 if (!profileExists) {
                     console.warn('El perfil no fue creado por el trigger a tiempo, creándolo manualmente...');
                     const { error: insertProfileError } = await supabase
                         .from('profiles')
                         .insert({
-                            id: authData.user.id,
+                            id: newUserId,
                             email: email,
                             first_name: firstName,
                             last_name: lastName,
@@ -485,7 +481,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             role: roleEl.value,
                             is_blocked: blocked
                         })
-                        .eq('id', authData.user.id);
+                        .eq('id', newUserId);
 
                     if (profileError) {
                         console.warn('Error actualizando perfil del nuevo usuario:', profileError);
@@ -496,7 +492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
                     const inscripcionData = {
-                        usuario_id: authData.user.id,
+                        usuario_id: newUserId,
                         curso_id: selectedCourse,
                         origen_acceso: 'ASIGNACION_ADMIN',
                         estado: 'ACTIVO'
@@ -518,7 +514,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            showToast(courseSelect.value ? 'Usuario creado con curso asignado.' : 'Usuario creado. Se envió email de verificación.');
+            showToast(courseSelect.value ? 'Usuario creado con curso asignado.' : 'Usuario creado exitosamente.');
             await loadAllData(); // Recargar todos los datos
             userModal.hide();
             return;
