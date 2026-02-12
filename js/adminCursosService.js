@@ -105,16 +105,16 @@ export const AdminCursosService = {
             const timestamp = Date.now();
             const fileName = `portadas/${timestamp}.${fileExt}`;
 
-            await ensureBucketExists('curso-portadas');
+            await ensureBucketExists('imagenes');
 
             const { data, error } = await supabase.storage
-                .from('curso-portadas')
+                .from('imagenes')
                 .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
             if (error) throw error;
 
             const { data: publicUrlData } = supabase.storage
-                .from('curso-portadas')
+                .from('imagenes')
                 .getPublicUrl(fileName);
 
             return { success: true, url: publicUrlData.publicUrl, path: fileName };
@@ -123,7 +123,7 @@ export const AdminCursosService = {
             console.error('Error al subir imagen de portada:', error);
             const msg = error.message || String(error);
             if (msg.includes('Bucket') || msg.includes('bucket') || msg.includes('not found')) {
-                return { success: false, error: 'Error de almacenamiento: el bucket "curso-portadas" no existe. Créalo en Supabase > Storage.' };
+                return { success: false, error: 'Error de almacenamiento: el bucket "imagenes" no existe. Créalo en Supabase > Storage.' };
             }
             return { success: false, error: msg };
         }
