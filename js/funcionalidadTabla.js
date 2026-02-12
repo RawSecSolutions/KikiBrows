@@ -432,87 +432,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Crear usuario via RPC (sin envio de email de confirmacion)
-            const { data: newUserId, error: rpcError } = await supabase.rpc('admin_create_user', {
+            // La funcion crea: auth user + profile + inscripcion (si hay curso)
+            const selectedCourse = courseSelect.value;
+            const rpcParams = {
                 p_email: email,
                 p_password: password,
                 p_first_name: firstName,
                 p_last_name: lastName,
-                p_role: roleEl.value
-            });
+                p_role: roleEl.value,
+                p_is_blocked: blocked
+            };
+
+            if (selectedCourse) {
+                rpcParams.p_curso_id = selectedCourse;
+                const fechaExp = calcularFechaExpiracion(selectedCourse);
+                if (fechaExp) rpcParams.p_fecha_expiracion = fechaExp;
+            }
+
+            const { data: newUserId, error: rpcError } = await supabase.rpc('admin_create_user', rpcParams);
 
             if (rpcError) {
                 alert('Error al crear usuario: ' + rpcError.message);
                 return;
             }
 
-            if (newUserId) {
-                // Esperar a que el trigger cree el perfil o crearlo manualmente
-                const profileExists = await waitForProfile(newUserId);
-
-                if (!profileExists) {
-                    console.warn('El perfil no fue creado por el trigger a tiempo, creándolo manualmente...');
-                    const { error: insertProfileError } = await supabase
-                        .from('profiles')
-                        .insert({
-                            id: newUserId,
-                            email: email,
-                            first_name: firstName,
-                            last_name: lastName,
-                            role: roleEl.value,
-                            is_blocked: blocked
-                        });
-
-                    if (insertProfileError) {
-                        console.error('Error creando perfil manualmente:', insertProfileError);
-                        showToast('Usuario creado en auth, pero hubo un error al crear el perfil.');
-                        await loadAllData();
-                        userModal.hide();
-                        return;
-                    }
-                } else {
-                    // El perfil fue creado por el trigger, actualizarlo con los datos correctos
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .update({
-                            first_name: firstName,
-                            last_name: lastName,
-                            role: roleEl.value,
-                            is_blocked: blocked
-                        })
-                        .eq('id', newUserId);
-
-                    if (profileError) {
-                        console.warn('Error actualizando perfil del nuevo usuario:', profileError);
-                    }
-                }
-
-                // Asignar curso si se seleccionó uno (regalo/asignación admin)
-                const selectedCourse = courseSelect.value;
-                if (selectedCourse) {
-                    const inscripcionData = {
-                        usuario_id: newUserId,
-                        curso_id: selectedCourse,
-                        origen_acceso: 'ASIGNACION_ADMIN',
-                        estado: 'ACTIVO'
-                    };
-                    const fechaExp = calcularFechaExpiracion(selectedCourse);
-                    if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
-
-                    const { error: inscripError } = await supabase
-                        .from('inscripciones')
-                        .insert(inscripcionData);
-
-                    if (inscripError) {
-                        console.warn('Error asignando curso al nuevo usuario:', inscripError);
-                        showToast('Usuario creado, pero hubo un error al asignar el curso.');
-                        await loadAllData();
-                        userModal.hide();
-                        return;
-                    }
-                }
-            }
-
-            showToast(courseSelect.value ? 'Usuario creado con curso asignado.' : 'Usuario creado exitosamente.');
+            showToast(selectedCourse ? 'Usuario creado con curso asignado.' : 'Usuario creado exitosamente.');
             await loadAllData(); // Recargar todos los datos
             userModal.hide();
             return;
