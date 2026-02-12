@@ -221,13 +221,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirm('¿ESTÁS SEGURO? Esto borrará al usuario, sus cursos y pagos.')) return;
 
         try {
-            const response = await fetch('/api/admin/delete-user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: usuarioId }),
+            const { error } = await supabase.rpc('admin_delete_user', {
+                target_user_id: usuarioId
             });
 
-            if (!response.ok) throw new Error('Falló la eliminación');
+            if (error) throw new Error(error.message);
 
             usersDB = usersDB.filter(u => u.id !== usuarioId);
             renderUsers();
