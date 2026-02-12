@@ -66,10 +66,10 @@ async function loadUserData() {
             return;
         }
 
-        // Obtener perfil desde Supabase
+        // Obtener perfil desde Supabase (email viene de session.user, no de profiles)
         const { data: profile, error } = await supabase
             .from('profiles')
-            .select('first_name, last_name, email')
+            .select('first_name, last_name')
             .eq('id', session.user.id)
             .single();
 
@@ -81,7 +81,7 @@ async function loadUserData() {
 
         const firstName = profile?.first_name || '';
         const lastName = profile?.last_name || '';
-        const email = session.user.email || profile?.email || '';
+        const email = session.user.email || '';
 
         // Cargar en la vista dashboard
         const userNameDisplay = document.getElementById('user-name-display');
