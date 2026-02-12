@@ -315,6 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 let mensaje = 'Error al iniciar sesión';
                 if (error.message.includes('Invalid login credentials')) {
                     mensaje = 'Correo o contraseña incorrectos';
+                } else if (error.status === 500 || error.message.includes('500')) {
+                    mensaje = 'Error del servidor al autenticar. Es posible que la cuenta no se haya creado correctamente. Contacta al administrador.';
                 }
 
                 mostrarError(mensaje);
