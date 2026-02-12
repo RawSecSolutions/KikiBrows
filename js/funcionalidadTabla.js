@@ -221,13 +221,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!confirm('¿ESTÁS SEGURO? Esto borrará al usuario, sus cursos y pagos.')) return;
 
         try {
-            const response = await fetch('/api/admin/delete-user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: usuarioId }),
+            const { error } = await supabase.rpc('admin_delete_user', {
+                target_user_id: usuarioId
             });
 
-            if (!response.ok) throw new Error('Falló la eliminación');
+            if (error) throw new Error(error.message);
 
             usersDB = usersDB.filter(u => u.id !== usuarioId);
             renderUsers();
@@ -433,92 +431,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Crear usuario vía Supabase Auth (signup)
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        first_name: firstName,
-                        last_name: lastName,
-                        role: roleEl.value
-                    }
-                }
-            });
+            // Crear usuario via RPC (sin envio de email de confirmacion)
+            // La funcion crea: auth user + profile + inscripcion (si hay curso)
+            const selectedCourse = courseSelect.value;
+            const rpcParams = {
+                p_email: email,
+                p_password: password,
+                p_first_name: firstName,
+                p_last_name: lastName,
+                p_role: roleEl.value,
+                p_is_blocked: blocked
+            };
 
-            if (authError) {
-                alert('Error al crear usuario: ' + authError.message);
+            if (selectedCourse) {
+                rpcParams.p_curso_id = selectedCourse;
+                const fechaExp = calcularFechaExpiracion(selectedCourse);
+                if (fechaExp) rpcParams.p_fecha_expiracion = fechaExp;
+            }
+
+            const { data: newUserId, error: rpcError } = await supabase.rpc('admin_create_user', rpcParams);
+
+            if (rpcError) {
+                alert('Error al crear usuario: ' + rpcError.message);
                 return;
             }
 
-            // Esperar a que el trigger de Supabase cree el perfil en la tabla profiles
-            if (authData.user) {
-                const profileExists = await waitForProfile(authData.user.id);
-
-                if (!profileExists) {
-                    console.warn('El perfil no fue creado por el trigger a tiempo, creándolo manualmente...');
-                    const { error: insertProfileError } = await supabase
-                        .from('profiles')
-                        .insert({
-                            id: authData.user.id,
-                            email: email,
-                            first_name: firstName,
-                            last_name: lastName,
-                            role: roleEl.value,
-                            is_blocked: blocked
-                        });
-
-                    if (insertProfileError) {
-                        console.error('Error creando perfil manualmente:', insertProfileError);
-                        showToast('Usuario creado en auth, pero hubo un error al crear el perfil.');
-                        await loadAllData();
-                        userModal.hide();
-                        return;
-                    }
-                } else {
-                    // El perfil fue creado por el trigger, actualizarlo con los datos correctos
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .update({
-                            first_name: firstName,
-                            last_name: lastName,
-                            role: roleEl.value,
-                            is_blocked: blocked
-                        })
-                        .eq('id', authData.user.id);
-
-                    if (profileError) {
-                        console.warn('Error actualizando perfil del nuevo usuario:', profileError);
-                    }
-                }
-
-                // Asignar curso si se seleccionó uno (regalo/asignación admin)
-                const selectedCourse = courseSelect.value;
-                if (selectedCourse) {
-                    const inscripcionData = {
-                        usuario_id: authData.user.id,
-                        curso_id: selectedCourse,
-                        origen_acceso: 'ASIGNACION_ADMIN',
-                        estado: 'ACTIVO'
-                    };
-                    const fechaExp = calcularFechaExpiracion(selectedCourse);
-                    if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
-
-                    const { error: inscripError } = await supabase
-                        .from('inscripciones')
-                        .insert(inscripcionData);
-
-                    if (inscripError) {
-                        console.warn('Error asignando curso al nuevo usuario:', inscripError);
-                        showToast('Usuario creado, pero hubo un error al asignar el curso.');
-                        await loadAllData();
-                        userModal.hide();
-                        return;
-                    }
-                }
-            }
-
-            showToast(courseSelect.value ? 'Usuario creado con curso asignado.' : 'Usuario creado. Se envió email de verificación.');
+            showToast(selectedCourse ? 'Usuario creado con curso asignado.' : 'Usuario creado exitosamente.');
             await loadAllData(); // Recargar todos los datos
             userModal.hide();
             return;
