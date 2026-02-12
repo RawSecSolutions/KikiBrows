@@ -6,6 +6,33 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Cache de buckets ya verificados para no repetir la verificación en cada subida
+const _bucketsVerificados = new Set();
+
+async function ensureBucketExists(bucketName) {
+    if (_bucketsVerificados.has(bucketName)) return;
+
+    const { error } = await supabase.storage.createBucket(bucketName, {
+        public: true
+    });
+
+    if (!error || error.message?.includes('already exists')) {
+        _bucketsVerificados.add(bucketName);
+        return;
+    }
+
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    if (!listError && buckets?.some(b => b.name === bucketName)) {
+        _bucketsVerificados.add(bucketName);
+        return;
+    }
+
+    throw new Error(
+        `El bucket de almacenamiento "${bucketName}" no existe en Supabase. ` +
+        `Créalo desde el panel de Supabase > Storage > New Bucket con el nombre "${bucketName}" y marcado como público.`
+    );
+}
+
 // ==================== SERVICIO DE CURSOS ====================
 
 export const CursosService = {
@@ -394,6 +421,8 @@ export const CursosService = {
             filePath = `${cursoId}/${claseId}/${usuarioId}/${timestamp}.${fileExt}`;
 
             // B. Subir archivo al Storage (Bucket 'entregas')
+            await ensureBucketExists('entregas');
+
             const { error: uploadError } = await supabase.storage
                 .from('entregas')
                 .upload(filePath, file);
