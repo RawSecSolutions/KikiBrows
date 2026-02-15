@@ -1,29 +1,19 @@
 // js/cursosAlumn.js - Dashboard Personal "Mis Cursos" (H6.1)
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// IMPORTANTE: Importamos supabase y el servicio desde el mismo lugar para evitar errores de instancia
+import { CursosService, supabase } from './cursosService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Verificar sesión primero
-    const { data: { session } } = await supabase.auth.getSession();
+    // 1. Verificar sesión usando el cliente centralizado
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
 
-    if (!session) {
+    if (authError || !session) {
         localStorage.setItem('redirectAfterLogin', window.location.href);
         window.location.href = 'login.html';
         return;
     }
 
-    // Inicializar navbar (esperar a que UI esté disponible)
-    if (typeof window.UI !== 'undefined' && window.UI.initNavbar) {
-        await window.UI.initNavbar();
-    }
-
-    // Inicializar datos
-    if (typeof CursosData !== 'undefined') {
-        CursosData.init();
-        CursosData.initStudent();
-    }
+    // Almacén local para los cursos cargados (usado por el buscador)
+    let cursosCargados = [];
 
     // Referencias DOM
     const coursesGrid = document.getElementById('courses-grid');
@@ -31,18 +21,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchInput = document.getElementById('searchCourses');
     const welcomeText = document.getElementById('welcome-text');
 
-    // Mostrar nombre de alumna desde Supabase
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name')
-        .eq('id', session.user.id)
-        .single();
-
-    if (welcomeText && profile?.first_name) {
-        welcomeText.textContent = `Bienvenida de vuelta, ${profile.first_name}`;
+    // Inicializar Navbar
+    if (typeof window.UI !== 'undefined' && window.UI.initNavbar) {
+        await window.UI.initNavbar();
     }
 
-    // Renderizar cursos
+    // Mostrar bienvenida personalizada
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('id', session.user.id)
+            .single();
+
+        if (welcomeText && profile?.first_name) {
+            welcomeText.textContent = `Bienvenida de vuelta, ${profile.first_name}`;
+        }
+    } catch (e) { console.error("Error cargando perfil:", e); }
+
+    // Función principal de renderizado
     function renderCourses(cursos) {
         if (!coursesGrid) return;
 
@@ -56,112 +53,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (emptyState) emptyState.classList.add('d-none');
 
         coursesGrid.innerHTML = cursos.map(curso => {
-            const progreso = curso.progreso || { porcentaje: 0, completados: 0 };
-            const isCompleted = progreso.porcentaje === 100;
-            const modulos = typeof CursosData !== 'undefined' ? CursosData.getModulosByCurso(curso.id) : [];
-            const modulosInfo = typeof CursosData !== 'undefined' ? CursosData.getModulosCompletados(curso.id) : { completados: 0, total: 0 };
-
-            // Determinar estado del botón
-            let buttonText = 'Continuar';
-            let buttonIcon = 'fa-play';
-            let buttonClass = 'btn-kiki';
-            let buttonDisabled = false;
-
-            if (curso.accesoExpirado) {
-                buttonText = 'Acceso Expirado';
-                buttonIcon = 'fa-lock';
-                buttonClass = 'btn-secondary';
-                buttonDisabled = true;
-            } else if (isCompleted) {
-                buttonText = 'Revisar Contenido';
-                buttonIcon = 'fa-eye';
-                buttonClass = 'btn-kiki-secondary';
-            } else if (progreso.completados === 0) {
-                buttonText = 'Comenzar';
-                buttonIcon = 'fa-play';
+            // Usamos los datos de progreso que vienen de la tabla 'inscripciones' o de 'CursosData'
+            const progresoPorcentaje = curso.progreso?.porcentaje || 0;
+            const isCompleted = progresoPorcentaje === 100;
+            
+            // Datos de duración (Fallback si CursosData no está disponible)
+            let duracionTexto = "Consultando...";
+            if (typeof CursosData !== 'undefined') {
+                const duracionMins = CursosData.calcularDuracionCurso(curso.id);
+                duracionTexto = CursosData.formatearDuracion(duracionMins);
             }
 
-            // Badge de completado
-            const completedBadge = isCompleted
-                ? `<div class="completed-badge">
-                       <i class="fas fa-check-circle me-1"></i>Completado
-                   </div>`
-                : '';
+            // Lógica de botones
+            let btnText = 'Continuar', btnIcon = 'fa-play', btnClass = 'btn-kiki', btnDisabled = false;
 
-            // Formatear última actividad
-            const lastActivity = curso.ultimaActividad
-                ? formatRelativeTime(curso.ultimaActividad)
-                : 'Sin actividad';
+            if (curso.accesoExpirado) {
+                btnText = 'Acceso Expirado'; btnIcon = 'fa-lock'; btnClass = 'btn-secondary'; btnDisabled = true;
+            } else if (isCompleted) {
+                btnText = 'Revisar Contenido'; btnIcon = 'fa-eye'; btnClass = 'btn-kiki-secondary';
+            } else if (progresoPorcentaje === 0) {
+                btnText = 'Comenzar';
+            }
 
             return `
                 <div class="col-12 col-md-6 col-lg-4">
                     <div class="course-card ${isCompleted ? 'completed' : ''}">
-                        ${completedBadge}
+                        ${isCompleted ? '<div class="completed-badge"><i class="fas fa-check-circle me-1"></i>Completado</div>' : ''}
                         <div class="course-image">
-                            <img src="${curso.portada_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=200&fit=crop'}" alt="${curso.nombre}">
+                            <img src="${curso.portada_url || 'img/default-course.jpg'}" alt="${curso.nombre}">
                             <div class="course-overlay">
-                                <span class="duration-badge">
-                                    <i class="fas fa-clock me-1"></i>${typeof CursosData !== 'undefined' ? CursosData.formatearDuracion(CursosData.calcularDuracionCurso(curso.id)) : ''}
-                                </span>
+                                <span class="duration-badge"><i class="fas fa-clock me-1"></i>${duracionTexto}</span>
                             </div>
                         </div>
                         <div class="course-body">
                             <h5 class="course-title">${curso.nombre}</h5>
                             <p class="course-description">${curso.descripcion?.substring(0, 80) || 'Sin descripción'}...</p>
 
-                            <!-- Barra de Progreso -->
                             <div class="progress-section">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="progress-label">Tu progreso</span>
-                                    <span class="progress-percentage ${isCompleted ? 'text-success' : ''}">${progreso.porcentaje}%</span>
+                                    <span class="progress-percentage ${isCompleted ? 'text-success' : ''}">${progresoPorcentaje}%</span>
                                 </div>
                                 <div class="progress-bar-container">
-                                    <div class="progress-bar-fill ${isCompleted ? 'completed' : ''}" style="width: ${progreso.porcentaje}%"></div>
-                                </div>
-                                <div class="progress-detail">
-                                    <span>${modulosInfo.completados} de ${modulosInfo.total} módulos completados</span>
+                                    <div class="progress-bar-fill ${isCompleted ? 'completed' : ''}" style="width: ${progresPorcentaje}%"></div>
                                 </div>
                             </div>
 
-                            <!-- Última actividad -->
-                            <div class="last-activity">
-                                <i class="fas fa-history me-1"></i>
-                                <span>${lastActivity}</span>
-                            </div>
-
-                            <!-- Acceso/Expiración -->
-                            ${(() => {
-                                if (!curso.acceso || !curso.acceso.fechaExpiracion) {
-                                    return '';
-                                }
-
-                                let accesoClass = 'text-success';
-                                let accesoIcon = 'fa-check-circle';
-
-                                if (curso.accesoExpirado) {
-                                    accesoClass = 'text-danger';
-                                    accesoIcon = 'fa-exclamation-circle';
-                                } else if (curso.accesoPorVencer) {
-                                    accesoClass = 'text-warning';
-                                    accesoIcon = 'fa-clock';
-                                }
-
-                                return `
-                                    <div class="access-info mb-3 p-2 rounded" style="background: rgba(138, 131, 90, 0.05);">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas ${accesoIcon} ${accesoClass} me-2"></i>
-                                            <div class="flex-grow-1">
-                                                <small class="d-block fw-semibold ${accesoClass}">${curso.tiempoRestante}</small>
-                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Acceso hasta: ${curso.fechaExpiracionFormato}</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            })()}
-
-                            <!-- Botón de acción -->
-                            <button class="btn ${buttonClass} w-100" ${buttonDisabled ? 'disabled' : `onclick="goToCourse('${curso.id}')"`}>
-                                <i class="fas ${buttonIcon} me-2"></i>${buttonText}
+                            <button class="btn ${btnClass} w-100 mt-3" ${btnDisabled ? 'disabled' : `onclick="goToCourse('${curso.id}')"`}>
+                                <i class="fas ${btnIcon} me-2"></i>${btnText}
                             </button>
                         </div>
                     </div>
@@ -170,79 +109,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
-    // Formatear tiempo relativo
-    function formatRelativeTime(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMins / 60);
-        const diffDays = Math.floor(diffHours / 24);
-
-        if (diffMins < 1) return 'Hace un momento';
-        if (diffMins < 60) return `Hace ${diffMins} min`;
-        if (diffHours < 24) return `Hace ${diffHours}h`;
-        if (diffDays === 1) return 'Ayer';
-        if (diffDays < 7) return `Hace ${diffDays} días`;
-        return date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
-    }
-
-    // Ir al curso
-    window.goToCourse = async (cursoId) => {
-        // Guardar curso activo y última posición
-        localStorage.setItem('activeCourseId', cursoId);
-        if (typeof CursosData !== 'undefined') {
-            // Intentar obtener última clase desde Supabase (progreso_clases)
-            const ultimaSupabase = await CursosData.getUltimaClaseDesdeSupabase(cursoId);
-            if (ultimaSupabase) {
-                localStorage.setItem('activeClaseId', ultimaSupabase.claseId);
-                localStorage.setItem('activeModuloId', ultimaSupabase.moduloId);
-            } else {
-                // Fallback local
-                const ultimaClase = CursosData.getUltimaClase(cursoId);
-                if (ultimaClase) {
-                    localStorage.setItem('activeClaseId', ultimaClase.claseId);
-                    localStorage.setItem('activeModuloId', ultimaClase.moduloId);
-                }
-            }
-        }
-        window.location.href = 'claseAlumn.html';
-    };
-
-    // Buscador
+    // Buscador corregido
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase().trim();
-            const cursos = typeof CursosData !== 'undefined' ? CursosData.getCursosAdquiridos() : [];
-
             if (term === '') {
-                renderCourses(cursos);
+                renderCourses(cursosCargados);
                 return;
             }
-
-            const filtered = cursos.filter(curso =>
-                curso.nombre.toLowerCase().includes(term) ||
-                curso.descripcion?.toLowerCase().includes(term)
+            const filtered = cursosCargados.filter(c => 
+                c.nombre.toLowerCase().includes(term) || 
+                c.descripcion?.toLowerCase().includes(term)
             );
             renderCourses(filtered);
         });
     }
 
-    // Cargar cursos reales desde Supabase
-    async function cargarCursos() {
-        if (typeof CursosService !== 'undefined') {
-            const result = await CursosService.getCursosAdquiridos(session.user.id);
-            if (result.success) {
-                renderCourses(result.data);
-            } else {
-                console.error("Error al cargar cursos:", result.error);
-                renderCourses([]); // Muestra estado vacío
-            }
+    // CARGA DE DATOS REAL
+    async function cargarDashboard() {
+        const result = await CursosService.getCursosAdquiridos(session.user.id);
+        if (result.success) {
+            cursosCargados = result.data;
+            renderCourses(cursosCargados);
         } else {
-            // Fallback si el servicio no carga
+            console.error("Error al cargar cursos:", result.error);
             renderCourses([]);
         }
     }
 
-    cargarCursos();
+    // Navegación
+    window.goToCourse = (cursoId) => {
+        localStorage.setItem('activeCourseId', cursoId);
+        window.location.href = 'claseAlumn.html';
+    };
+
+    cargarDashboard();
 });
