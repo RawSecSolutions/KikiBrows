@@ -244,15 +244,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('modalUserTitle').textContent = 'Editar Usuario';
         document.getElementById('userId').value = user.id;
         document.getElementById('userName').value = getUserName(user);
-        // Si es el usuario actual y no tiene email en profiles, usar el de auth
+        
         const emailValue = user.email || (user.id === currentUserId ? currentUserEmail : '') || '';
         document.getElementById('userEmail').value = emailValue;
 
-        // Cargar estado de bloqueo
         const blockedCheckbox = document.getElementById('userBlocked');
         blockedCheckbox.checked = user.is_blocked || false;
 
-        // No permitir bloquearse a sí mismo
         const blockGroup = blockedCheckbox.closest('.mb-3');
         if (user.id === currentUserId) {
             blockedCheckbox.disabled = true;
@@ -264,7 +262,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             blockGroup.title = '';
         }
 
-        // Cargar Curso Asignado
         const userInscrip = inscripcionesDB.find(i =>
             i.user_id === user.id || i.perfil_id === user.id || i.usuario_id === user.id
         );
@@ -292,7 +289,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         handleDeleteUser(id);
     };
 
-    // Botón "Nuevo Usuario"
     const btnOpenCreate = document.getElementById('btn-open-create');
     if (btnOpenCreate) {
         btnOpenCreate.addEventListener('click', () => {
@@ -327,6 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const email = document.getElementById('userEmail').value.trim();
         const roleEl = document.getElementById('userRole');
         const blocked = document.getElementById('userBlocked').checked;
+        const saveBtn = document.getElementById('btn-save-user');
 
         if (!fullName) {
             alert('El nombre es obligatorio');
@@ -338,55 +335,117 @@ document.addEventListener('DOMContentLoaded', async () => {
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
 
-        if (id) {
-            // --- EDICIÓN ---
-            const user = usersDB.find(u => u.id === id);
-            if (!user) return;
+        // UI: Deshabilitar botón durante la carga
+        const originalBtnText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        saveBtn.disabled = true;
 
-            // No permitir bloquearse a sí mismo
-            if (user.id === currentUserId && blocked) {
-                alert('No puedes bloquearte a ti mismo');
-                return;
-            }
+        try {
+            if (id) {
+                // ==========================================
+                //                 EDICIÓN
+                // ==========================================
+                const user = usersDB.find(u => u.id === id);
+                if (!user) throw new Error("Usuario no encontrado en la base local");
 
-            // Si cambió el estado de bloqueo, usar RPC
-            if (user.is_blocked !== blocked) {
-                const ok = await handleToggleBlock(user);
-                if (!ok) return;
-            }
+                if (user.id === currentUserId && blocked) {
+                    throw new Error('No puedes bloquearte a ti mismo');
+                }
 
-            // Actualizar perfil en Supabase
-            const updateData = { first_name: firstName, last_name: lastName };
-            if (!roleEl.disabled) {
-                updateData.role = roleEl.value;
-            }
+                if (user.is_blocked !== blocked) {
+                    const ok = await handleToggleBlock(user);
+                    if (!ok) throw new Error("Fallo al actualizar bloqueo");
+                }
 
-            const { error } = await supabase
-                .from('profiles')
-                .update(updateData)
-                .eq('id', id);
+                const updateData = { first_name: firstName, last_name: lastName };
+                if (!roleEl.disabled) {
+                    updateData.role = roleEl.value;
+                }
 
-            if (error) {
-                alert('Error al actualizar perfil: ' + error.message);
-                return;
-            }
+                const { error } = await supabase
+                    .from('profiles')
+                    .update(updateData)
+                    .eq('id', id);
 
-            // Asignar curso si se seleccionó uno (regalo/asignación admin)
-            const selectedCourse = courseSelect.value;
-            if (selectedCourse) {
-                // Verificar si ya tiene inscripción para este curso
-                const yaInscrito = inscripcionesDB.some(i =>
-                    (i.usuario_id === id || i.user_id === id || i.perfil_id === id) &&
-                    (i.curso_id === selectedCourse || i.course_id === selectedCourse)
-                );
+                if (error) throw new Error('Error al actualizar perfil: ' + error.message);
 
-                if (!yaInscrito) {
+                const selectedCourse = courseSelect.value;
+                if (selectedCourse) {
+                    const yaInscrito = inscripcionesDB.some(i =>
+                        (i.usuario_id === id || i.user_id === id || i.perfil_id === id) &&
+                        (i.curso_id === selectedCourse || i.course_id === selectedCourse)
+                    );
+
+                    if (!yaInscrito) {
+                        const inscripcionData = {
+                            usuario_id: id,
+                            curso_id: selectedCourse,
+                            origen_acceso: 'ASIGNACION_ADMIN',
+                            estado: 'ACTIVO'
+                        };
+                        const fechaExp = calcularFechaExpiracion(selectedCourse);
+                        if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
+
+                        const { error: inscripError } = await supabase
+                            .from('inscripciones')
+                            .insert(inscripcionData);
+
+                        if (inscripError) {
+                            console.warn('Error asignando curso:', inscripError);
+                            showToast('Perfil actualizado, pero hubo un error al asignar el curso.');
+                        } else {
+                            showToast('Datos actualizados con curso asignado.');
+                        }
+                    } else {
+                        showToast('Datos actualizados.');
+                    }
+                } else {
+                    showToast('Datos actualizados.');
+                }
+
+            } else {
+                // ==========================================
+                //                 CREACIÓN
+                // ==========================================
+                if (!email) throw new Error('El email es obligatorio para crear un usuario');
+
+                const password = document.getElementById('userPassword').value;
+                if (!password || password.length < 6) {
+                    throw new Error('La contraseña es obligatoria y debe tener al menos 6 caracteres');
+                }
+
+                const selectedCourse = courseSelect.value;
+
+                // 1. Invocar la Edge Function para crear el usuario en GoTrue
+                const userData = {
+                    email: email,
+                    password: password,
+                    firstName: firstName,
+                    lastName: lastName,
+                    role: roleEl.value
+                };
+
+                const { data: edgeData, error: functionError } = await supabase.functions.invoke('create-user-admin', {
+                    body: userData
+                });
+
+                if (functionError) throw new Error(functionError.message);
+                if (edgeData?.error) throw new Error(edgeData.error);
+
+                const newUserId = edgeData.user.id;
+
+                // 2. Esperar a que el trigger de base de datos cree el Perfil
+                await waitForProfile(newUserId);
+
+                // 3. Asignar el curso en la tabla de inscripciones si es necesario
+                if (selectedCourse) {
                     const inscripcionData = {
-                        usuario_id: id,
+                        usuario_id: newUserId,
                         curso_id: selectedCourse,
                         origen_acceso: 'ASIGNACION_ADMIN',
                         estado: 'ACTIVO'
                     };
+                    
                     const fechaExp = calcularFechaExpiracion(selectedCourse);
                     if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
 
@@ -396,74 +455,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (inscripError) {
                         console.warn('Error asignando curso:', inscripError);
-                        showToast('Perfil actualizado, pero hubo un error al asignar el curso.');
-                        await loadAllData();
-                        userModal.hide();
-                        return;
+                        showToast('Usuario creado, pero hubo un error al asignar el curso.');
+                    } else {
+                        showToast('Usuario creado con curso asignado exitosamente.');
                     }
+                } else {
+                    showToast('Usuario creado exitosamente.');
                 }
             }
 
-            // Actualizar datos locales
-            const index = usersDB.findIndex(u => u.id === id);
-            if (index !== -1) {
-                usersDB[index].first_name = firstName;
-                usersDB[index].last_name = lastName;
-                if (!roleEl.disabled) usersDB[index].role = roleEl.value;
-            }
-
-            // Recargar inscripciones para reflejar cambios
-            if (selectedCourse) {
-                await fetchInscripciones();
-            }
-
-            showToast(selectedCourse ? 'Datos actualizados con curso asignado.' : 'Datos actualizados.');
-        } else {
-            // --- CREACIÓN ---
-            if (!email) {
-                alert('El email es obligatorio para crear un usuario');
-                return;
-            }
-
-            const password = document.getElementById('userPassword').value;
-            if (!password || password.length < 6) {
-                alert('La contraseña es obligatoria y debe tener al menos 6 caracteres');
-                return;
-            }
-
-            // Crear usuario via RPC (sin envio de email de confirmacion)
-            // La funcion crea: auth user + profile + inscripcion (si hay curso)
-            const selectedCourse = courseSelect.value;
-            const rpcParams = {
-                p_email: email,
-                p_password: password,
-                p_first_name: firstName,
-                p_last_name: lastName,
-                p_role: roleEl.value,
-                p_is_blocked: blocked
-            };
-
-            if (selectedCourse) {
-                rpcParams.p_curso_id = selectedCourse;
-                const fechaExp = calcularFechaExpiracion(selectedCourse);
-                if (fechaExp) rpcParams.p_fecha_expiracion = fechaExp;
-            }
-
-            const { data: newUserId, error: rpcError } = await supabase.rpc('admin_create_user', rpcParams);
-
-            if (rpcError) {
-                alert('Error al crear usuario: ' + rpcError.message);
-                return;
-            }
-
-            showToast(selectedCourse ? 'Usuario creado con curso asignado.' : 'Usuario creado exitosamente.');
-            await loadAllData(); // Recargar todos los datos
+            await loadAllData(); 
             userModal.hide();
-            return;
-        }
 
-        userModal.hide();
-        renderUsers();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            // UI: Restaurar botón
+            saveBtn.innerHTML = originalBtnText;
+            saveBtn.disabled = false;
+        }
     });
 
     // Filtros
