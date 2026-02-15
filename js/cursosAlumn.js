@@ -228,7 +228,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Cargar cursos iniciales
-    const cursosAdquiridos = typeof CursosData !== 'undefined' ? CursosData.getCursosAdquiridos() : [];
-    renderCourses(cursosAdquiridos);
+    // Cargar cursos reales desde Supabase
+    async function cargarCursos() {
+        if (typeof CursosService !== 'undefined') {
+            const result = await CursosService.getCursosAdquiridos(session.user.id);
+            if (result.success) {
+                renderCourses(result.data);
+            } else {
+                console.error("Error al cargar cursos:", result.error);
+                renderCourses([]); // Muestra estado vacío
+            }
+        } else {
+            // Fallback si el servicio no carga
+            renderCourses([]);
+        }
+    }
+
+    cargarCursos();
 });

@@ -326,17 +326,20 @@ export const CursosService = {
     },
 
     /**
-     * Obtener cursos adquiridos por el usuario
+     * Obtener cursos adquiridos por el usuario (vía Inscripciones)
+     * Ahora lee la tabla 'inscripciones' para incluir asignaciones manuales
      */
     async getCursosAdquiridos(usuarioId) {
         try {
-            const { data: transacciones, error } = await supabase
-                .from('transacciones')
+            const { data: inscripciones, error } = await supabase
+                .from('inscripciones')
                 .select(`
                     id,
                     curso_id,
                     estado,
-                    fecha_compra,
+                    fecha_expiracion,
+                    porcentaje_progreso,
+                    acceso_bloqueado,
                     cursos (
                         id,
                         nombre,
@@ -346,17 +349,23 @@ export const CursosService = {
                     )
                 `)
                 .eq('usuario_id', usuarioId)
-                .eq('estado', 'PAGADO');
+                .eq('estado', 'ACTIVO') // Solo accesos activos
+                .eq('acceso_bloqueado', false); // Solo si no está bloqueado
 
             if (error) throw error;
 
-            // Extraer cursos de las transacciones
-            const cursos = transacciones
-                .filter(t => t.cursos)
-                .map(t => ({
-                    ...t.cursos,
-                    fechaCompra: t.fecha_compra,
-                    transaccionId: t.id
+            // Formateamos los datos para que el frontend los entienda
+            const cursos = inscripciones
+                .filter(ins => ins.cursos)
+                .map(ins => ({
+                    ...ins.cursos,
+                    inscripcionId: ins.id,
+                    progreso: { 
+                        porcentaje: ins.porcentaje_progreso || 0 
+                    },
+                    fechaExpiracion: ins.fecha_expiracion,
+                    // Verificamos si ya expiró
+                    accesoExpirado: ins.fecha_expiracion ? new Date(ins.fecha_expiracion) < new Date() : false
                 }));
 
             return { success: true, data: cursos };
@@ -365,7 +374,7 @@ export const CursosService = {
             return { success: false, error, data: [] };
         }
     },
-
+    
     /**
      * Registrar una transacción de compra
      */
