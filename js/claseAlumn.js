@@ -1,9 +1,11 @@
 // js/claseAlumn.js - Aula Virtual LMS Completo (H6.2-H6.6)
+import { CursosData } from './cursosData.js';
+import { CursosService } from './cursosService.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar datos
-    CursosData.init();
-    CursosData.initStudent();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Inicializar datos desde Supabase
+    await CursosData.init();
+    await CursosData.initStudent();
 
     // Helper para parsear IDs (soporta tanto UUIDs como integers)
     const parseId = (value) => {
