@@ -904,6 +904,82 @@ export const CursosService = {
             return `${horas}h`;
         }
         return `${horas}h ${mins}min`;
+    },
+
+    // ==================== CERTIFICADOS ====================
+
+    /**
+     * Obtener todos los certificados de un usuario
+     * @param {string} userId - UUID del usuario
+     */
+    async getCertificadosByUsuario(userId) {
+        try {
+            const { data, error } = await supabase
+                .from('certificados')
+                .select('*')
+                .eq('usuario_id', userId)
+                .order('fecha_emision', { ascending: false });
+
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error al obtener certificados:', error);
+            return { success: false, error, data: [] };
+        }
+    },
+
+    /**
+     * Obtener certificado específico de un usuario para un curso
+     * @param {string} cursoId - UUID del curso
+     * @param {string} userId - UUID del usuario
+     */
+    async getCertificadoByCurso(cursoId, userId) {
+        try {
+            const { data, error } = await supabase
+                .from('certificados')
+                .select('*')
+                .eq('usuario_id', userId)
+                .eq('curso_id', cursoId)
+                .maybeSingle();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al obtener certificado:', error);
+            return { success: false, error, data: null };
+        }
+    },
+
+    /**
+     * Crear un certificado en Supabase
+     * @param {Object} datos - Datos del certificado
+     * @param {string} datos.usuario_id - UUID del usuario
+     * @param {string} datos.curso_id - UUID del curso
+     * @param {string} datos.nombre_alumno_snapshot - Nombre del alumno (fijo)
+     * @param {string} datos.nombre_curso_snapshot - Nombre del curso (fijo)
+     * @param {string} datos.codigo_verificacion - Código único
+     */
+    async crearCertificado(datos) {
+        try {
+            const { data, error } = await supabase
+                .from('certificados')
+                .insert(datos)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            // Si ya existe (UNIQUE violation), retornar el existente
+            if (error.code === '23505') {
+                const existing = await this.getCertificadoByCurso(datos.curso_id, datos.usuario_id);
+                if (existing.success && existing.data) {
+                    return { success: true, data: existing.data, existing: true };
+                }
+            }
+            console.error('Error al crear certificado:', error);
+            return { success: false, error };
+        }
     }
 };
 

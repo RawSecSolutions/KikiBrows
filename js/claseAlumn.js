@@ -1324,20 +1324,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (canGet.puede) {
             const curso = CursosData.getCurso(currentCursoId);
             const student = CursosData.getStudent();
-            const today = new Date().toLocaleDateString('es-CL', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
+            const certExistente = CursosData.getCertificado(currentCursoId);
+
+            // Usar datos snapshot si existe certificado en Supabase
+            const nombreMostrar = certExistente?.nombreAlumnoSnapshot || student.nombre;
+            const cursoMostrar = certExistente?.nombreCursoSnapshot || curso.nombre;
+            const today = certExistente?.fecha
+                ? new Date(certExistente.fecha).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+                : new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
 
             body.innerHTML = `
                 <div class="certificate-preview">
                     <div class="certificate-logo">KIKIBROWS</div>
                     <div class="certificate-text">Certificado de Finalización</div>
                     <div class="certificate-text">Se otorga a:</div>
-                    <div class="certificate-name">${student.nombre}</div>
+                    <div class="certificate-name">${nombreMostrar}</div>
                     <div class="certificate-text">Por completar satisfactoriamente el curso:</div>
-                    <div class="certificate-course">${curso.nombre}</div>
+                    <div class="certificate-course">${cursoMostrar}</div>
                     <div class="certificate-date">${today}</div>
                 </div>
                 <div class="mt-4">
@@ -1414,30 +1417,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             console.log('Datos del curso obtenidos:', curso.nombre);
 
+            // Registrar certificado en Supabase (o recuperar existente)
+            const certRecord = await CursosData.generarCertificado(currentCursoId);
+
             // Obtener datos del usuario actual (con apellido)
             const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
-            console.log('Datos del usuario:', usuarioActual);
 
-            // Generar código de certificado
-            const codigoCertificado = window.CertificateGenerator.generarCodigoCertificado(
-                currentCursoId,
-                student.id
-            );
+            // Usar datos snapshot del certificado si vienen de Supabase
+            let nombreAlumno, apellidoAlumno, nombreCurso, codigoCertificado, fechaCompletado;
 
-            // Obtener fecha de completación
-            const certificadoData = student.certificados[currentCursoId];
-            const fechaCompletado = certificadoData
-                ? window.CertificateGenerator.formatearFecha(certificadoData.fecha)
-                : window.CertificateGenerator.formatearFecha(new Date());
+            if (certRecord && certRecord.nombreAlumnoSnapshot) {
+                // Datos snapshot de Supabase
+                const partes = certRecord.nombreAlumnoSnapshot.split(' ');
+                nombreAlumno = partes[0] || 'Estudiante';
+                apellidoAlumno = partes.slice(1).join(' ') || '';
+                nombreCurso = certRecord.nombreCursoSnapshot || curso.nombre;
+                codigoCertificado = certRecord.codigo;
+                fechaCompletado = window.CertificateGenerator.formatearFecha(certRecord.fecha);
+            } else {
+                // Fallback con datos actuales
+                nombreAlumno = usuarioActual.nombre || student.nombre || 'Estudiante';
+                apellidoAlumno = usuarioActual.apellido || '';
+                nombreCurso = curso.nombre || 'Curso';
+                codigoCertificado = certRecord?.codigo
+                    || window.CertificateGenerator.generarCodigoCertificado(currentCursoId, student.id);
+                fechaCompletado = certRecord?.fecha
+                    ? window.CertificateGenerator.formatearFecha(certRecord.fecha)
+                    : window.CertificateGenerator.formatearFecha(new Date());
+            }
 
-            // Datos para el certificado
+            // Datos para el certificado PDF
             const datosCertificado = {
-                nombreAlumno: usuarioActual.nombre || student.nombre || 'Estudiante',
-                apellidoAlumno: usuarioActual.apellido || '',
-                nombreCurso: curso.nombre || 'Curso',
-                fechaCompletado: fechaCompletado,
-                codigoCertificado: codigoCertificado,
-                nombreInstructor: curso.instructor || 'Equipo KikiBrows'
+                nombreAlumno,
+                apellidoAlumno,
+                nombreCurso,
+                fechaCompletado,
+                codigoCertificado,
+                nombreInstructor: 'Equipo KikiBrows'
             };
 
             console.log('Generando certificado con datos:', datosCertificado);
@@ -1447,9 +1463,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (resultado.success) {
                 console.log('Certificado generado exitosamente:', resultado.fileName);
-
-                // Registrar descarga en los datos del estudiante
-                CursosData.generarCertificado(currentCursoId);
 
                 // Actualizar el modal para mostrar que se descargó
                 setTimeout(() => {

@@ -130,8 +130,11 @@ const CursosData = {
                     await this.cargarProgresoDesdeSupabase(curso.id);
                 }
 
+                // Cargar certificados desde Supabase
+                await this.cargarCertificadosDesdeSupabase();
+
                 this._studentInitialized = true;
-                console.log('CursosData: Estudiante inicializado con progreso de Supabase');
+                console.log('CursosData: Estudiante inicializado con progreso y certificados de Supabase');
             }
         } catch (error) {
             console.error('CursosData: Error al inicializar estudiante:', error);
@@ -805,23 +808,123 @@ const CursosData = {
         return { puede: true };
     },
 
-    generarCertificado(cursoId) {
+    /**
+     * Cargar certificados del alumno desde la tabla certificados de Supabase
+     */
+    async cargarCertificadosDesdeSupabase() {
+        if (!this._currentUserId) return;
+
+        try {
+            const result = await CursosService.getCertificadosByUsuario(this._currentUserId);
+            if (result.success && result.data.length > 0) {
+                if (!this._student.certificados) {
+                    this._student.certificados = {};
+                }
+
+                result.data.forEach(cert => {
+                    this._student.certificados[cert.curso_id] = {
+                        id: cert.id,
+                        fecha: cert.fecha_emision,
+                        codigo: cert.codigo_verificacion,
+                        nombreAlumnoSnapshot: cert.nombre_alumno_snapshot,
+                        nombreCursoSnapshot: cert.nombre_curso_snapshot,
+                        urlDescarga: cert.url_descarga,
+                        fromSupabase: true
+                    };
+                });
+
+                this.saveStudent(this._student);
+                console.log(`CursosData: ${result.data.length} certificados cargados desde Supabase`);
+            }
+        } catch (error) {
+            console.error('Error al cargar certificados desde Supabase:', error);
+        }
+    },
+
+    /**
+     * Generar y guardar certificado en Supabase
+     * @param {string} cursoId - UUID del curso
+     * @returns {Object} Datos del certificado creado
+     */
+    async generarCertificado(cursoId) {
+        if (!this._student) return null;
+
+        // Obtener datos para el snapshot
+        const curso = this.getCurso(cursoId);
+        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+        const nombreAlumno = usuarioActual.apellido
+            ? `${usuarioActual.nombre} ${usuarioActual.apellido}`
+            : (usuarioActual.nombre || this._student.nombre || 'Estudiante');
+        const nombreCurso = curso?.nombre || 'Curso';
+
+        // Generar código de verificación único
+        const codigo = this._generarCodigoCertificado(cursoId);
+
+        // Intentar guardar en Supabase
+        if (this._currentUserId) {
+            try {
+                const result = await CursosService.crearCertificado({
+                    usuario_id: this._currentUserId,
+                    curso_id: cursoId,
+                    nombre_alumno_snapshot: nombreAlumno,
+                    nombre_curso_snapshot: nombreCurso,
+                    codigo_verificacion: codigo
+                });
+
+                if (result.success) {
+                    const cert = result.data;
+                    if (!this._student.certificados) {
+                        this._student.certificados = {};
+                    }
+                    this._student.certificados[cursoId] = {
+                        id: cert.id,
+                        fecha: cert.fecha_emision,
+                        codigo: cert.codigo_verificacion,
+                        nombreAlumnoSnapshot: cert.nombre_alumno_snapshot,
+                        nombreCursoSnapshot: cert.nombre_curso_snapshot,
+                        urlDescarga: cert.url_descarga,
+                        fromSupabase: true
+                    };
+                    this.saveStudent(this._student);
+                    console.log('Certificado guardado en Supabase:', cert.codigo_verificacion);
+                    return this._student.certificados[cursoId];
+                }
+            } catch (error) {
+                console.error('Error al guardar certificado en Supabase:', error);
+            }
+        }
+
+        // Fallback: guardar solo en localStorage
         if (!this._student.certificados) {
             this._student.certificados = {};
         }
-
         this._student.certificados[cursoId] = {
             fecha: new Date().toISOString(),
-            codigo: this._generarCodigoCertificado(cursoId)
+            codigo: codigo
         };
-
         this.saveStudent(this._student);
+        return this._student.certificados[cursoId];
+    },
+
+    /**
+     * Obtener certificado de un curso (desde cache local, ya cargado de Supabase)
+     */
+    getCertificado(cursoId) {
+        return this._student?.certificados?.[cursoId] || null;
+    },
+
+    /**
+     * Obtener todos los certificados del estudiante
+     */
+    getCertificados() {
+        return this._student?.certificados || {};
     },
 
     _generarCodigoCertificado(cursoId) {
-        const timestamp = Date.now().toString(36).toUpperCase();
+        const fecha = new Date();
+        const año = fecha.getFullYear();
         const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-        return `KB-${cursoId}-${timestamp}-${random}`;
+        return `KB-${año}-${random}-${String(cursoId).substring(0, 8)}`;
     },
 
     // ==================== UTILIDADES ====================

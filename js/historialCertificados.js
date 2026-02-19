@@ -1,105 +1,88 @@
-document.addEventListener('DOMContentLoaded', function() {
+// js/historialCertificados.js
+// Carga y muestra los certificados del alumno desde Supabase
+
+import { CursosData } from './cursosData.js';
+
+document.addEventListener('DOMContentLoaded', async function() {
 
     const container = document.getElementById('certificados-container');
     const noCertsMsg = document.getElementById('no-certs-message');
 
-    // AGREGAR CERTIFICADOS DE DEMO si no existen
-    function agregarCertificadosDemo() {
-        const student = CursosData.getStudentData();
-
-        // Si ya tiene certificados, no hacer nada
-        if (student.certificados && Object.keys(student.certificados).length > 0) {
-            return;
-        }
-
-        // Agregar certificados de demo para cursos 1, 2, 4 y 5
-        if (!student.certificados) {
-            student.certificados = {};
-        }
-
-        // Curso 1: Microblading Básico (completado hace 2 meses)
-        const fecha1 = new Date();
-        fecha1.setMonth(fecha1.getMonth() - 2);
-        student.certificados[1] = {
-            fecha: fecha1.toISOString(),
-            descargado: false
-        };
-
-        // Curso 2: Lash Lifting Profesional (completado hace 1 mes)
-        const fecha2 = new Date();
-        fecha2.setMonth(fecha2.getMonth() - 1);
-        student.certificados[2] = {
-            fecha: fecha2.toISOString(),
-            descargado: false
-        };
-
-        // Curso 4: CURSO CAPPING POLYGEL (completado hace 3 semanas)
-        const fecha4 = new Date();
-        fecha4.setDate(fecha4.getDate() - 21);
-        student.certificados[4] = {
-            fecha: fecha4.toISOString(),
-            descargado: false
-        };
-
-        // Curso 5: CURSO MANICURE BÁSICO (completado hace 1 semana)
-        const fecha5 = new Date();
-        fecha5.setDate(fecha5.getDate() - 7);
-        student.certificados[5] = {
-            fecha: fecha5.toISOString(),
-            descargado: false
-        };
-
-        // Guardar los cambios
-        CursosData.saveStudent(student);
-        console.log('Certificados de demo agregados correctamente');
+    // Mostrar loading mientras se cargan los datos
+    if (container) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border" style="color: #8A835A;" role="status"></div>
+                <p class="mt-3" style="color: #8A835A;">Cargando certificados...</p>
+            </div>
+        `;
     }
 
-    // Agregar certificados de demo al cargar la página
-    agregarCertificadosDemo();
+    // Inicializar CursosData y cargar datos del estudiante desde Supabase
+    try {
+        await CursosData.init();
+        await CursosData.initStudent();
+    } catch (error) {
+        console.error('Error al inicializar datos:', error);
+        if (container) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fa-solid fa-triangle-exclamation fa-3x mb-3" style="color: #8A835A;"></i>
+                    <p style="color: #8A835A;">Error al cargar los datos. Intenta recargar la página.</p>
+                </div>
+            `;
+        }
+        return;
+    }
 
-    // 1. FUNCIÓN PARA OBTENER CERTIFICADOS REALES
-    function obtenerCertificadosReales() {
-        const student = CursosData.getStudentData();
+    // FUNCIÓN PARA OBTENER CERTIFICADOS DESDE SUPABASE
+    function obtenerCertificados() {
+        const certificados = CursosData.getCertificados();
         const certificadosData = [];
 
-        // Iterar sobre los certificados del estudiante
-        if (student.certificados && Object.keys(student.certificados).length > 0) {
-            Object.keys(student.certificados).forEach(cursoId => {
-                const certInfo = student.certificados[cursoId];
-                const curso = CursosData.getCurso(parseInt(cursoId));
+        if (certificados && Object.keys(certificados).length > 0) {
+            Object.keys(certificados).forEach(cursoId => {
+                const certInfo = certificados[cursoId];
 
-                if (curso) {
-                    // Generar código de certificado
-                    const codigo = window.CertificateGenerator.generarCodigoCertificado(
-                        parseInt(cursoId),
-                        student.id
-                    );
+                // Usar datos snapshot del certificado (Supabase)
+                const nombreCurso = certInfo.nombreCursoSnapshot
+                    || CursosData.getCurso(cursoId)?.nombre
+                    || 'Curso';
 
-                    // Formatear fecha
-                    const fechaFormateada = window.CertificateGenerator.formatearFecha(certInfo.fecha);
+                const codigo = certInfo.codigo
+                    || window.CertificateGenerator?.generarCodigoCertificado(cursoId, CursosData.getCurrentUserId());
 
-                    certificadosData.push({
-                        id: parseInt(cursoId),
-                        curso: curso.nombre,
-                        instructor: curso.instructor || 'Equipo KikiBrows',
-                        fecha: fechaFormateada,
-                        codigo: codigo
+                const fechaFormateada = window.CertificateGenerator
+                    ? window.CertificateGenerator.formatearFecha(certInfo.fecha)
+                    : new Date(certInfo.fecha).toLocaleDateString('es-ES', {
+                        year: 'numeric', month: 'long', day: 'numeric'
                     });
-                }
+
+                certificadosData.push({
+                    id: cursoId,
+                    curso: nombreCurso,
+                    alumno: certInfo.nombreAlumnoSnapshot || '',
+                    instructor: 'Equipo KikiBrows',
+                    fecha: fechaFormateada,
+                    codigo: codigo
+                });
             });
         }
 
         return certificadosData;
     }
 
-    // 2. FUNCIÓN PARA RENDERIZAR TARJETAS
+    // FUNCIÓN PARA RENDERIZAR TARJETAS
     function cargarCertificados() {
-        if (!container) return; // Seguridad por si el ID cambia
+        if (!container) return;
 
-        const certificadosData = obtenerCertificadosReales();
+        const certificadosData = obtenerCertificados();
+
+        // Limpiar loading
+        container.innerHTML = '';
 
         if (certificadosData.length === 0) {
-            if(noCertsMsg) noCertsMsg.classList.remove('d-none');
+            if (noCertsMsg) noCertsMsg.classList.remove('d-none');
             return;
         }
 
@@ -113,14 +96,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <h3 class="cert-title">${cert.curso}</h3>
                                 <p class="cert-detail"><i class="fa-solid fa-user-tie me-2"></i>Instructor: <strong>${cert.instructor}</strong></p>
                                 <p class="cert-detail"><i class="fa-regular fa-calendar me-2"></i>Completado: ${cert.fecha}</p>
-                                <small class="text-muted fst-italic">Cód: ${cert.codigo}</small>
+                                <small class="text-muted fst-italic">Cod: ${cert.codigo}</small>
                             </div>
 
                             <div class="cert-actions">
-                                <button class="btn-kiki-primary" onclick="verCertificado(${cert.id})">
+                                <button class="btn-kiki-primary" data-action="ver" data-curso-id="${cert.id}">
                                     <i class="fa-regular fa-eye me-2"></i>Ver
                                 </button>
-                                <button class="btn-kiki-outline" onclick="descargarCertificado(${cert.id})">
+                                <button class="btn-kiki-outline" data-action="descargar" data-curso-id="${cert.id}">
                                     <i class="fa-solid fa-download me-2"></i>Descargar
                                 </button>
                             </div>
@@ -131,17 +114,32 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             container.innerHTML += cardHTML;
         });
+
+        // Event delegation para botones
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.getAttribute('data-action');
+            const cursoId = btn.getAttribute('data-curso-id');
+
+            if (action === 'ver') {
+                verCertificado(cursoId);
+            } else if (action === 'descargar') {
+                descargarCertificado(cursoId);
+            }
+        });
     }
 
     // Ejecutar carga de certificados
     cargarCertificados();
 });
 
-// Funciones globales (fuera del DOMContentLoaded para que el HTML las encuentre en el onclick)
+// Funciones globales para compatibilidad con onclick
 function verCertificado(id) {
-    // Redirigir a la página del curso con el modal de certificado abierto
     window.location.href = `claseAlumn.html?curso=${id}&showCertificate=true`;
 }
+window.verCertificado = verCertificado;
 
 async function descargarCertificado(cursoId) {
     try {
@@ -150,58 +148,57 @@ async function descargarCertificado(cursoId) {
         // Verificar que pdfMake esté disponible
         if (typeof pdfMake === 'undefined') {
             console.error('pdfMake no está disponible');
-            alert('Error: El generador de PDF no está disponible. Por favor, recarga la página.');
+            alert('Error: El generador de PDF no esta disponible. Por favor, recarga la pagina.');
             return;
         }
 
         // Verificar que CertificateGenerator esté disponible
         if (!window.CertificateGenerator) {
             console.error('CertificateGenerator no está disponible');
-            alert('Error: El generador de certificados no está disponible. Por favor, recarga la página.');
+            alert('Error: El generador de certificados no esta disponible. Por favor, recarga la pagina.');
             return;
         }
 
-        // Obtener datos del estudiante y curso
-        const student = CursosData.getStudentData();
-        if (!student) {
-            console.error('No se pudo obtener los datos del estudiante');
-            alert('Error: No se pudieron obtener tus datos. Por favor, recarga la página.');
+        // Obtener datos del certificado desde Supabase (ya cargado en CursosData)
+        const certInfo = CursosData.getCertificado(cursoId);
+        if (!certInfo) {
+            console.error('No se encontró certificado para curso:', cursoId);
+            alert('No se encontro el certificado.');
             return;
         }
 
-        const curso = CursosData.getCurso(cursoId);
-        if (!curso) {
-            console.error('No se encontró el curso con ID:', cursoId);
-            alert('No se encontró el curso.');
-            return;
-        }
-
-        console.log('Datos del curso obtenidos:', curso.nombre);
-
-        // Obtener datos del usuario actual (con apellido)
+        // Obtener datos del usuario actual
         const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
-        console.log('Datos del usuario:', usuarioActual);
 
-        // Generar código de certificado
-        const codigoCertificado = window.CertificateGenerator.generarCodigoCertificado(
-            cursoId,
-            student.id
-        );
+        // Usar datos snapshot del certificado (congelados al momento de emisión)
+        let nombreAlumno, apellidoAlumno;
+        if (certInfo.nombreAlumnoSnapshot) {
+            // Si tenemos snapshot, separar nombre y apellido
+            const partes = certInfo.nombreAlumnoSnapshot.split(' ');
+            nombreAlumno = partes[0] || 'Estudiante';
+            apellidoAlumno = partes.slice(1).join(' ') || '';
+        } else {
+            nombreAlumno = usuarioActual.nombre || 'Estudiante';
+            apellidoAlumno = usuarioActual.apellido || '';
+        }
 
-        // Obtener fecha de completación
-        const certificadoData = student.certificados[cursoId];
-        const fechaCompletado = certificadoData
-            ? window.CertificateGenerator.formatearFecha(certificadoData.fecha)
-            : window.CertificateGenerator.formatearFecha(new Date());
+        const nombreCurso = certInfo.nombreCursoSnapshot
+            || CursosData.getCurso(cursoId)?.nombre
+            || 'Curso';
 
-        // Datos para el certificado
+        const codigoCertificado = certInfo.codigo
+            || window.CertificateGenerator.generarCodigoCertificado(cursoId, CursosData.getCurrentUserId());
+
+        const fechaCompletado = window.CertificateGenerator.formatearFecha(certInfo.fecha);
+
+        // Datos para el certificado PDF
         const datosCertificado = {
-            nombreAlumno: usuarioActual.nombre || student.nombre || 'Estudiante',
-            apellidoAlumno: usuarioActual.apellido || '',
-            nombreCurso: curso.nombre || 'Curso',
+            nombreAlumno: nombreAlumno,
+            apellidoAlumno: apellidoAlumno,
+            nombreCurso: nombreCurso,
             fechaCompletado: fechaCompletado,
             codigoCertificado: codigoCertificado,
-            nombreInstructor: curso.instructor || 'Equipo KikiBrows'
+            nombreInstructor: 'Equipo KikiBrows'
         };
 
         console.log('Generando certificado con datos:', datosCertificado);
@@ -220,3 +217,4 @@ async function descargarCertificado(cursoId) {
         alert('Error al generar el certificado: ' + error.message);
     }
 }
+window.descargarCertificado = descargarCertificado;
