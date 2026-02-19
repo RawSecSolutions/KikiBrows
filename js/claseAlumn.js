@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         ? parseId(cursoIdFromUrl)
         : parseId(localStorage.getItem('activeCourseId')) || null;
 
-    let currentModuloId = parseId(localStorage.getItem('activeModuloId')) || null;
-    let currentClaseId = parseId(localStorage.getItem('activeClaseId')) || null;
+    let currentModuloId =parseId(localStorage.getItem('activeModuloId_' + currentCursoId)) || null;
+    let currentClaseId = parseId(localStorage.getItem('activeClaseId_' + currentCursoId)) || null;
     let currentClase = null;
     let videoWatchProgress = 0;
 
@@ -143,12 +143,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         courseName.textContent = curso.nombre;
         document.title = `${curso.nombre} | KIKIBROWS`;
 
-        // Si no hay clase seleccionada, obtener la última (desde datos ya sincronizados)
-        if (!currentClaseId || !currentModuloId) {
-            const ultima = CursosData.getUltimaClase(currentCursoId);
-            if (ultima) {
-                currentClaseId = ultima.claseId;
-                currentModuloId = ultima.moduloId;
+        const modulosDelCurso = CursosData.getModulosByCurso(currentCursoId);
+
+        if (!modulosDelCurso || modulosDelCurso.length === 0) {
+            dynamicContent.innerHTML = '<div class="alert alert-warning text-center p-5 mt-4">Este curso aún no tiene contenido publicado.</div>';
+            contentTitle.textContent = "Sin contenido";
+            contentTypeBadge.textContent = "AVISO";
+            return;
+        }
+
+        // Verificar si la clase en caché REALMENTE pertenece a este curso
+        let claseValida = false;
+        if (currentModuloId && currentClaseId) {
+            const moduloExiste = modulosDelCurso.find(m => String(m.id) === String(currentModuloId));
+            if (moduloExiste) {
+                const clasesDelModulo = CursosData.getClasesByModulo(moduloExiste.id);
+                if (clasesDelModulo.find(c => String(c.id) === String(currentClaseId))) {
+                    claseValida = true;
+                }
+            }
+        }
+
+        // Si la clase no es válida para este curso, forzar la PRIMERA clase del PRIMER módulo
+        if (!claseValida) {
+            const ultimaGuardada = CursosData.getUltimaClase(currentCursoId);
+
+            // Si el progreso nos da una clase válida de este curso, la usamos
+            if (ultimaGuardada && ultimaGuardada.moduloId && ultimaGuardada.claseId) {
+                currentModuloId = ultimaGuardada.moduloId;
+                currentClaseId = ultimaGuardada.claseId;
+            } else {
+                // Obligar a cargar el módulo 1, clase 1
+                const primerModulo = modulosDelCurso[0];
+                const clasesPrimerModulo = CursosData.getClasesByModulo(primerModulo.id);
+
+                if (clasesPrimerModulo && clasesPrimerModulo.length > 0) {
+                    currentModuloId = primerModulo.id;
+                    currentClaseId = clasesPrimerModulo[0].id;
+                } else {
+                    dynamicContent.innerHTML = '<div class="alert alert-warning text-center p-5 mt-4">El primer módulo no tiene clases.</div>';
+                    return;
+                }
             }
         }
 
@@ -240,7 +275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 return `
                     <div class="lesson-item ${statusClass} ${isActive ? 'active' : ''}"
-                         onclick="window.selectClase(${modulo.id}, ${clase.id})"
+                         onclick="window.selectClase('${modulo.id}', '${clase.id}')"
                          data-clase-id="${clase.id}">
                         <div class="lesson-status">${statusIcon}</div>
                         <div class="lesson-info">
@@ -338,9 +373,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!currentClase) return;
 
-        // Guardar posición actual
-        localStorage.setItem('activeModuloId', moduloId);
-        localStorage.setItem('activeClaseId', claseId);
+       // Guardar posición actual SEPARADA POR CURSO
+        localStorage.setItem(`activeModuloId_${currentCursoId}`, moduloId);
+        localStorage.setItem(`activeClaseId_${currentCursoId}`, claseId);
 
         // Actualizar UI del sidebar
         renderSidebar();
