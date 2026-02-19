@@ -904,6 +904,74 @@ export const CursosService = {
             return `${horas}h`;
         }
         return `${horas}h ${mins}min`;
+    },
+
+    // ==================== CERTIFICADOS ====================
+
+    /**
+     * Obtener todos los certificados de un usuario
+     * @param {string} userId - UUID del usuario
+     */
+    async getCertificadosByUsuario(userId) {
+        try {
+            const { data, error } = await supabase
+                .from('certificados')
+                .select('*')
+                .eq('usuario_id', userId)
+                .order('fecha_emision', { ascending: false });
+
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error al obtener certificados:', error);
+            return { success: false, error, data: [] };
+        }
+    },
+
+    /**
+     * Obtener certificado específico de un usuario para un curso
+     * @param {string} cursoId - UUID del curso
+     * @param {string} userId - UUID del usuario
+     */
+    async getCertificadoByCurso(cursoId, userId) {
+        try {
+            const { data, error } = await supabase
+                .from('certificados')
+                .select('*')
+                .eq('usuario_id', userId)
+                .eq('curso_id', cursoId)
+                .maybeSingle();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al obtener certificado:', error);
+            return { success: false, error, data: null };
+        }
+    },
+
+    /**
+     * Llamar RPC que genera certificado automáticamente si el curso está completo al 100%.
+     * Los snapshots (nombre alumno, nombre curso) se toman server-side desde las tablas
+     * profiles y cursos, así no dependen del frontend ni de localStorage.
+     * @param {string} cursoId - UUID del curso
+     * @param {string} userId - UUID del usuario
+     * @returns {Object} { success, data: { generado, ya_existia, certificado, progreso } }
+     */
+    async generarCertificadoSiCompleto(cursoId, userId) {
+        try {
+            const { data, error } = await supabase
+                .rpc('generar_certificado_si_completo', {
+                    p_curso_id: cursoId,
+                    p_usuario_id: userId
+                });
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al intentar generar certificado:', error);
+            return { success: false, error };
+        }
     }
 };
 
