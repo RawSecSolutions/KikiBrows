@@ -1400,53 +1400,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Obtener datos del estudiante
-            const student = CursosData.getStudentData();
-            if (!student) {
-                console.error('No se pudo obtener los datos del estudiante');
-                alert('Error: No se pudieron obtener tus datos. Por favor, recarga la página.');
+            // Leer certificado existente de Supabase (ya generado al completar curso)
+            const certRecord = CursosData.getCertificado(currentCursoId);
+            if (!certRecord || !certRecord.fromSupabase) {
+                console.error('No existe certificado en Supabase para este curso');
+                alert('El certificado aún no ha sido generado. Completa todas las clases del curso.');
                 return;
             }
 
-            const curso = CursosData.getCurso(currentCursoId);
-            if (!curso) {
-                console.error('No se encontró el curso con ID:', currentCursoId);
-                alert('Error: No se encontró el curso.');
-                return;
-            }
+            // Usar datos snapshot del certificado (congelados al momento de completar)
+            const partes = certRecord.nombreAlumnoSnapshot.split(' ');
+            const nombreAlumno = partes[0] || 'Estudiante';
+            const apellidoAlumno = partes.slice(1).join(' ') || '';
+            const nombreCurso = certRecord.nombreCursoSnapshot;
+            const codigoCertificado = certRecord.codigo;
+            const fechaCompletado = window.CertificateGenerator.formatearFecha(certRecord.fecha);
 
-            console.log('Datos del curso obtenidos:', curso.nombre);
-
-            // Registrar certificado en Supabase (o recuperar existente)
-            const certRecord = await CursosData.generarCertificado(currentCursoId);
-
-            // Obtener datos del usuario actual (con apellido)
-            const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
-
-            // Usar datos snapshot del certificado si vienen de Supabase
-            let nombreAlumno, apellidoAlumno, nombreCurso, codigoCertificado, fechaCompletado;
-
-            if (certRecord && certRecord.nombreAlumnoSnapshot) {
-                // Datos snapshot de Supabase
-                const partes = certRecord.nombreAlumnoSnapshot.split(' ');
-                nombreAlumno = partes[0] || 'Estudiante';
-                apellidoAlumno = partes.slice(1).join(' ') || '';
-                nombreCurso = certRecord.nombreCursoSnapshot || curso.nombre;
-                codigoCertificado = certRecord.codigo;
-                fechaCompletado = window.CertificateGenerator.formatearFecha(certRecord.fecha);
-            } else {
-                // Fallback con datos actuales
-                nombreAlumno = usuarioActual.nombre || student.nombre || 'Estudiante';
-                apellidoAlumno = usuarioActual.apellido || '';
-                nombreCurso = curso.nombre || 'Curso';
-                codigoCertificado = certRecord?.codigo
-                    || window.CertificateGenerator.generarCodigoCertificado(currentCursoId, student.id);
-                fechaCompletado = certRecord?.fecha
-                    ? window.CertificateGenerator.formatearFecha(certRecord.fecha)
-                    : window.CertificateGenerator.formatearFecha(new Date());
-            }
-
-            // Datos para el certificado PDF
+            // Generar PDF con los datos snapshot (inmutables)
             const datosCertificado = {
                 nombreAlumno,
                 apellidoAlumno,
@@ -1456,15 +1426,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 nombreInstructor: 'Equipo KikiBrows'
             };
 
-            console.log('Generando certificado con datos:', datosCertificado);
+            console.log('Generando PDF con datos snapshot:', datosCertificado);
 
-            // Generar el PDF
             const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
 
             if (resultado.success) {
-                console.log('Certificado generado exitosamente:', resultado.fileName);
+                console.log('PDF descargado exitosamente:', resultado.fileName);
 
-                // Actualizar el modal para mostrar que se descargó
                 setTimeout(() => {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('certificateModal'));
                     if (modal) {
@@ -1472,7 +1440,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }, 500);
             } else {
-                console.error('Error al generar certificado:', resultado.error);
+                console.error('Error al generar PDF:', resultado.error);
                 alert('Error al generar el certificado: ' + (resultado.error || 'Error desconocido'));
             }
         } catch (error) {
@@ -1551,6 +1519,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateCertificateStatus();
         enableNext();
         showCompletionStatus('Completado');
+
+        // Intentar generar certificado automáticamente (RPC server-side)
+        // Si el curso está al 100%, Supabase crea el certificado con snapshots
+        CursosData.intentarGenerarCertificado(currentCursoId);
     }
 
     function enableNext() {

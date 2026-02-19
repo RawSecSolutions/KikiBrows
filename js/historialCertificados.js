@@ -143,73 +143,42 @@ window.verCertificado = verCertificado;
 
 async function descargarCertificado(cursoId) {
     try {
-        console.log('Iniciando descarga de certificado para curso:', cursoId);
+        console.log('Descargando PDF de certificado para curso:', cursoId);
 
-        // Verificar que pdfMake esté disponible
         if (typeof pdfMake === 'undefined') {
-            console.error('pdfMake no está disponible');
             alert('Error: El generador de PDF no esta disponible. Por favor, recarga la pagina.');
             return;
         }
 
-        // Verificar que CertificateGenerator esté disponible
         if (!window.CertificateGenerator) {
-            console.error('CertificateGenerator no está disponible');
             alert('Error: El generador de certificados no esta disponible. Por favor, recarga la pagina.');
             return;
         }
 
-        // Obtener datos del certificado desde Supabase (ya cargado en CursosData)
+        // Leer certificado existente de Supabase (solo lectura, ya fue generado al completar)
         const certInfo = CursosData.getCertificado(cursoId);
-        if (!certInfo) {
-            console.error('No se encontró certificado para curso:', cursoId);
-            alert('No se encontro el certificado.');
+        if (!certInfo || !certInfo.fromSupabase) {
+            alert('El certificado aun no ha sido generado.');
             return;
         }
 
-        // Obtener datos del usuario actual
-        const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual') || '{}');
+        // Usar datos snapshot inmutables del certificado
+        const partes = certInfo.nombreAlumnoSnapshot.split(' ');
 
-        // Usar datos snapshot del certificado (congelados al momento de emisión)
-        let nombreAlumno, apellidoAlumno;
-        if (certInfo.nombreAlumnoSnapshot) {
-            // Si tenemos snapshot, separar nombre y apellido
-            const partes = certInfo.nombreAlumnoSnapshot.split(' ');
-            nombreAlumno = partes[0] || 'Estudiante';
-            apellidoAlumno = partes.slice(1).join(' ') || '';
-        } else {
-            nombreAlumno = usuarioActual.nombre || 'Estudiante';
-            apellidoAlumno = usuarioActual.apellido || '';
-        }
-
-        const nombreCurso = certInfo.nombreCursoSnapshot
-            || CursosData.getCurso(cursoId)?.nombre
-            || 'Curso';
-
-        const codigoCertificado = certInfo.codigo
-            || window.CertificateGenerator.generarCodigoCertificado(cursoId, CursosData.getCurrentUserId());
-
-        const fechaCompletado = window.CertificateGenerator.formatearFecha(certInfo.fecha);
-
-        // Datos para el certificado PDF
         const datosCertificado = {
-            nombreAlumno: nombreAlumno,
-            apellidoAlumno: apellidoAlumno,
-            nombreCurso: nombreCurso,
-            fechaCompletado: fechaCompletado,
-            codigoCertificado: codigoCertificado,
+            nombreAlumno: partes[0] || 'Estudiante',
+            apellidoAlumno: partes.slice(1).join(' ') || '',
+            nombreCurso: certInfo.nombreCursoSnapshot,
+            fechaCompletado: window.CertificateGenerator.formatearFecha(certInfo.fecha),
+            codigoCertificado: certInfo.codigo,
             nombreInstructor: 'Equipo KikiBrows'
         };
 
-        console.log('Generando certificado con datos:', datosCertificado);
+        console.log('Generando PDF con datos snapshot:', datosCertificado);
 
-        // Generar el PDF
         const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
 
-        if (resultado.success) {
-            console.log('Certificado generado exitosamente:', resultado.fileName);
-        } else {
-            console.error('Error al generar certificado:', resultado.error);
+        if (!resultado.success) {
             alert('Error al generar el certificado: ' + resultado.error);
         }
     } catch (error) {
