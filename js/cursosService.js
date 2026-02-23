@@ -855,6 +855,40 @@ export const CursosService = {
         }
     },
 
+    // ==================== DATOS DE USUARIO (DASHBOARD) ====================
+
+    /**
+     * Obtener historial de transacciones de un usuario
+     */
+    async getTransaccionesUsuario(usuarioId) {
+        try {
+            const { data, error } = await supabase
+                .from('transacciones')
+                .select(`
+                    id,
+                    monto,
+                    estado,
+                    metodo_pago,
+                    codigo_autorizacion,
+                    fecha_compra,
+                    curso_id,
+                    cursos (
+                        id,
+                        nombre,
+                        portada_url
+                    )
+                `)
+                .eq('usuario_id', usuarioId)
+                .order('fecha_compra', { ascending: false });
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al obtener transacciones:', error);
+            return { success: false, error, data: [] };
+        }
+    },
+
     // ==================== UTILIDADES ====================
 
     /**

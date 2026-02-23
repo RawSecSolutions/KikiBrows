@@ -17,7 +17,6 @@ class CertificateGenerator {
      * @param {string} data.nombreCurso - Nombre del curso
      * @param {string} data.fechaCompletado - Fecha de completación (formato legible)
      * @param {string} data.codigoCertificado - Código único del certificado
-     * @param {string} data.nombreInstructor - Nombre del instructor (opcional)
      */
     async generarCertificado(data) {
         try {
@@ -33,8 +32,7 @@ class CertificateGenerator {
                 apellidoAlumno,
                 nombreCurso,
                 fechaCompletado,
-                codigoCertificado,
-                nombreInstructor = 'Equipo KikiBrows'
+                codigoCertificado
             } = data;
 
             // Validar datos requeridos
@@ -42,10 +40,12 @@ class CertificateGenerator {
                 throw new Error('Faltan datos requeridos para generar el certificado');
             }
 
-            // Nombre completo del alumno (manejar apellido vacío)
-            const nombreCompleto = apellidoAlumno
-                ? `${nombreAlumno} ${apellidoAlumno}`
-                : nombreAlumno;
+            // Crear el nombre completo de forma inteligente para evitar duplicar el apellido
+            // Si nombreAlumno ya contiene el apellido, no lo volvemos a sumar
+            let nombreCompleto = nombreAlumno || 'Estudiante';
+            if (apellidoAlumno && !nombreCompleto.toLowerCase().includes(apellidoAlumno.toLowerCase())) {
+                nombreCompleto = `${nombreCompleto} ${apellidoAlumno}`;
+            }
 
             // Definición del documento PDF
             const documentDefinition = {
@@ -152,7 +152,7 @@ class CertificateGenerator {
                         text: nombreCurso,
                         style: 'courseName',
                         alignment: 'center',
-                        margin: [0, 0, 0, 25]
+                        margin: [0, 0, 0, 40] // Margen ajustado al remover la firma
                     },
 
                     // Decoración (línea floral simulada con texto)
@@ -160,54 +160,10 @@ class CertificateGenerator {
                         text: '✿ ✿ ✿',
                         style: 'decoration',
                         alignment: 'center',
-                        margin: [0, 0, 0, 25]
+                        margin: [0, 0, 0, 50] // Margen ajustado al remover la firma
                     },
 
-                    // Espacio para firmas
-                    {
-                        columns: [
-                            {
-                                width: '*',
-                                text: ''
-                            },
-                            {
-                                width: 'auto',
-                                stack: [
-                                    {
-                                        canvas: [
-                                            {
-                                                type: 'line',
-                                                x1: 0,
-                                                y1: 0,
-                                                x2: 150,
-                                                y2: 0,
-                                                lineWidth: 1,
-                                                lineColor: '#8A835A'
-                                            }
-                                        ],
-                                        margin: [0, 0, 0, 5]
-                                    },
-                                    {
-                                        text: nombreInstructor,
-                                        style: 'signature',
-                                        alignment: 'center'
-                                    },
-                                    {
-                                        text: 'Instructor',
-                                        style: 'signatureLabel',
-                                        alignment: 'center'
-                                    }
-                                ]
-                            },
-                            {
-                                width: '*',
-                                text: ''
-                            }
-                        ],
-                        margin: [0, 0, 0, 30]
-                    },
-
-                    // Fecha y código
+                    // Fecha y código (Alineados al centro como bloque final)
                     {
                         columns: [
                             {
@@ -270,15 +226,6 @@ class CertificateGenerator {
                         fontSize: 16,
                         color: '#D8B6B1'
                     },
-                    signature: {
-                        fontSize: 12,
-                        bold: true,
-                        color: '#333333'
-                    },
-                    signatureLabel: {
-                        fontSize: 10,
-                        color: '#666666'
-                    },
                     footerLabel: {
                         fontSize: 9,
                         color: '#666666',
@@ -289,18 +236,14 @@ class CertificateGenerator {
                         color: '#333333'
                     }
                 }
-
-                // defaultStyle se omite para usar las fuentes predeterminadas de pdfMake
-                // que incluyen todas las variantes (normal, bold, italic, bolditalic)
             };
 
             // Generar y descargar el PDF
             console.log('Creando documento PDF con pdfMake...');
             const pdfDocGenerator = pdfMake.createPdf(documentDefinition);
 
-            // Generar nombre de archivo (manejar apellido vacío)
-            const apellidoPart = apellidoAlumno ? `_${apellidoAlumno}` : '';
-            const fileName = `Certificado_${nombreCurso.replace(/\s+/g, '_')}_${nombreAlumno}${apellidoPart}.pdf`;
+            // Generar nombre de archivo sin caracteres raros
+            const fileName = `Certificado_${nombreCurso.replace(/\s+/g, '_')}_${nombreCompleto.replace(/\s+/g, '_')}.pdf`;
 
             console.log('Descargando PDF con nombre:', fileName);
 
