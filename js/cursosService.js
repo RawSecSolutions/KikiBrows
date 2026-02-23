@@ -1,5 +1,5 @@
 // js/cursosService.js - Servicio de Cursos conectado a Supabase
-// Conecta el frontend con las tablas: cursos, modulos, clases, entregas, transacciones
+// Conecta el frontend con las tablas: cursos, modulos, clases, entregas, transacciones, consulta_slots y consultas_reservas
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -885,6 +885,119 @@ export const CursosService = {
             return { success: true, data };
         } catch (error) {
             console.error('Error al obtener transacciones:', error);
+            return { success: false, error, data: [] };
+        }
+    },
+
+    // ==================== CONSULTAS Y RESERVAS (ZOOM) ====================
+
+    /**
+     * Obtener los slots disponibles (para mostrar en el calendario del alumno)
+     */
+    async getSlotsDisponibles() {
+        try {
+            const { data, error } = await supabase
+                .from('consulta_slots')
+                .select('*')
+                .eq('estado', 'DISPONIBLE')
+                .gte('fecha_inicio', new Date().toISOString()) // Solo mostrar slots futuros
+                .order('fecha_inicio', { ascending: true });
+
+            if (error) throw error;
+            
+            // Doble validación en frontend: asegurar que realmente haya cupo
+            const slotsValidos = (data || []).filter(slot => slot.cupos_ocupados < slot.cupos_maximos);
+
+            return { success: true, data: slotsValidos };
+        } catch (error) {
+            console.error('Error al obtener slots disponibles:', error);
+            return { success: false, error, data: [] };
+        }
+    },
+
+    /**
+     * Crear una nueva reserva ligada a un slot específico (Verificando cupos)
+     * @param {Object} reservaData - { slotId, usuarioId, cursoId, cursoNombreSnapshot }
+     */
+    async crearReservaConsulta(reservaData) {
+        try {
+            // 1. Obtener el slot actual para verificar cupos
+            const { data: slot, error: fetchError } = await supabase
+                .from('consulta_slots')
+                .select('cupos_maximos, cupos_ocupados, estado')
+                .eq('id', reservaData.slotId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            // 2. Verificar disponibilidad
+            if (slot.estado !== 'DISPONIBLE' || slot.cupos_ocupados >= slot.cupos_maximos) {
+                return { success: false, error: { message: 'Lo sentimos, este horario ya no tiene cupos disponibles.' } };
+            }
+
+            // 3. Insertar la reserva del alumno
+            const { data: reserva, error: reservaError } = await supabase
+                .from('consultas_reservas')
+                .insert([{
+                    slot_id: reservaData.slotId,
+                    usuario_id: reservaData.usuarioId,
+                    curso_id: reservaData.cursoId,
+                    curso_nombre_snapshot: reservaData.cursoNombreSnapshot
+                }])
+                .select()
+                .single();
+
+            if (reservaError) {
+                if (reservaError.code === '23505') { // Error de UNIQUE constraint
+                    return { success: false, error: { message: 'Ya tienes una reserva para este horario.' } };
+                }
+                throw reservaError;
+            }
+
+            // 4. Actualizar los cupos del slot
+            const nuevosCupos = slot.cupos_ocupados + 1;
+            const nuevoEstado = nuevosCupos >= slot.cupos_maximos ? 'LLENO' : 'DISPONIBLE';
+
+            const { error: slotError } = await supabase
+                .from('consulta_slots')
+                .update({ 
+                    cupos_ocupados: nuevosCupos,
+                    estado: nuevoEstado
+                })
+                .eq('id', reservaData.slotId);
+
+            if (slotError) throw slotError;
+
+            return { success: true, data: reserva };
+        } catch (error) {
+            console.error('Error al crear reserva de consulta:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Obtener el historial de reservas de un usuario
+     * @param {string} usuarioId - UUID del usuario
+     */
+    async getReservasUsuario(usuarioId) {
+        try {
+            const { data, error } = await supabase
+                .from('consultas_reservas')
+                .select(`
+                    *,
+                    consulta_slots (
+                        fecha_inicio,
+                        fecha_fin,
+                        zoom_link
+                    )
+                `)
+                .eq('usuario_id', usuarioId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            console.error('Error al obtener historial de reservas:', error);
             return { success: false, error, data: [] };
         }
     },
