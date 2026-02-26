@@ -1386,89 +1386,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.showCertificate = async () => {
-        const modal = new bootstrap.Modal(document.getElementById('certificateModal'));
-        const body = document.getElementById('certificateBody');
-
-        // Mostrar un "Cargando..." mientras le preguntamos a Supabase
-        body.innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border text-success" role="status"></div>
-                <p class="text-muted mt-3">Verificando estado de tu certificado con el servidor...</p>
-            </div>
-        `;
-        modal.show();
-
         const userId = CursosData.getCurrentUserId();
-
-        // Forzar a Supabase a generar el certificado si las notas están listas
-        await CursosService.generarCertificadoSiCompleto(currentCursoId, userId);
-
-        // Consultar el certificado real recién horneado de Supabase
-        const certResult = await CursosService.getCertificadoByCurso(currentCursoId, userId);
-        const certExistente = certResult.success && certResult.data;
         const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
 
-        if (certExistente || canGet.puede) {
-            const curso = CursosData.getCurso(currentCursoId);
-            const student = CursosData.getStudent();
-            const certData = certExistente || CursosData.getCertificado(currentCursoId);
-
-            // ==========================================
-            // FIX: Usar ESTRICTAMENTE el Snapshot de la BD
-            // ==========================================
-            let nombreMostrar = 'Estudiante';
-            if (certData && certData.nombreAlumnoSnapshot) {
-                nombreMostrar = certData.nombreAlumnoSnapshot;
-            } else if (student) {
-                // Fallback de emergencia si el snapshot fallara
-                nombreMostrar = `${student.nombre || ''} ${student.apellido || ''}`.trim();
+        // Si el certificado no está disponible, mostrar alerta informativa
+        if (!canGet.puede) {
+            const certResult = await CursosService.getCertificadoByCurso(currentCursoId, userId);
+            const certExistente = certResult.success && certResult.data;
+            if (!certExistente) {
+                if (canGet.razon === 'pendiente') {
+                    alert('¡Casi listo! Tu certificado se desbloqueará cuando aprobemos tu entrega práctica.');
+                } else if (canGet.razon === 'entrega') {
+                    alert(`Entrega rechazada o pendiente de correcciones en: ${canGet.moduloNombre || 'práctica'}.`);
+                } else {
+                    alert('Completa todo el contenido del curso y aprueba tus prácticas para desbloquear tu certificado.');
+                }
+                return;
             }
-
-            const cursoMostrar = certData?.nombreCursoSnapshot || curso.nombre;
-            const today = certData?.fecha
-                ? new Date(certData.fecha).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-                : new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
-
-            body.innerHTML = `
-                <div class="certificate-preview">
-                    <div class="certificate-logo">KIKIBROWS</div>
-                    <div class="certificate-text">Certificado de Finalización</div>
-                    <div class="certificate-text">Se otorga a:</div>
-                    <div class="certificate-name">${nombreMostrar}</div>
-                    <div class="certificate-text">Por completar satisfactoriamente el curso:</div>
-                    <div class="certificate-course">${cursoMostrar}</div>
-                    <div class="certificate-date">${today}</div>
-                </div>
-                <div class="mt-4">
-                    <button class="btn btn-success btn-lg" onclick="window.downloadCertificate()">
-                        <i class="fas fa-download me-2"></i>Descargar PDF
-                    </button>
-                </div>
-            `;
-            updateCertificateStatus(); // Pintar menú de verde
-        } else {
-            let message = '';
-            if (canGet.razon === 'pendiente') {
-                message = `
-                    <i class="fas fa-clock fa-4x text-warning mb-4"></i>
-                    <h4>¡Casi listo!</h4>
-                    <p class="text-muted">Tu certificado se desbloqueará cuando aprobemos tu entrega práctica.</p>
-                `;
-            } else if (canGet.razon === 'entrega') {
-                message = `
-                    <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
-                    <h4>Entrega Rechazada</h4>
-                    <p class="text-muted">Tu entrega fue rechazada o necesita correcciones en el módulo "<strong>${canGet.moduloNombre || 'práctica'}</strong>".</p>
-                `;
-            } else {
-                message = `
-                    <i class="fas fa-lock fa-4x text-muted mb-4"></i>
-                    <h4>Certificado Bloqueado</h4>
-                    <p class="text-muted">Completa todo el contenido del curso y aprueba tus prácticas para desbloquear tu certificado.</p>
-                `;
-            }
-            body.innerHTML = message;
         }
+
+        // Descargar directamente el certificado PDF
+        await window.downloadCertificate();
     };
 
     window.downloadCertificate = async () => {
@@ -1481,6 +1419,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const userId = CursosData.getCurrentUserId();
+
+            // Forzar a Supabase a generar el certificado si las notas están listas
+            await CursosService.generarCertificadoSiCompleto(currentCursoId, userId);
+
             const certResult = await CursosService.getCertificadoByCurso(currentCursoId, userId);
             let certRecord = CursosData.getCertificado(currentCursoId);
 
@@ -1494,14 +1436,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // ==========================================
-            // FIX: Pasar el nombre completo exacto al PDF
-            // ==========================================
             const nombreCompleto = certRecord.nombreAlumnoSnapshot || 'Estudiante';
             const partes = nombreCompleto.split(' ');
             const nombreAlumno = partes[0] || '';
             const apellidoAlumno = partes.slice(1).join(' ') || '';
-            
+
             const nombreCurso = certRecord.nombreCursoSnapshot;
             const codigoCertificado = certRecord.codigo;
             const fechaCompletado = window.CertificateGenerator.formatearFecha(certRecord.fecha);
@@ -1518,10 +1457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
 
             if (resultado.success) {
-                setTimeout(() => {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('certificateModal'));
-                    if (modal) modal.hide();
-                }, 500);
+                updateCertificateStatus();
             } else {
                 alert('Error al generar el certificado: ' + (resultado.error || 'Error desconocido'));
             }
