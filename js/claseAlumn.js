@@ -946,6 +946,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ultimaEntregaSupabase = result.data;
                 // Normalizar estado a minúsculas para compatibilidad
                 ultimaEntregaSupabase.estado = ultimaEntregaSupabase.estado?.toLowerCase() || 'pendiente';
+
+                // =========================================================
+                // FIX: Sincronizar el estado de Supabase con el caché local
+                // para que el certificado se entere de que ya se aprobó
+                // =========================================================
+                const student = CursosData.getStudent();
+                if (student.progreso[currentCursoId]) {
+                    if (!student.progreso[currentCursoId].modulos[currentModuloId]) {
+                        student.progreso[currentCursoId].modulos[currentModuloId] = { clases: {} };
+                    }
+                    const currentClaseData = student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] || {};
+                    
+                    student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] = {
+                        ...currentClaseData,
+                        estado: ultimaEntregaSupabase.estado,
+                        completado: ultimaEntregaSupabase.estado === 'aprobada' ? true : currentClaseData.completado
+                    };
+                    CursosData.saveStudent(student);
+                    
+                    // Actualizar el candado del certificado en el menú izquierdo (fire and forget)
+                    updateCertificateStatus();
+                }
+                // =========================================================
             } else {
                 ultimaEntregaSupabase = null;
             }
@@ -957,7 +980,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const metadata = currentClase.metadata || {};
         const instrucciones = metadata.instrucciones_entrega || currentClase.instrucciones || currentClase.descripcion || 'Sube un archivo demostrando la técnica aprendida en este módulo.';
         const demoVideo = currentClase.contenido_url || currentClase.demoVideo || '';
-        const archivosPermitidos = metadata.archivos_permitidos || ['.jpg', '.png', '.pdf', '.mp4', '.webm'];
+        // Ajustado para que el texto de la UI coincida con la validación de Supabase (Solo video)
+        const archivosPermitidos = metadata.archivos_permitidos || ['.mp4', '.webm'];
         const pesoMaximoMb = metadata.peso_maximo_mb || 500;
         const rubrica = metadata.rubrica_evaluacion || [];
 
@@ -1065,10 +1089,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (ultimaEntrega.estado === 'pendiente' || ultimaEntrega.estado === 'aprobada') {
                 enableNext();
                 if (ultimaEntrega.estado === 'aprobada') {
-                    // Marcar como completada automáticamente cuando está aprobada
-                    if (!isClaseCompleted()) {
-                        markAsCompleted();
-                    }
+                    // FORZAR SIEMPRE LA SINCRONIZACIÓN PARA EL CERTIFICADO
+                    markAsCompleted();
                     showCompletionStatus('Entrega Aprobada');
                 } else {
                     showCompletionStatus('Pendiente de Revisión', 'warning');
@@ -1274,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Actualizar barra de progreso
                 document.getElementById('uploadProgress').style.width = '100%';
 
-                // Actualizar estado local en el progreso
+                // Actualizar estado local en el progreso SIN BORRAR datos anteriores (como segundo_actual)
                 const student = CursosData.getStudent();
                 if (!student.progreso[currentCursoId]) {
                     student.progreso[currentCursoId] = { modulos: {} };
@@ -1282,7 +1304,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!student.progreso[currentCursoId].modulos[currentModuloId]) {
                     student.progreso[currentCursoId].modulos[currentModuloId] = { clases: {} };
                 }
+                
+                const currentData = student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] || {};
+                
                 student.progreso[currentCursoId].modulos[currentModuloId].clases[currentClaseId] = {
+                    ...currentData,
                     completado: false,
                     estado: 'pendiente',
                     fecha: new Date().toISOString()
@@ -1329,10 +1355,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ==================== CERTIFICADO (H6.6) ====================
 
-    function updateCertificateStatus() {
+    async function updateCertificateStatus() {
+        const userId = CursosData.getCurrentUserId();
+        if (!userId) return;
+
+        // 1. Verificamos la Verdad Absoluta directamente en Supabase (ignora la caché local)
+        const certResult = await CursosService.getCertificadoByCurso(currentCursoId, userId);
+        const certExistente = certResult.success && certResult.data;
+
+        // 2. Caché local (como plan B para los mensajes de error)
         const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
 
-        if (canGet.puede) {
+        if (certExistente || canGet.puede) {
             certificateItem.classList.remove('locked');
             certificateItem.classList.add('unlocked');
             certStatus.textContent = '¡Disponible para descargar!';
@@ -1351,21 +1385,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    window.showCertificate = () => {
-        const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
+    window.showCertificate = async () => {
         const modal = new bootstrap.Modal(document.getElementById('certificateModal'));
         const body = document.getElementById('certificateBody');
 
-        if (canGet.puede) {
+        // Mostrar un "Cargando..." mientras le preguntamos a Supabase
+        body.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-success" role="status"></div>
+                <p class="text-muted mt-3">Verificando estado de tu certificado con el servidor...</p>
+            </div>
+        `;
+        modal.show();
+
+        const userId = CursosData.getCurrentUserId();
+
+        // Forzar a Supabase a generar el certificado si las notas están listas
+        await CursosService.generarCertificadoSiCompleto(currentCursoId, userId);
+
+        // Consultar el certificado real recién horneado de Supabase
+        const certResult = await CursosService.getCertificadoByCurso(currentCursoId, userId);
+        const certExistente = certResult.success && certResult.data;
+        const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
+
+        if (certExistente || canGet.puede) {
             const curso = CursosData.getCurso(currentCursoId);
             const student = CursosData.getStudent();
-            const certExistente = CursosData.getCertificado(currentCursoId);
+            const certData = certExistente || CursosData.getCertificado(currentCursoId);
 
-            // Usar datos snapshot si existe certificado en Supabase
-            const nombreMostrar = certExistente?.nombreAlumnoSnapshot || student.nombre;
-            const cursoMostrar = certExistente?.nombreCursoSnapshot || curso.nombre;
-            const today = certExistente?.fecha
-                ? new Date(certExistente.fecha).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+            // ==========================================
+            // FIX: Usar ESTRICTAMENTE el Snapshot de la BD
+            // ==========================================
+            let nombreMostrar = 'Estudiante';
+            if (certData && certData.nombreAlumnoSnapshot) {
+                nombreMostrar = certData.nombreAlumnoSnapshot;
+            } else if (student) {
+                // Fallback de emergencia si el snapshot fallara
+                nombreMostrar = `${student.nombre || ''} ${student.apellido || ''}`.trim();
+            }
+
+            const cursoMostrar = certData?.nombreCursoSnapshot || curso.nombre;
+            const today = certData?.fecha
+                ? new Date(certData.fecha).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
                 : new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
 
             body.innerHTML = `
@@ -1384,6 +1445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </button>
                 </div>
             `;
+            updateCertificateStatus(); // Pintar menú de verde
         } else {
             let message = '';
             if (canGet.razon === 'pendiente') {
@@ -1391,67 +1453,59 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <i class="fas fa-clock fa-4x text-warning mb-4"></i>
                     <h4>¡Casi listo!</h4>
                     <p class="text-muted">Tu certificado se desbloqueará cuando aprobemos tu entrega práctica.</p>
-                    <p><strong>Estado:</strong> Esperando corrección del instructor</p>
                 `;
             } else if (canGet.razon === 'entrega') {
                 message = `
                     <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
                     <h4>Entrega Rechazada</h4>
-                    <p class="text-muted">Tu entrega fue rechazada. Por favor corrige tu entrega práctica en el módulo "<strong>${canGet.moduloNombre}</strong>" para obtener tu certificado.</p>
+                    <p class="text-muted">Tu entrega fue rechazada o necesita correcciones en el módulo "<strong>${canGet.moduloNombre || 'práctica'}</strong>".</p>
                 `;
             } else {
                 message = `
                     <i class="fas fa-lock fa-4x text-muted mb-4"></i>
                     <h4>Certificado Bloqueado</h4>
                     <p class="text-muted">Completa todo el contenido del curso y aprueba tus prácticas para desbloquear tu certificado.</p>
-                    <div class="progress mt-4" style="height: 20px;">
-                        <div class="progress-bar" style="width: ${CursosData.calcularProgresoCurso(currentCursoId).porcentaje}%">
-                            ${CursosData.calcularProgresoCurso(currentCursoId).porcentaje}%
-                        </div>
-                    </div>
                 `;
             }
             body.innerHTML = message;
         }
-
-        modal.show();
     };
 
     window.downloadCertificate = async () => {
         try {
             console.log('Iniciando descarga de certificado...');
 
-            // Verificar que pdfMake esté disponible
-            if (typeof pdfMake === 'undefined') {
-                console.error('pdfMake no está disponible');
+            if (typeof pdfMake === 'undefined' || !window.CertificateGenerator) {
                 alert('Error: El generador de PDF no está disponible. Por favor, recarga la página.');
                 return;
             }
 
-            // Verificar que CertificateGenerator esté disponible
-            if (!window.CertificateGenerator) {
-                console.error('CertificateGenerator no está disponible');
-                alert('Error: El generador de certificados no está disponible. Por favor, recarga la página.');
-                return;
-            }
+            const userId = CursosData.getCurrentUserId();
+            const certResult = await CursosService.getCertificadoByCurso(currentCursoId, userId);
+            let certRecord = CursosData.getCertificado(currentCursoId);
 
-            // Leer certificado existente de Supabase (ya generado al completar curso)
-            const certRecord = CursosData.getCertificado(currentCursoId);
+            // Si no está en caché, usamos el que nos dio Supabase recién
             if (!certRecord || !certRecord.fromSupabase) {
-                console.error('No existe certificado en Supabase para este curso');
-                alert('El certificado aún no ha sido generado. Completa todas las clases del curso.');
-                return;
+                if (certResult.success && certResult.data) {
+                    certRecord = certResult.data;
+                } else {
+                    alert('El certificado aún no ha sido generado en la base de datos.');
+                    return;
+                }
             }
 
-            // Usar datos snapshot del certificado (congelados al momento de completar)
-            const partes = certRecord.nombreAlumnoSnapshot.split(' ');
-            const nombreAlumno = partes[0] || 'Estudiante';
+            // ==========================================
+            // FIX: Pasar el nombre completo exacto al PDF
+            // ==========================================
+            const nombreCompleto = certRecord.nombreAlumnoSnapshot || 'Estudiante';
+            const partes = nombreCompleto.split(' ');
+            const nombreAlumno = partes[0] || '';
             const apellidoAlumno = partes.slice(1).join(' ') || '';
+            
             const nombreCurso = certRecord.nombreCursoSnapshot;
             const codigoCertificado = certRecord.codigo;
             const fechaCompletado = window.CertificateGenerator.formatearFecha(certRecord.fecha);
 
-            // Generar PDF con los datos snapshot (inmutables)
             const datosCertificado = {
                 nombreAlumno,
                 apellidoAlumno,
@@ -1461,25 +1515,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 nombreInstructor: 'Equipo KikiBrows'
             };
 
-            console.log('Generando PDF con datos snapshot:', datosCertificado);
-
             const resultado = await window.CertificateGenerator.generarCertificado(datosCertificado);
 
             if (resultado.success) {
-                console.log('PDF descargado exitosamente:', resultado.fileName);
-
                 setTimeout(() => {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('certificateModal'));
-                    if (modal) {
-                        modal.hide();
-                    }
+                    if (modal) modal.hide();
                 }, 500);
             } else {
-                console.error('Error al generar PDF:', resultado.error);
                 alert('Error al generar el certificado: ' + (resultado.error || 'Error desconocido'));
             }
         } catch (error) {
-            console.error('Error al descargar certificado:', error);
             alert('Error al generar el certificado: ' + error.message);
         }
     };

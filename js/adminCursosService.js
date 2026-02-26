@@ -64,7 +64,9 @@ export const AdminCursosService = {
             const timestamp = Date.now();
             const fileName = `${cursoId}/${claseId}_${timestamp}.${fileExt}`;
 
-            await ensureBucketExists('videos');
+            // CORRECCIÓN: Comentamos esto porque intentar crear/listar buckets desde el cliente 
+            // con la key anónima siempre fallará por permisos y lanzará un falso error.
+            // await ensureBucketExists('videos');
 
             const { data, error } = await supabase.storage
                 .from('videos')
@@ -81,10 +83,8 @@ export const AdminCursosService = {
         } catch (error) {
             console.error('Error al subir video:', error);
             const msg = error.message || String(error);
-            if (msg.includes('Bucket') || msg.includes('bucket') || msg.includes('not found')) {
-                return { success: false, error: 'Error de almacenamiento: el bucket "videos" no existe. Créalo en Supabase > Storage.' };
-            }
-            return { success: false, error: msg };
+            // CORRECCIÓN: Devolvemos el error real para saber si falla por RLS (permisos) u otra cosa
+            return { success: false, error: `Error de Supabase: ${msg}` };
         }
     },
 
@@ -105,7 +105,8 @@ export const AdminCursosService = {
             const timestamp = Date.now();
             const fileName = `portadas/${timestamp}.${fileExt}`;
 
-            await ensureBucketExists('imagenes');
+            // CORRECCIÓN: Comentado por la misma razón que los videos
+            // await ensureBucketExists('imagenes');
 
             const { data, error } = await supabase.storage
                 .from('imagenes')
@@ -122,10 +123,8 @@ export const AdminCursosService = {
         } catch (error) {
             console.error('Error al subir imagen de portada:', error);
             const msg = error.message || String(error);
-            if (msg.includes('Bucket') || msg.includes('bucket') || msg.includes('not found')) {
-                return { success: false, error: 'Error de almacenamiento: el bucket "imagenes" no existe. Créalo en Supabase > Storage.' };
-            }
-            return { success: false, error: msg };
+            // CORRECCIÓN: Devolvemos el error real
+            return { success: false, error: `Error de Supabase: ${msg}` };
         }
     },
 
@@ -143,7 +142,8 @@ export const AdminCursosService = {
             const timestamp = Date.now();
             const fileName = `${cursoId}/${claseId}_${timestamp}.pdf`;
 
-            await ensureBucketExists('documentos');
+            // CORRECCIÓN: Comentado por la misma razón que los videos
+            // await ensureBucketExists('documentos');
 
             const { data, error } = await supabase.storage
                 .from('documentos')
@@ -160,10 +160,8 @@ export const AdminCursosService = {
         } catch (error) {
             console.error('Error al subir PDF:', error);
             const msg = error.message || String(error);
-            if (msg.includes('Bucket') || msg.includes('bucket') || msg.includes('not found')) {
-                return { success: false, error: 'Error de almacenamiento: el bucket "documentos" no existe. Créalo en Supabase > Storage.' };
-            }
-            return { success: false, error: msg };
+            // CORRECCIÓN: Devolvemos el error real
+            return { success: false, error: `Error de Supabase: ${msg}` };
         }
     },
 

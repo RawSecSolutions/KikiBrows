@@ -424,13 +424,14 @@ export const CursosService = {
 
         try {
             // A. Construir el path con formato requerido por políticas de Storage
-            // Formato: ${cursoId}/${claseId}/${userId}/${timestamp}.${ext}
+            // Formato: ${cursoId}/${claseId}/${usuarioId}/${timestamp}.${ext}
             const fileExt = file.name.split('.').pop().toLowerCase();
             const timestamp = Date.now();
             filePath = `${cursoId}/${claseId}/${usuarioId}/${timestamp}.${fileExt}`;
 
             // B. Subir archivo al Storage (Bucket 'entregas')
-            await ensureBucketExists('entregas');
+            // ELIMINADO para alumnas ya que no tienen permisos para crear/verificar buckets:
+            // await ensureBucketExists('entregas');
 
             const { error: uploadError } = await supabase.storage
                 .from('entregas')

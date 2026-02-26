@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         texto: { icon: 'fa-file-alt', color: 'text-secondary', label: 'Texto', dbType: 'TEXTO' },
         pdf: { icon: 'fa-file-pdf', color: 'text-danger', label: 'PDF', dbType: 'PDF' },
         quiz: { icon: 'fa-question-circle', color: 'text-info', label: 'Quiz', dbType: 'QUIZ' },
-        entrega: { icon: 'fa-upload', color: 'text-warning', label: 'Entrega', dbType: 'ENTREGA' }
+        entrega: { icon: 'fa-upload', color: 'text-warning', label: 'Entrega', dbType: 'PRACTICA' }
     };
     
     // Mapeo inverso: de tipo DB a tipo interno
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'TEXTO': 'texto',
         'PDF': 'pdf',
         'QUIZ': 'quiz',
-        'ENTREGA': 'entrega'
+        'PRACTICA': 'entrega'
     };
     
     // ==========================================

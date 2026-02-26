@@ -155,14 +155,6 @@ class CertificateGenerator {
                         margin: [0, 0, 0, 40] // Margen ajustado al remover la firma
                     },
 
-                    // Decoración (línea floral simulada con texto)
-                    {
-                        text: '✿ ✿ ✿',
-                        style: 'decoration',
-                        alignment: 'center',
-                        margin: [0, 0, 0, 50] // Margen ajustado al remover la firma
-                    },
-
                     // Fecha y código (Alineados al centro como bloque final)
                     {
                         columns: [
