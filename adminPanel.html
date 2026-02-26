@@ -171,7 +171,7 @@
                         .from('inscripciones')
                         .select('usuario_id', { count: 'exact' })
                         .eq('estado', 'ACTIVO')
-                        .eq('acceso_bloqueado', false),
+                        .or('acceso_bloqueado.eq.false,acceso_bloqueado.is.null'),
 
                     // 2. Facturación del mes: suma de transacciones pagadas este mes
                     supabase

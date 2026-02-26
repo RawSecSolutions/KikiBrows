@@ -381,7 +381,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             usuario_id: id,
                             curso_id: selectedCourse,
                             origen_acceso: 'ASIGNACION_ADMIN',
-                            estado: 'ACTIVO'
+                            estado: 'ACTIVO',
+                            acceso_bloqueado: false
                         };
                         const fechaExp = calcularFechaExpiracion(selectedCourse);
                         if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
@@ -443,7 +444,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         usuario_id: newUserId,
                         curso_id: selectedCourse,
                         origen_acceso: 'ASIGNACION_ADMIN',
-                        estado: 'ACTIVO'
+                        estado: 'ACTIVO',
+                        acceso_bloqueado: false
                     };
                     
                     const fechaExp = calcularFechaExpiracion(selectedCourse);

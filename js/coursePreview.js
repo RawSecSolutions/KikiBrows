@@ -519,6 +519,7 @@ async function procesarCompraExitosa(curso, metodoPago) {
             curso_id: curso.id,
             origen_acceso: 'COMPRA',
             estado: 'ACTIVO',
+            acceso_bloqueado: false,
             fecha_expiracion: fechaExp.toISOString()
         };
         if (transResult?.id) inscripcionData.transaccion_id = transResult.id;

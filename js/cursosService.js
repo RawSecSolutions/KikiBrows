@@ -350,7 +350,7 @@ export const CursosService = {
                 `)
                 .eq('usuario_id', usuarioId)
                 .eq('estado', 'ACTIVO') // Solo accesos activos
-                .eq('acceso_bloqueado', false); // Solo si no está bloqueado
+                .or('acceso_bloqueado.eq.false,acceso_bloqueado.is.null'); // Solo si no está bloqueado
 
             if (error) throw error;
 
