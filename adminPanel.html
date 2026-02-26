@@ -166,12 +166,11 @@
             try {
                 // Lanzar todas las consultas en paralelo
                 const [usuariosRes, facturacionRes, nuevosRes, cursosRes] = await Promise.all([
-                    // 1. Usuarios activos: usuarios distintos con inscripción activa
+                    // 1. Usuarios activos: perfiles distintos con al menos 1 inscripción activa
                     supabase
                         .from('inscripciones')
-                        .select('usuario_id', { count: 'exact' })
-                        .eq('estado', 'ACTIVO')
-                        .or('acceso_bloqueado.eq.false,acceso_bloqueado.is.null'),
+                        .select('usuario_id')
+                        .eq('estado', 'ACTIVO'),
 
                     // 2. Facturación del mes: suma de transacciones pagadas este mes
                     supabase
