@@ -151,6 +151,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             const result = await CursosService.getCursosAdquiridos(session.user.id);
             if (result.success) {
                 cursosCargados = result.data;
+                // Renderizar inmediatamente con los datos de inscripciones
+                renderCourses(cursosCargados);
+
+                // Calcular progreso real desde progreso_clases vía RPC para cada curso
+                const progresoPromises = cursosCargados.map(async (curso) => {
+                    try {
+                        const rpc = await CursosService.calcularProgresoCursoRPC(curso.id, session.user.id);
+                        if (rpc.success) {
+                            curso.progreso = { porcentaje: rpc.porcentaje };
+                        }
+                    } catch (e) {
+                        console.warn(`No se pudo calcular progreso para curso ${curso.id}:`, e);
+                    }
+                });
+
+                await Promise.all(progresoPromises);
+                // Re-renderizar con los porcentajes reales
                 renderCourses(cursosCargados);
             } else {
                 console.error("Error al cargar cursos:", result.error);

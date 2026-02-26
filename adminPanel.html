@@ -63,7 +63,7 @@
                     <div class="account-card p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
                         <i class="fas fa-users fs-1 mb-2" style="color: #8A835A;"></i>
                         <h5 class="text-muted">Usuarios Activos</h5>
-                        <h2 class="fw-bold mb-0">24</h2>
+                        <h2 class="fw-bold mb-0" id="stat-usuarios-activos"><span class="spinner-border spinner-border-sm"></span></h2>
                     </div>
                 </div>
 
@@ -71,7 +71,7 @@
                     <div class="account-card p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
                         <i class="fas fa-dollar-sign fs-1 mb-2" style="color: #8A835A;"></i>
                         <h5 class="text-muted">Facturación</h5>
-                        <h2 class="fw-bold mb-0">$487,000</h2>
+                        <h2 class="fw-bold mb-0" id="stat-facturacion"><span class="spinner-border spinner-border-sm"></span></h2>
                     </div>
                 </div>
 
@@ -79,7 +79,7 @@
                     <div class="account-card p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
                         <i class="fas fa-user-plus fs-1 mb-2" style="color: #8A835A;"></i>
                         <h5 class="text-muted">Nuevos</h5>
-                        <h2 class="fw-bold mb-0">10</h2>
+                        <h2 class="fw-bold mb-0" id="stat-nuevos"><span class="spinner-border spinner-border-sm"></span></h2>
                     </div>
                 </div>
 
@@ -87,7 +87,7 @@
                     <div class="account-card p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
                         <i class="fas fa-graduation-cap fs-1 mb-2" style="color: #8A835A;"></i>
                         <h5 class="text-muted">Cursos</h5>
-                        <h2 class="fw-bold mb-2">25</h2>
+                        <h2 class="fw-bold mb-2" id="stat-cursos"><span class="spinner-border spinner-border-sm"></span></h2>
                         <a href="gestionCursos.html" class="text-decoration-none fw-bold small" style="color: #8A835A;">
                             Ver Cursos <i class="fas fa-arrow-right ms-1"></i>
                         </a>
@@ -111,11 +111,11 @@
                 <div class="col-12 col-lg-6">
                     <div class="account-card p-4 h-100">
                         <h3 class="fs-5 border-bottom pb-2 mb-3"><i class="fas fa-eraser me-2" style="color: #8A835A;"></i> Borradores</h3>
-                        <div class="d-flex align-items-center justify-content-center text-muted" style="min-height: 150px; background-color: rgba(255,255,255,0.4); border-radius: 8px;">
-                            <p class="m-0 fst-italic">Borrador: Curso de Cejas (Sin guardar)</p>
+                        <div id="borradores-widget" class="d-flex align-items-center justify-content-center text-muted" style="min-height: 150px; background-color: rgba(255,255,255,0.4); border-radius: 8px;">
+                            <div class="spinner-border spinner-border-sm text-muted" role="status"></div>
                         </div>
                         <div class="mt-3 text-end">
-                            <a href="#" class="text-decoration-none fw-bold" style="color: #8A835A;">Ver Todos</a>
+                            <a href="gestionCursos.html" class="text-decoration-none fw-bold" style="color: #8A835A;">Ver Todos</a>
                         </div>
                     </div>
                 </div>
@@ -142,9 +142,100 @@
     <script type="module" src="js/componenteAdmin.js"></script>
     <script src="js/dashboardAdmin.js"></script>
     <script type="module">
-        import { CursosService } from './js/cursosService.js';
+        import { CursosService, supabase } from './js/cursosService.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // ==================== CARGAR ESTADÍSTICAS DEL DASHBOARD ====================
+            cargarEstadisticas();
+            cargarRevisionesPendientes();
+            cargarBorradores();
+        });
+
+        // ---------- Estadísticas principales ----------
+        async function cargarEstadisticas() {
+            const elUsuarios = document.getElementById('stat-usuarios-activos');
+            const elFacturacion = document.getElementById('stat-facturacion');
+            const elNuevos = document.getElementById('stat-nuevos');
+            const elCursos = document.getElementById('stat-cursos');
+
+            // Rango del mes actual
+            const ahora = new Date();
+            const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString();
+            const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+            try {
+                // Lanzar todas las consultas en paralelo
+                const [usuariosRes, facturacionRes, nuevosRes, cursosRes] = await Promise.all([
+                    // 1. Usuarios activos: usuarios distintos con inscripción activa
+                    supabase
+                        .from('inscripciones')
+                        .select('usuario_id', { count: 'exact' })
+                        .eq('estado', 'ACTIVO')
+                        .eq('acceso_bloqueado', false),
+
+                    // 2. Facturación del mes: suma de transacciones pagadas este mes
+                    supabase
+                        .from('transacciones')
+                        .select('monto')
+                        .eq('estado', 'PAGADO')
+                        .gte('fecha_compra', inicioMes)
+                        .lte('fecha_compra', finMes),
+
+                    // 3. Nuevos usuarios este mes (registrados este mes)
+                    supabase
+                        .from('profiles')
+                        .select('id', { count: 'exact', head: true })
+                        .gte('created_at', inicioMes)
+                        .lte('created_at', finMes),
+
+                    // 4. Total de cursos publicados
+                    supabase
+                        .from('cursos')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('estado', 'PUBLICADO')
+                ]);
+
+                // Usuarios activos: contar usuarios únicos
+                if (elUsuarios) {
+                    if (!usuariosRes.error && usuariosRes.data) {
+                        const uniqueUsers = new Set(usuariosRes.data.map(i => i.usuario_id));
+                        elUsuarios.textContent = uniqueUsers.size;
+                    } else {
+                        elUsuarios.textContent = '0';
+                    }
+                }
+
+                // Facturación
+                if (elFacturacion) {
+                    if (!facturacionRes.error && facturacionRes.data) {
+                        const total = facturacionRes.data.reduce((sum, t) => sum + (t.monto || 0), 0);
+                        elFacturacion.textContent = '$' + total.toLocaleString('es-CL');
+                    } else {
+                        elFacturacion.textContent = '$0';
+                    }
+                }
+
+                // Nuevos
+                if (elNuevos) {
+                    elNuevos.textContent = (!nuevosRes.error && nuevosRes.count != null) ? nuevosRes.count : '0';
+                }
+
+                // Cursos
+                if (elCursos) {
+                    elCursos.textContent = (!cursosRes.error && cursosRes.count != null) ? cursosRes.count : '0';
+                }
+
+            } catch (error) {
+                console.error('Error cargando estadísticas del dashboard:', error);
+                if (elUsuarios) elUsuarios.textContent = '--';
+                if (elFacturacion) elFacturacion.textContent = '--';
+                if (elNuevos) elNuevos.textContent = '--';
+                if (elCursos) elCursos.textContent = '--';
+            }
+        }
+
+        // ---------- Widget de revisiones pendientes ----------
+        async function cargarRevisionesPendientes() {
             const widget = document.getElementById('revisiones-pendientes-widget');
             if (!widget) return;
 
@@ -187,7 +278,50 @@
                 console.error('Error cargando widget de revisiones:', error);
                 widget.innerHTML = '<p class="m-0 fst-italic">No hay revisiones pendientes.</p>';
             }
-        });
+        }
+
+        // ---------- Widget de borradores ----------
+        async function cargarBorradores() {
+            const widget = document.getElementById('borradores-widget');
+            if (!widget) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('cursos')
+                    .select('id, nombre, created_at')
+                    .eq('estado', 'BORRADOR')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    widget.classList.remove('d-flex', 'align-items-center', 'justify-content-center');
+                    widget.style.minHeight = 'auto';
+                    widget.innerHTML = data.map(curso => {
+                        const fecha = new Date(curso.created_at).toLocaleDateString('es-CL', {
+                            day: '2-digit', month: '2-digit', year: 'numeric'
+                        });
+                        return `
+                            <div class="d-flex justify-content-between align-items-center p-2 mb-1 rounded" style="background: rgba(255,255,255,0.5);">
+                                <div>
+                                    <strong class="small">${curso.nombre}</strong>
+                                    <span class="text-muted small d-block">Creado: ${fecha}</span>
+                                </div>
+                                <div>
+                                    <span class="badge" style="background-color: #8A835A;">Borrador</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    widget.innerHTML = '<p class="m-0 fst-italic">No hay borradores.</p>';
+                }
+            } catch (error) {
+                console.error('Error cargando borradores:', error);
+                widget.innerHTML = '<p class="m-0 fst-italic">No hay borradores.</p>';
+            }
+        }
     </script>
 
 </body>
