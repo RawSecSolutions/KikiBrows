@@ -158,6 +158,13 @@
             const elNuevos = document.getElementById('stat-nuevos');
             const elCursos = document.getElementById('stat-cursos');
 
+            // Esperar a que la sesión de Supabase esté lista antes de consultar
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                console.warn('Dashboard: No hay sesión activa, no se pueden cargar estadísticas');
+                return;
+            }
+
             // Rango del mes actual
             const ahora = new Date();
             const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString();
@@ -196,10 +203,14 @@
 
                 // Usuarios activos: contar usuarios únicos
                 if (elUsuarios) {
-                    if (!usuariosRes.error && usuariosRes.data) {
+                    if (usuariosRes.error) {
+                        console.error('Error query usuarios activos:', usuariosRes.error);
+                        elUsuarios.textContent = '0';
+                    } else if (usuariosRes.data && usuariosRes.data.length > 0) {
                         const uniqueUsers = new Set(usuariosRes.data.map(i => i.usuario_id));
                         elUsuarios.textContent = uniqueUsers.size;
                     } else {
+                        console.warn('Usuarios activos: data vacía', usuariosRes);
                         elUsuarios.textContent = '0';
                     }
                 }
