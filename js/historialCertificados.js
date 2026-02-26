@@ -100,10 +100,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             </div>
 
                             <div class="cert-actions">
-                                <button class="btn-kiki-primary" data-action="ver" data-curso-id="${cert.id}">
-                                    <i class="fa-regular fa-eye me-2"></i>Ver
-                                </button>
-                                <button class="btn-kiki-outline" data-action="descargar" data-curso-id="${cert.id}">
+                                <button class="btn-kiki-primary" data-action="descargar" data-curso-id="${cert.id}">
                                     <i class="fa-solid fa-download me-2"></i>Descargar
                                 </button>
                             </div>
@@ -123,9 +120,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const action = btn.getAttribute('data-action');
             const cursoId = btn.getAttribute('data-curso-id');
 
-            if (action === 'ver') {
-                verCertificado(cursoId);
-            } else if (action === 'descargar') {
+            if (action === 'descargar') {
                 descargarCertificado(cursoId);
             }
         });
@@ -134,12 +129,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Ejecutar carga de certificados
     cargarCertificados();
 });
-
-// Funciones globales para compatibilidad con onclick
-function verCertificado(id) {
-    window.location.href = `claseAlumn.html?curso=${id}&showCertificate=true`;
-}
-window.verCertificado = verCertificado;
 
 async function descargarCertificado(cursoId) {
     try {
