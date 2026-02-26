@@ -339,7 +339,6 @@ export const CursosService = {
                     estado,
                     fecha_expiracion,
                     porcentaje_progreso,
-                    acceso_bloqueado,
                     cursos (
                         id,
                         nombre,
@@ -349,8 +348,7 @@ export const CursosService = {
                     )
                 `)
                 .eq('usuario_id', usuarioId)
-                .eq('estado', 'ACTIVO') // Solo accesos activos
-                .eq('acceso_bloqueado', false); // Solo si no está bloqueado
+                .eq('estado', 'ACTIVO'); // Solo inscripciones activas
 
             if (error) throw error;
 
