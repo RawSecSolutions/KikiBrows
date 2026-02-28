@@ -103,6 +103,65 @@ body {
     height: 100%;
 }
 
+/* Carrusel de imágenes en sección Nosotros */
+.nosotros-text-col {
+    background-color: var(--white);
+}
+
+.nosotros-carousel-col {
+    overflow: hidden;
+}
+
+.nosotros-slide {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* En mobile: texto arriba (40%) y carrusel abajo (60%) */
+@media (max-width: 991px) {
+    #nosotros .nosotros-text-col {
+        height: 40%;
+        padding: 1.5rem;
+    }
+
+    #nosotros .nosotros-carousel-col {
+        height: 60%;
+    }
+
+    #nosotros .nosotros-text-col .display-4 {
+        font-size: 1.8rem;
+    }
+
+    #nosotros .nosotros-text-col .lead {
+        font-size: 0.95rem;
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* Sección Contacto con imagen de fondo */
+.contacto-bg {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.contacto-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 0;
+}
+
+.contacto-bg > .container {
+    position: relative;
+    z-index: 1;
+}
+
 .contacto-block {
     /* Fallback para navegadores sin soporte de backdrop-filter */
     background-color: rgb(253, 252, 250);
