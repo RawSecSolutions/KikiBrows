@@ -399,3 +399,69 @@ body {
         min-height: 420px;
     }
 }
+
+/* 6. CARRUSEL DE FONDO - NOSOTROS */
+.nosotros-bg-carousel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.nosotros-bg-carousel .carousel-inner,
+.nosotros-bg-carousel .carousel-item {
+    height: 100%;
+}
+
+.nosotros-bg-carousel .carousel-item {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Overlay suave para que el texto sea legible sin perder la estética */
+.nosotros-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(253, 252, 250, 0.62);
+    z-index: 1;
+}
+
+/* Capa de contenido por encima del overlay */
+.nosotros-content-layer {
+    z-index: 2;
+}
+
+/* Indicadores del carrusel nosotros */
+#nosotrosCarousel .carousel-indicators {
+    z-index: 3;
+}
+
+#nosotrosCarousel .carousel-control-prev,
+#nosotrosCarousel .carousel-control-next {
+    z-index: 3;
+}
+
+/* 7. FONDO IMAGEN - CONTACTO */
+/* El .contacto-block ya tiene backdrop-filter y rgba que le dan contraste suficiente */
+#contacto {
+    background-color: transparent;
+}
+
+#contacto::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(253, 252, 250, 0.45);
+    z-index: 0;
+}
+
+#contacto .container {
+    position: relative;
+    z-index: 1;
+}
