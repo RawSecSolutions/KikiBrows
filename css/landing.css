@@ -32,7 +32,7 @@ body {
 
 /* Z-index escalonado para que cada sección 'pise' a la anterior */
 #inicio { z-index: 10; }
-#nosotros { z-index: 20; }
+#nosotros { z-index: 25; }
 #contacto { z-index: 30; }
 
 /* 2. CARRUSEL (Sección Inicio) */
@@ -201,7 +201,7 @@ body {
 
 /* 5. CARRUSEL DE CURSOS */
 #cursos {
-    z-index: 25;
+    z-index: 20;
     height: auto !important;
     min-height: 100vh;
     overflow: visible !important;
