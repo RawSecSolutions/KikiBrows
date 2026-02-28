@@ -425,7 +425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     role: roleEl.value
                 };
 
-                const { data: edgeData, error: functionError } = await supabase.functions.invoke('create-user-admin', {
+                const { data: edgeData, error: functionError } = await supabase.functions.invoke('bright-api', {
                     body: userData
                 });
 
