@@ -18,45 +18,41 @@
     <div id="navbar-global"></div>
 
     <section id="nosotros" class="sticky-section container-fluid p-0">
-        <div class="row g-0 h-100 w-100 m-0">
-            <!-- Columna izquierda: texto -->
-            <div class="col-lg-6 d-flex align-items-center justify-content-center nosotros-text-col">
-                <div class="text-center animate-up px-4 px-lg-5">
-                    <h2 class="display-4 fw-bold mb-4" style="color: var(--accent-color);">NOSOTROS</h2>
-                    <p class="lead mb-4 mx-auto" style="max-width: 500px;">Somos un equipo de expertas en estética y diseño de cejas, comprometidas con entregar formación profesional de alto nivel. Nuestros cursos están diseñados y dictados por especialistas con años de experiencia en el mundo de la belleza, para que aprendas técnicas reales y actuales desde la comodidad de tu hogar.</p>
-                    <a href="#contacto" class="register-button">Contáctanos</a>
+        <!-- Carrusel de fondo -->
+        <div id="nosotrosCarousel" class="carousel slide carousel-fade carousel-full-width" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Kiki"></button>
+                <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="1" aria-label="Nosotros 1"></button>
+                <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="2" aria-label="Nosotros 2"></button>
+                <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="3" aria-label="Nosotros 3"></button>
+            </div>
+            <div class="carousel-inner h-100">
+                <div class="carousel-item active h-100">
+                    <div class="nosotros-slide" style="background-image: url('img/kiki.jpg');"></div>
+                </div>
+                <div class="carousel-item h-100">
+                    <div class="nosotros-slide" style="background-image: url('img/nos_0.jpg');"></div>
+                </div>
+                <div class="carousel-item h-100">
+                    <div class="nosotros-slide" style="background-image: url('img/nos_1.jpg');"></div>
+                </div>
+                <div class="carousel-item h-100">
+                    <div class="nosotros-slide" style="background-image: url('img/nos_2.jpg');"></div>
                 </div>
             </div>
-            <!-- Columna derecha: carrusel de imágenes -->
-            <div class="col-lg-6 p-0 nosotros-carousel-col">
-                <div id="nosotrosCarousel" class="carousel slide carousel-fade h-100" data-bs-ride="carousel" data-bs-interval="4000">
-                    <div class="carousel-indicators">
-                        <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Kiki"></button>
-                        <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="1" aria-label="Nosotros 1"></button>
-                        <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="2" aria-label="Nosotros 2"></button>
-                        <button type="button" data-bs-target="#nosotrosCarousel" data-bs-slide-to="3" aria-label="Nosotros 3"></button>
-                    </div>
-                    <div class="carousel-inner h-100">
-                        <div class="carousel-item active h-100">
-                            <div class="nosotros-slide" style="background-image: url('img/kiki.jpg');"></div>
-                        </div>
-                        <div class="carousel-item h-100">
-                            <div class="nosotros-slide" style="background-image: url('img/nos_0.jpg');"></div>
-                        </div>
-                        <div class="carousel-item h-100">
-                            <div class="nosotros-slide" style="background-image: url('img/nos_1.jpg');"></div>
-                        </div>
-                        <div class="carousel-item h-100">
-                            <div class="nosotros-slide" style="background-image: url('img/nos_2.jpg');"></div>
-                        </div>
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#nosotrosCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#nosotrosCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
-                </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#nosotrosCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#nosotrosCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+        <!-- Texto encima del carrusel -->
+        <div class="nosotros-overlay">
+            <div class="container text-center animate-up">
+                <h2 class="display-4 fw-bold mb-4" style="color: var(--accent-color);">NOSOTROS</h2>
+                <p class="lead mb-4 mx-auto" style="max-width: 700px;">Somos un equipo de expertas en estética y diseño de cejas, comprometidas con entregar formación profesional de alto nivel. Nuestros cursos están diseñados y dictados por especialistas con años de experiencia en el mundo de la belleza, para que aprendas técnicas reales y actuales desde la comodidad de tu hogar.</p>
+                <a href="#contacto" class="register-button">Contáctanos</a>
             </div>
         </div>
     </section>
