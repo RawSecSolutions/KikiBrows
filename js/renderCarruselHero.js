@@ -114,7 +114,7 @@ function crearSlideHero(curso, isActive) {
     slide.className = `carousel-item${isActive ? ' active' : ''}`;
     
     // Aplicar estilos de fondo usando propiedades individuales
-    // Esto permite que el CSS (height: 100vh) se aplique correctamente
+    // Esto permite que el CSS (height: 70vh) se aplique correctamente
     if (curso.portada_url) {
         slide.style.backgroundImage = `url('${curso.portada_url}')`;
         slide.style.backgroundSize = 'cover';
@@ -134,7 +134,7 @@ function crearSlideHero(curso, isActive) {
         : (curso.descripcion || 'Clases 100% online y demostraciones prácticas.');
 
     slide.innerHTML = `
-        <div class="bg-overlay-dark">
+        <div class="bg-overlay-dark w-100 h-100 d-flex align-items-center justify-content-center">
             <div class="carousel-caption-custom text-center shadow animate-up">
                 <h1 class="display-4 fw-bold">${curso.nombre.toUpperCase()}</h1>
                 <p class="lead">${descripcionCorta}</p>
@@ -150,7 +150,7 @@ function crearSlideHero(curso, isActive) {
 function mostrarSlideDefault(carouselInner, carouselIndicators) {
     carouselInner.innerHTML = `
         <div class="carousel-item active" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div class="bg-overlay-dark">
+            <div class="bg-overlay-dark w-100 h-100 d-flex align-items-center justify-content-center">
                 <div class="carousel-caption-custom text-center shadow animate-up visible">
                     <h1 class="display-4 fw-bold">KIKI BROWS</h1>
                     <p class="lead">Cursos profesionales de belleza y estética</p>
