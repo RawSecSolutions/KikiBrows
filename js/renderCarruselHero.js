@@ -112,19 +112,9 @@ function handleSlideChange(e) {
 function crearSlideHero(curso, isActive) {
     const slide = document.createElement('div');
     slide.className = `carousel-item${isActive ? ' active' : ''}`;
-    
-    // Aplicar estilos de fondo usando propiedades individuales
-    // Esto permite que el CSS (height: 70vh) se aplique correctamente
-    if (curso.portada_url) {
-        slide.style.backgroundImage = `url('${curso.portada_url}')`;
-        slide.style.backgroundSize = 'cover';
-        slide.style.backgroundPosition = 'center';
-    } else {
-        slide.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-    }
 
     // Formatear precio
-    const precioFormateado = curso.precio 
+    const precioFormateado = curso.precio
         ? `$ ${curso.precio.toLocaleString('es-CL')}`
         : 'Consultar precio';
 
@@ -133,9 +123,16 @@ function crearSlideHero(curso, isActive) {
         ? curso.descripcion.substring(0, 80) + '...'
         : (curso.descripcion || 'Clases 100% online y demostraciones prácticas.');
 
+    const imagenHTML = curso.portada_url
+        ? `<img src="${curso.portada_url}" alt="${curso.nombre}" class="hero-carousel-img">`
+        : '<div class="hero-carousel-img-placeholder"><i class="fas fa-image"></i></div>';
+
     slide.innerHTML = `
-        <div class="bg-overlay-dark w-100 h-100 d-flex align-items-center justify-content-center">
-            <div class="carousel-caption-custom text-center shadow animate-up">
+        <div class="hero-split-layout">
+            <div class="hero-split-image">
+                ${imagenHTML}
+            </div>
+            <div class="hero-split-content animate-up">
                 <h1 class="display-4 fw-bold">${curso.nombre.toUpperCase()}</h1>
                 <p class="lead">${descripcionCorta}</p>
                 <span class="fs-3 fw-bold d-block my-3" style="color: var(--accent-color);">Valor: ${precioFormateado}</span>
@@ -149,9 +146,12 @@ function crearSlideHero(curso, isActive) {
 
 function mostrarSlideDefault(carouselInner, carouselIndicators) {
     carouselInner.innerHTML = `
-        <div class="carousel-item active" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div class="bg-overlay-dark w-100 h-100 d-flex align-items-center justify-content-center">
-                <div class="carousel-caption-custom text-center shadow animate-up visible">
+        <div class="carousel-item active">
+            <div class="hero-split-layout">
+                <div class="hero-split-image">
+                    <div class="hero-carousel-img-placeholder"><i class="fas fa-image"></i></div>
+                </div>
+                <div class="hero-split-content animate-up visible">
                     <h1 class="display-4 fw-bold">KIKI BROWS</h1>
                     <p class="lead">Cursos profesionales de belleza y estética</p>
                     <span class="fs-3 fw-bold d-block my-3" style="color: var(--accent-color);">Próximamente nuevos cursos</span>
