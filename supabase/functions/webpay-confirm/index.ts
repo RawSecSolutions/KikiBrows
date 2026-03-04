@@ -8,7 +8,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const TBK_COMMERCE_CODE = Deno.env.get('TBK_COMMERCE_CODE') ?? '597055555532'
 const TBK_API_KEY = Deno.env.get('TBK_API_KEY') ?? '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'
-const TBK_URL = 'https://webpay3gstd.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions'
+// integración: webpay3gint | producción: webpay3g
+const TBK_URL = 'https://webpay3gint.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

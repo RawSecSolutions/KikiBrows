@@ -13,7 +13,8 @@ const TBK_COMMERCE_CODE = Deno.env.get('TBK_COMMERCE_CODE') ?? '597055555532'
 const TBK_API_KEY = Deno.env.get('TBK_API_KEY') ?? '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'
 
 // URL de integración (test). Para producción: webpay3g.transbank.cl
-const TBK_URL = 'https://webpay3gstd.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions'
+// integración: webpay3gint | producción: webpay3g
+const TBK_URL = 'https://webpay3gint.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -97,9 +98,10 @@ serve(async (req: Request) => {
     )
 
   } catch (err) {
-    console.error('[webpay-create] Error:', err)
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[webpay-create] Excepción:', msg)
     return new Response(
-      JSON.stringify({ error: 'Error interno del servidor' }),
+      JSON.stringify({ error: 'Error interno del servidor', detail: msg }),
       { status: 500, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
     )
   }

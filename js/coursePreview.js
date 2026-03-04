@@ -488,7 +488,7 @@ function configurarEventosPortalPago(curso) {
                 const EDGE_URL = 'https://wrmelwftwumsfwzjjoxa.supabase.co/functions/v1';
                 const returnUrl = `${window.location.origin}/payment-confirmation.html`;
 
-                const resp = await fetch(`${EDGE_URL}/webpay-create`, {
+                const resp = await fetch(`${EDGE_URL}/dynamic-worker`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
