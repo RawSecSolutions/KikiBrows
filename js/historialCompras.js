@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
             cursoId: "microblading-expert",
             cursoNombre: "Microblading Expert",
             monto: 350000,
-            metodoPago: "Webpay Plus",
+            metodoPago: "TRANSBANK",
             codigoAutorizacion: "1234567890",
             fecha: new Date("2024-12-15T14:30:00")
         },
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
             cursoId: "diseno-mirada-pro",
             cursoNombre: "Diseño de Mirada Pro",
             monto: 280000,
-            metodoPago: "Transbank",
+            metodoPago: "TRANSBANK",
             codigoAutorizacion: "0987654321",
             fecha: new Date("2024-11-20T16:45:00")
         }
@@ -192,7 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
         doc.setFont('helvetica', 'bold');
         doc.text('Método de Pago:', 20, y);
         doc.setFont('helvetica', 'normal');
-        doc.text(transaccion.metodoPago || 'Webpay Plus', 60, y);
+        const nombres = { 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
+        doc.text(nombres[transaccion.metodoPago] || transaccion.metodoPago || 'Webpay Plus', 60, y);
 
         y += 10;
         doc.setFont('helvetica', 'bold');

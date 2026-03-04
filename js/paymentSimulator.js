@@ -9,7 +9,7 @@
  * @param {Object} usuario - Objeto del usuario
  * @param {string} metodoPago - Método de pago usado
  */
-function simularPagoExitoso(cursoId, metodoPago = 'Webpay Plus') {
+function simularPagoExitoso(cursoId, metodoPago = 'TRANSBANK') {
     // Inicializar CursosData
     if (typeof CursosData !== 'undefined' && CursosData.init) {
         CursosData.init();
@@ -49,7 +49,7 @@ function simularPagoExitoso(cursoId, metodoPago = 'Webpay Plus') {
  * @param {number} cursoId - ID del curso
  * @param {string} metodoPago - Método de pago usado
  */
-function simularPagoRechazado(cursoId, metodoPago = 'Webpay Plus') {
+function simularPagoRechazado(cursoId, metodoPago = 'TRANSBANK') {
     if (typeof CursosData !== 'undefined' && CursosData.init) {
         CursosData.init();
     }
@@ -88,5 +88,5 @@ console.log('%cFunciones disponibles:', 'font-weight: bold; font-size: 14px; col
 console.log('%c- simularPagoExitoso(cursoId, metodoPago)', 'color: #6B8F71;');
 console.log('%c- simularPagoRechazado(cursoId, metodoPago)', 'color: #B67676;');
 console.log('%c\nEjemplo de uso:', 'font-weight: bold; font-size: 12px; margin-top: 10px;');
-console.log('%csimularPagoExitoso(1, "Webpay Plus")', 'font-style: italic; color: #666;');
-console.log('%csimularPagoRechazado(1, "Webpay Plus")', 'font-style: italic; color: #666;');
+console.log('%csimularPagoExitoso(1, "TRANSBANK")', 'font-style: italic; color: #666;');
+console.log('%csimularPagoRechazado(1, "TRANSBANK")', 'font-style: italic; color: #666;');

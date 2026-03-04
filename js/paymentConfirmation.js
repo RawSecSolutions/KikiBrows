@@ -1,6 +1,13 @@
 // js/paymentConfirmation.js - Lógica para la página de confirmación de pago
 // Maneja los diferentes estados de transacción y genera boletas
 
+// ==================== MAPEO DE MÉTODO DE PAGO (DB → Display) ====================
+
+function formatearMetodoPago(metodo) {
+    const nombres = { 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
+    return nombres[metodo] || metodo || 'Webpay Plus';
+}
+
 // ==================== OBTENER PARÁMETROS DE URL ====================
 
 function obtenerParametrosUrl() {
@@ -100,7 +107,7 @@ function mostrarEstadoExitoso(transaccion) {
 
     // Cargar detalles de la transacción
     document.getElementById('fechaCompra').textContent = formatearFecha(transaccion.fecha);
-    document.getElementById('metodoPago').textContent = transaccion.metodoPago || 'Webpay Plus';
+    document.getElementById('metodoPago').textContent = formatearMetodoPago(transaccion.metodoPago);
     document.getElementById('codigoTransaccion').textContent = transaccion.codigoAutorizacion || transaccion.transaccionId || 'N/A';
     document.getElementById('montoPagado').textContent = formatearPrecio(transaccion.monto);
 
@@ -126,7 +133,7 @@ function mostrarEstadoPendiente(transaccion) {
 
     // Cargar detalles
     document.getElementById('fechaCompraPendiente').textContent = formatearFecha(transaccion.fecha);
-    document.getElementById('metodoPagoPendiente').textContent = transaccion.metodoPago || 'Método de Pago';
+    document.getElementById('metodoPagoPendiente').textContent = formatearMetodoPago(transaccion.metodoPago);
 
     // Configurar botones
     configurarBotonesPendiente();
@@ -288,7 +295,7 @@ function generarBoleta(transaccion) {
     doc.setFont('helvetica', 'bold');
     doc.text('Método de Pago:', 20, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(transaccion.metodoPago || 'Webpay Plus', 60, y);
+    doc.text(formatearMetodoPago(transaccion.metodoPago), 60, y);
 
     y += 10;
     doc.setFont('helvetica', 'bold');
@@ -426,7 +433,7 @@ async function procesarWebpayReturn(tokenWs, tbkToken) {
                 estado: 'PAGADO',
                 cursoNombre: data.cursoNombre,
                 monto: data.monto,
-                metodoPago: data.metodoPago || 'Webpay Plus',
+                metodoPago: data.metodoPago || 'TRANSBANK',
                 fecha: data.fecha,
                 codigoAutorizacion: data.codigoAutorizacion,
                 transaccionId: data.transaccionId
