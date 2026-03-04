@@ -475,10 +475,57 @@ function configurarEventosPortalPago(curso) {
     
     const formWebpay = document.getElementById('formWebpay');
     if (formWebpay) {
-        formWebpay.onsubmit = (e) => {
+        formWebpay.onsubmit = async (e) => {
             e.preventDefault();
-            alert('Simulación: Redirigiendo a Webpay...');
-            procesarCompraExitosa(curso, 'Webpay Plus');
+
+            const btn = formWebpay.querySelector('button[type="submit"]');
+            const spinner = btn.querySelector('.spinner-border');
+            btn.disabled = true;
+            if (spinner) spinner.classList.remove('d-none');
+            btn.querySelector('i.fas')?.classList.add('d-none');
+
+            try {
+                const EDGE_URL = 'https://wrmelwftwumsfwzjjoxa.supabase.co/functions/v1';
+                const returnUrl = `${window.location.origin}/payment-confirmation.html`;
+
+                const resp = await fetch(`${EDGE_URL}/webpay-create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cursoId: curso.id,
+                        cursoNombre: curso.nombre,
+                        monto: curso.precio,
+                        usuarioId: usuarioActual.id,
+                        returnUrl
+                    })
+                });
+
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.error || 'Error al crear transacción');
+                }
+
+                const { token, url } = await resp.json();
+
+                // Redirigir a Webpay vía form POST (requerido por Transbank)
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'token_ws';
+                input.value = token;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+
+            } catch (err) {
+                console.error('Error iniciando Webpay:', err);
+                alert('Ocurrió un error al iniciar el pago. Por favor intenta nuevamente.');
+                btn.disabled = false;
+                if (spinner) spinner.classList.add('d-none');
+                btn.querySelector('i.fas')?.classList.remove('d-none');
+            }
         };
     }
     

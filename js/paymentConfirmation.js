@@ -377,12 +377,90 @@ function formatearFecha(fecha) {
     return fecha.toLocaleDateString('es-CL', opciones);
 }
 
+// ==================== WEBPAY REAL: CONFIRMAR VÍA EDGE FUNCTION ====================
+
+const EDGE_URL = 'https://wrmelwftwumsfwzjjoxa.supabase.co/functions/v1';
+
+function mostrarCargandoConfirmacion() {
+    // Oculta todos los estados y muestra un spinner de espera
+    ['estadoExitoso', 'estadoPendiente', 'estadoRechazado', 'estadoError'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+
+    const container = document.querySelector('.confirmation-container');
+    if (container && !document.getElementById('estadoCargando')) {
+        const div = document.createElement('div');
+        div.id = 'estadoCargando';
+        div.className = 'confirmation-content text-center';
+        div.style.display = 'block';
+        div.innerHTML = `
+            <div class="spinner-border mb-4" role="status" style="width:3rem;height:3rem;color:#8A835A;">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <h1 class="confirmation-title">Verificando tu pago...</h1>
+            <p class="confirmation-message">Estamos confirmando tu transacción con Webpay. Un momento por favor.</p>
+        `;
+        container.appendChild(div);
+    }
+}
+
+async function procesarWebpayReturn(tokenWs, tbkToken) {
+    mostrarCargandoConfirmacion();
+
+    try {
+        const resp = await fetch(`${EDGE_URL}/webpay-confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token_ws: tokenWs || null, tbk_token: tbkToken || null })
+        });
+
+        const data = await resp.json();
+
+        // Ocultar spinner
+        const spinner = document.getElementById('estadoCargando');
+        if (spinner) spinner.style.display = 'none';
+
+        if (data.estado === 'PAGADO') {
+            mostrarEstadoExitoso({
+                estado: 'PAGADO',
+                cursoNombre: data.cursoNombre,
+                monto: data.monto,
+                metodoPago: data.metodoPago || 'Webpay Plus',
+                fecha: data.fecha,
+                codigoAutorizacion: data.codigoAutorizacion,
+                transaccionId: data.transaccionId
+            });
+        } else {
+            // RECHAZADO o ANULADO → mostrar estado de rechazo
+            mostrarEstadoRechazado({ cursoId: data.cursoId });
+        }
+
+    } catch (err) {
+        console.error('[paymentConfirmation] Error confirmando con Webpay:', err);
+        const spinner = document.getElementById('estadoCargando');
+        if (spinner) spinner.style.display = 'none';
+        mostrarEstadoError();
+    }
+}
+
 // ==================== INICIALIZACIÓN ====================
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Inicializando paymentConfirmation.js');
 
-    // Cargar información de la transacción
+    // ── Detectar retorno real de Webpay (token_ws o TBK_TOKEN en la URL) ──
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenWs = urlParams.get('token_ws');
+    const tbkToken = urlParams.get('TBK_TOKEN');
+
+    if (tokenWs || tbkToken) {
+        // Viene de Webpay real: confirmar vía Edge Function
+        procesarWebpayReturn(tokenWs, tbkToken);
+        return;
+    }
+
+    // ── Flujo legacy: localStorage (simulador / Mercado Pago) ──
     const transaccion = cargarTransaccion();
 
     if (!transaccion) {
@@ -390,10 +468,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Normalizar el estado (puede venir como 'PAGADO', 'pagado', 'approved', etc.)
+    // Normalizar el estado
     let estado = (transaccion.estado || '').toUpperCase();
 
-    // Mapear estados de Mercado Pago a estados internos
     if (estado === 'APPROVED' || estado === 'PAGADO' || estado === 'SUCCESS') {
         estado = 'PAGADO';
     } else if (estado === 'PENDING' || estado === 'PENDIENTE' || estado === 'IN_PROCESS') {
@@ -402,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
         estado = 'RECHAZADO';
     }
 
-    // Mostrar el estado correspondiente
     switch (estado) {
         case 'PAGADO':
             mostrarEstadoExitoso(transaccion);
@@ -417,8 +493,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Estado de transacción desconocido:', estado);
             mostrarEstadoError();
     }
-
-    // Limpiar la transacción del localStorage después de cargarla
-    // (opcional, dependiendo de si quieres mantener el historial)
-    // localStorage.removeItem('ultimaTransaccion');
 });
