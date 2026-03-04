@@ -36,24 +36,27 @@ body {
 #contacto { z-index: 30; }
 
 /* 2. CARRUSEL (Sección Inicio) */
-.carousel-full-width {
-    width: 100%;
-    height: 100%;
-}
+/* .carousel-full-width reemplazado por clases Bootstrap w-100 h-100 */
 
 .carousel-item {
-    height: 100vh;
     background-size: cover;
     background-position: center;
 }
 
+/* Hero carousel más pequeño que el de Nosotros */
+#inicio {
+    height: 70vh !important;
+    min-height: 500px;
+}
+
+#homeCarousel .carousel-item {
+    height: 70vh;
+    min-height: 500px;
+}
+
 .bg-overlay-dark {
     background: rgba(0, 0, 0, 0.3);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Layout (w, h, flex) manejado por clases Bootstrap: w-100 h-100 d-flex align-items-center justify-content-center */
 }
 
 .carousel-caption-custom {
@@ -379,6 +382,16 @@ body {
     .cursos-carousel {
         padding: 1rem 0;
     }
+
+    #inicio {
+        height: 60vh !important;
+        min-height: 450px;
+    }
+
+    #homeCarousel .carousel-item {
+        height: 60vh;
+        min-height: 450px;
+    }
 }
 
 /* Móviles pequeños */
@@ -397,6 +410,16 @@ body {
 
     .producto-card {
         min-height: 420px;
+    }
+
+    #inicio {
+        height: 55vh !important;
+        min-height: 400px;
+    }
+
+    #homeCarousel .carousel-item {
+        height: 55vh;
+        min-height: 400px;
     }
 }
 
@@ -442,10 +465,6 @@ body {
     z-index: 3;
 }
 
-#nosotrosCarousel .carousel-control-prev,
-#nosotrosCarousel .carousel-control-next {
-    z-index: 3;
-}
 
 /* 7. FONDO IMAGEN - CONTACTO */
 /* El .contacto-block ya tiene backdrop-filter y rgba que le dan contraste suficiente */
