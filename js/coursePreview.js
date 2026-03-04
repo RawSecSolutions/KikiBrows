@@ -533,7 +533,7 @@ function configurarEventosPortalPago(curso) {
     if(btnPagarMP) {
         btnPagarMP.onclick = () => {
             alert('Simulación: Redirigiendo a Mercado Pago...');
-            procesarCompraExitosa(curso, 'Mercado Pago');
+            procesarCompraExitosa(curso, 'MERCADOPAGO');
         };
     }
 }
