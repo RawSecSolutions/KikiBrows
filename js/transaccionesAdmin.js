@@ -1,99 +1,115 @@
-// js/transaccionesAdmin.js
+// js/transaccionesAdmin.js - Transacciones Admin con datos reales de Supabase
+
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Simulación de datos con trazabilidad bancaria
-    const allTransactions = [
-        {
-            id: 1,
-            producto: 'Curso Microblading',
-            valor: 30000,
-            usuario: 'Maria Castillo',
-            fecha: '12/12/2024',
-            email: 'maria@gmail.com',
-            estado: 'Completada',
-            // Datos bancarios
-            paymentStatus: 'PAGADO',
-            bank: 'Webpay Plus',
-            paymentMethod: 'Débito',
-            authCode: '182930',
-            gatewayToken: '01ab23cd-45ef-6789-90ab-cdef12345678'
-        },
-        {
-            id: 2,
-            producto: 'Lifting Pestañas',
-            valor: 15000,
-            usuario: 'Javier Pérez',
-            fecha: '12/12/2024',
-            email: 'javier@mail.com',
-            estado: 'Completada',
-            // Datos bancarios
-            paymentStatus: 'PAGADO',
-            bank: 'Mercado Pago',
-            paymentMethod: 'Crédito',
-            authCode: '998877',
-            gatewayToken: 'mp-3d4e5f67-89ab-cdef-0123-456789abcdef'
-        },
-        {
-            id: 3,
-            producto: 'Diseño de Cejas',
-            valor: 45000,
-            usuario: 'Andrea Soto',
-            fecha: '11/12/2024',
-            email: 'andrea@mail.com',
-            estado: 'Completada',
-            // Datos bancarios
-            paymentStatus: 'PAGADO',
-            bank: 'Webpay Plus',
-            paymentMethod: 'Prepago',
-            authCode: '445521',
-            gatewayToken: '02bc34de-56fa-7890-12bc-def345678901'
-        },
-        // Generar más datos para probar paginación
-        ...Array(15).fill().map((_, i) => {
-            const statuses = ['PAGADO', 'PAGADO', 'PAGADO', 'PENDIENTE', 'RECHAZADO'];
-            const banks = ['Webpay Plus', 'Mercado Pago'];
-            const methods = ['Débito', 'Crédito', 'Prepago'];
-
-            return {
-                id: i + 4,
-                producto: `Servicio ${i + 4}`,
-                valor: (i + 1) * 2000,
-                usuario: `Cliente ${i + 4}`,
-                fecha: `10/12/2024`,
-                email: `cliente${i + 4}@mail.com`,
-                estado: 'Completada',
-                // Datos bancarios
-                paymentStatus: statuses[i % statuses.length],
-                bank: banks[i % banks.length],
-                paymentMethod: methods[i % methods.length],
-                authCode: String(100000 + i * 11111).substring(0, 6),
-                gatewayToken: `${i}abc${i}def-${i}ghi-${i}jkl-${i}mno-${i}pqr${i}stu${i}vwx`
-            };
-        })
-    ];
-
     const transactionsPerPage = 8;
     let currentPage = 1;
-    let filteredTransactions = [...allTransactions]; // Transacciones filtradas por búsqueda
-    let totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+    let allTransactions = [];
+    let filteredTransactions = [];
+    let totalPages = 0;
 
     const listBody = document.getElementById('transaction-list');
     const modalDetails = document.getElementById('modal-details');
     const searchInput = document.getElementById('transaction-search');
-
-    // Elementos de paginación
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
+
+    // Cargar transacciones reales desde Supabase
+    async function loadTransactions() {
+        if (listBody) {
+            listBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        Cargando transacciones...
+                    </td>
+                </tr>
+            `;
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('transacciones')
+                .select(`
+                    id,
+                    folio_visual,
+                    curso_titulo_snapshot,
+                    monto,
+                    metodo_pago,
+                    estado,
+                    token_pasarela,
+                    codigo_autorizacion,
+                    fecha_compra,
+                    usuario_id,
+                    curso_id,
+                    profiles (
+                        first_name,
+                        last_name,
+                        email
+                    )
+                `)
+                .order('fecha_compra', { ascending: false });
+
+            if (error) throw error;
+
+            allTransactions = (data || []).map(t => {
+                const nombre = t.profiles
+                    ? `${t.profiles.first_name || ''} ${t.profiles.last_name || ''}`.trim()
+                    : 'Usuario desconocido';
+                const email = t.profiles?.email || '';
+
+                // Formatear fecha
+                const fecha = t.fecha_compra
+                    ? new Date(t.fecha_compra).toLocaleDateString('es-CL', {
+                        day: '2-digit', month: '2-digit', year: 'numeric'
+                    })
+                    : 'Sin fecha';
+
+                return {
+                    id: t.id,
+                    folio: t.folio_visual || null,
+                    producto: t.curso_titulo_snapshot || 'Producto sin nombre',
+                    valor: Number(t.monto) || 0,
+                    usuario: nombre,
+                    email: email,
+                    fecha: fecha,
+                    fechaRaw: t.fecha_compra,
+                    estado: t.estado || 'PENDIENTE',
+                    metodo_pago: t.metodo_pago || '',
+                    codigo_autorizacion: t.codigo_autorizacion || '',
+                    token_pasarela: t.token_pasarela || ''
+                };
+            });
+
+            filteredTransactions = [...allTransactions];
+            renderTable();
+
+        } catch (err) {
+            console.error('Error cargando transacciones:', err);
+            if (listBody) {
+                listBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger py-4">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                            <p class="mb-0">Error al cargar transacciones. Intenta recargar la página.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+    }
 
     function renderTable() {
         if (!listBody) return;
         listBody.innerHTML = '';
 
-        // Recalcular paginación basada en datos filtrados
         totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
 
-        // Si no hay resultados, mostrar mensaje
         if (filteredTransactions.length === 0) {
             listBody.innerHTML = `
                 <tr>
@@ -112,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const displayData = filteredTransactions.slice(start, end);
 
         displayData.forEach(t => {
+            const displayId = t.folio ? `#${t.folio}` : `#${t.id.substring(0, 8)}`;
             const row = document.createElement('tr');
             row.style.cursor = 'pointer';
             row.innerHTML = `
@@ -119,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="fw-bold">$ ${t.valor.toLocaleString('es-CL')}</td>
                 <td>${t.usuario}</td>
                 <td>${t.fecha}</td>
-                <td>#${t.id}</td>
+                <td>${displayId}</td>
                 <td>
                     <button class="btn btn-sm text-white" style="background-color: #8A835A;"
                             data-id="${t.id}" data-bs-toggle="modal" data-bs-target="#transactionDetailModal">
@@ -132,53 +149,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updatePagination();
     }
-    
+
     function updatePagination() {
         if (!prevBtn || !nextBtn) return;
 
-        // Estado botones
         if (currentPage === 1) prevBtn.classList.add('disabled');
         else prevBtn.classList.remove('disabled');
 
         if (currentPage === totalPages || totalPages === 0) nextBtn.classList.add('disabled');
         else nextBtn.classList.remove('disabled');
-
-        // Listeners simples (se recomienda removerlos y re-agregar o usar clonación para evitar duplicados en SPA, aquí simple)
-        // Nota: En una app real, gestiona los listeners mejor.
     }
 
-    // Función de búsqueda inteligente
+    // Búsqueda inteligente
     function searchTransactions(query) {
         const searchTerm = query.toLowerCase().trim();
 
         if (!searchTerm) {
-            // Si no hay búsqueda, mostrar todas
             filteredTransactions = [...allTransactions];
         } else {
-            // Buscar en nombre, ID y código de autorización
             filteredTransactions = allTransactions.filter(t => {
                 const matchesName = t.usuario.toLowerCase().includes(searchTerm);
-                const matchesId = String(t.id).includes(searchTerm) || `#${t.id}`.includes(searchTerm);
-                const matchesAuthCode = t.authCode.toLowerCase().includes(searchTerm);
+                const matchesFolio = t.folio && String(t.folio).includes(searchTerm);
+                const matchesId = t.id.toLowerCase().includes(searchTerm);
+                const matchesAuthCode = t.codigo_autorizacion.toLowerCase().includes(searchTerm);
                 const matchesProduct = t.producto.toLowerCase().includes(searchTerm);
 
-                return matchesName || matchesId || matchesAuthCode || matchesProduct;
+                return matchesName || matchesFolio || matchesId || matchesAuthCode || matchesProduct;
             });
         }
 
-        // Resetear a la primera página después de buscar
         currentPage = 1;
         renderTable();
     }
 
-    // Event listener para búsqueda
+    // Event listeners
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             searchTransactions(e.target.value);
         });
     }
 
-    // Eventos Paginación
     if (prevBtn) {
         prevBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -198,23 +208,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
-    // Evento Modal Detalle
+
+    // Modal Detalle
     const detailModal = document.getElementById('transactionDetailModal');
     if (detailModal) {
         detailModal.addEventListener('show.bs.modal', (event) => {
             const btn = event.relatedTarget;
             const id = btn.getAttribute('data-id');
-            const t = allTransactions.find(x => x.id == id);
+            const t = allTransactions.find(x => x.id === id);
 
             if (t && modalDetails) {
-                // Determinar color del badge según estado
                 const statusColors = {
                     'PAGADO': 'success',
                     'PENDIENTE': 'warning',
                     'RECHAZADO': 'danger'
                 };
-                const statusColor = statusColors[t.paymentStatus] || 'secondary';
+                const statusColor = statusColors[t.estado] || 'secondary';
+                const displayId = t.folio ? `#${t.folio}` : `#${t.id.substring(0, 8)}`;
 
                 modalDetails.innerHTML = `
                     <h5 class="fw-bold mb-1">${t.producto}</h5>
@@ -225,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="text-muted small">${t.email}</p>
                     <hr>
 
-                    <!-- Sección de Datos del Banco (Trazabilidad) -->
+                    <!-- Datos del Banco (Trazabilidad) -->
                     <div class="bank-details-section p-3 rounded mb-3" style="background-color: rgba(138, 131, 90, 0.08); border-left: 3px solid #8A835A;">
                         <p class="fw-bold mb-2" style="color: #8A835A; font-size: 0.9rem;">
                             <i class="fas fa-university me-2"></i>DATOS DEL BANCO (TRAZABILIDAD)
@@ -234,41 +244,47 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="row g-2 small">
                             <div class="col-12">
                                 <span class="text-muted">Estado:</span>
-                                <span class="badge bg-${statusColor} ms-2">${t.paymentStatus}</span>
+                                <span class="badge bg-${statusColor} ms-2">${t.estado}</span>
                             </div>
-                            <div class="col-12">
-                                <span class="text-muted">Banco:</span>
-                                <strong class="ms-2">${t.bank} (${t.paymentMethod})</strong>
-                            </div>
-                            <div class="col-12">
-                                <span class="text-muted">Cód. Autorización:</span>
-                                <strong class="ms-2 text-primary">${t.authCode}</strong>
-                                <i class="fas fa-copy ms-1 text-muted" style="cursor: pointer;"
-                                   onclick="navigator.clipboard.writeText('${t.authCode}')"
-                                   title="Copiar código"></i>
-                            </div>
+                            ${t.metodo_pago ? `
                             <div class="col-12">
                                 <span class="text-muted">Método de Pago:</span>
-                                <strong class="ms-2">${t.paymentMethod}</strong>
-                            </div>
+                                <strong class="ms-2">${t.metodo_pago}</strong>
+                            </div>` : ''}
+                            ${t.codigo_autorizacion ? `
+                            <div class="col-12">
+                                <span class="text-muted">Cód. Autorización:</span>
+                                <strong class="ms-2 text-primary">${t.codigo_autorizacion}</strong>
+                                <i class="fas fa-copy ms-1 text-muted" style="cursor: pointer;"
+                                   title="Copiar código"></i>
+                            </div>` : ''}
+                            ${t.token_pasarela ? `
                             <div class="col-12">
                                 <span class="text-muted">Token Pasarela:</span>
-                                <code class="ms-2 small" style="font-size: 0.7rem; color: #6c757d; background-color: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 3px;">${t.gatewayToken}</code>
+                                <code class="ms-2 small" style="font-size: 0.7rem; color: #6c757d; background-color: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 3px;">${t.token_pasarela}</code>
                                 <i class="fas fa-copy ms-1 text-muted" style="cursor: pointer;"
-                                   onclick="navigator.clipboard.writeText('${t.gatewayToken}')"
                                    title="Copiar token"></i>
-                            </div>
+                            </div>` : ''}
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-between text-muted small">
-                        <span>ID: <strong>#${t.id}</strong></span>
+                        <span>ID: <strong>${displayId}</strong></span>
                         <span>Fecha: <strong>${t.fecha}</strong></span>
                     </div>
                 `;
+
+                // Event listeners para copiar al portapapeles
+                modalDetails.querySelectorAll('.fa-copy').forEach(icon => {
+                    icon.addEventListener('click', () => {
+                        const textToCopy = icon.previousElementSibling.textContent.trim();
+                        navigator.clipboard.writeText(textToCopy);
+                    });
+                });
             }
         });
     }
 
-    renderTable();
+    // Iniciar carga
+    loadTransactions();
 });
