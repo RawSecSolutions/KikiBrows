@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (listBody) {
             listBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-4">
+                    <td colspan="7" class="text-center text-muted py-4">
                         <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                         Cargando transacciones...
                     </td>
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (listBody) {
                 listBody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center text-danger py-4">
+                        <td colspan="7" class="text-center text-danger py-4">
                             <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
                             <p class="mb-0">Error al cargar transacciones. Intenta recargar la página.</p>
                         </td>
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filteredTransactions.length === 0) {
             listBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-4">
+                    <td colspan="7" class="text-center text-muted py-4">
                         <i class="fas fa-search fa-2x mb-2"></i>
                         <p class="mb-0">No se encontraron transacciones que coincidan con tu búsqueda</p>
                     </td>
@@ -138,11 +138,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const displayId = t.folio ? `#${t.folio}` : `#${t.id.substring(0, 8)}`;
             const row = document.createElement('tr');
             row.style.cursor = 'pointer';
+            const statusColors = {
+                'PAGADO': 'success',
+                'PENDIENTE': 'warning',
+                'RECHAZADO': 'danger'
+            };
+            const statusColor = statusColors[t.estado] || 'secondary';
             row.innerHTML = `
                 <td>${t.producto}</td>
                 <td class="fw-bold">$ ${t.valor.toLocaleString('es-CL')}</td>
                 <td>${t.usuario}</td>
                 <td>${t.fecha}</td>
+                <td><span class="badge bg-${statusColor}">${t.estado}</span></td>
                 <td>${displayId}</td>
                 <td>
                     <button class="btn btn-sm text-white" style="background-color: #8A835A;"
