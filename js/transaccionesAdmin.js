@@ -46,22 +46,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     codigo_autorizacion,
                     fecha_compra,
                     usuario_id,
-                    curso_id,
-                    profiles (
-                        first_name,
-                        last_name,
-                        email
-                    )
+                    curso_id
                 `)
                 .order('fecha_compra', { ascending: false });
 
             if (error) throw error;
 
+            // Fetch profiles separately since there's no FK relationship
+            const usuarioIds = [...new Set((data || []).map(t => t.usuario_id).filter(Boolean))];
+            let profilesMap = {};
+            if (usuarioIds.length > 0) {
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, first_name, last_name, email')
+                    .in('id', usuarioIds);
+                (profiles || []).forEach(p => { profilesMap[p.id] = p; });
+            }
+
             allTransactions = (data || []).map(t => {
-                const nombre = t.profiles
-                    ? `${t.profiles.first_name || ''} ${t.profiles.last_name || ''}`.trim()
+                const profile = profilesMap[t.usuario_id];
+                const nombre = profile
+                    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
                     : 'Usuario desconocido';
-                const email = t.profiles?.email || '';
+                const email = profile?.email || '';
 
                 // Formatear fecha
                 const fecha = t.fecha_compra
