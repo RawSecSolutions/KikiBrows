@@ -57,8 +57,12 @@ export const AdminCursosService = {
             const maxSize = 500 * 1024 * 1024; // 500MB
             if (file.size > maxSize) return { success: false, error: 'El archivo excede los 500MB permitidos' };
 
-            const validTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
-            if (!validTypes.includes(file.type)) return { success: false, error: 'Formato no válido. Solo MP4, WEBM o MOV' };
+            const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
+            const validExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv'];
+            const fileExtCheck = file.name.split('.').pop().toLowerCase();
+            if (!validTypes.includes(file.type) && !validExts.includes(fileExtCheck)) {
+                return { success: false, error: 'Formato no válido. Solo MP4, WEBM, MOV o HEVC' };
+            }
 
             const fileExt = file.name.split('.').pop();
             const timestamp = Date.now();
