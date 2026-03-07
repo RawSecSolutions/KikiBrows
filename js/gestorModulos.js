@@ -391,8 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `
                     <div class="mb-3">
                         <label class="form-label">Video de la clase</label>
-                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm,.mov">
-                        <small class="text-muted">MP4, WEBM, MOV • Máx 500MB</small>
+                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm,.mov,.hevc,.mkv">
+                        <small class="text-muted">MP4, WEBM, MOV, HEVC • Máx 500MB</small>
                         <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
                     </div>
                     <div class="upload-progress-container" id="uploadProgress" style="display: none;">
@@ -469,8 +469,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold">1. Video Demostrativo (Instructora)</label>
-                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm">
-                        <small class="text-muted">Sube el ejemplo que las alumnas deben imitar.</small>
+                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm,.mov,.hevc,.mkv">
+                        <small class="text-muted">Sube el ejemplo que las alumnas deben imitar. (MP4, WEBM, MOV, HEVC)</small>
                         <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
                     </div>
                     
@@ -687,8 +687,11 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMsg.classList.remove('d-none');
             return { success: false };
         }
-        if (!['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type)) {
-            errorMsg.textContent = "Formato no válido. Solo MP4, WEBM o MOV.";
+        const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
+        const validVideoExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv'];
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        if (!validVideoTypes.includes(file.type) && !validVideoExts.includes(fileExt)) {
+            errorMsg.textContent = "Formato no válido. Solo MP4, WEBM, MOV o HEVC.";
             errorMsg.classList.remove('d-none');
             return { success: false };
         }

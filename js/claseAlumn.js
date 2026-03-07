@@ -501,10 +501,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            // Detectar tipo MIME según extensión del archivo
+            const videoExt = videoSrc.split('.').pop().split('?')[0].toLowerCase();
+            const videoMimeMap = { mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', hevc: 'video/hevc', mkv: 'video/x-matroska' };
+            const videoMime = videoMimeMap[videoExt] || 'video/mp4';
+
             videoHTML = `
                 <div class="video-container">
                     <video id="mainVideo" controls controlsList="nodownload">
-                        <source src="${videoSrc}" type="video/mp4">
+                        <source src="${videoSrc}" type="${videoMime}">
+                        ${videoMime !== 'video/mp4' ? `<source src="${videoSrc}" type="video/mp4">` : ''}
                         Tu navegador no soporta video HTML5.
                     </video>
                 </div>
@@ -981,7 +987,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const instrucciones = metadata.instrucciones_entrega || currentClase.instrucciones || currentClase.descripcion || 'Sube un archivo demostrando la técnica aprendida en este módulo.';
         const demoVideo = currentClase.contenido_url || currentClase.demoVideo || '';
         // Ajustado para que el texto de la UI coincida con la validación de Supabase (Solo video)
-        const archivosPermitidos = metadata.archivos_permitidos || ['.mp4', '.webm', '.mov'];
+        const archivosPermitidos = metadata.archivos_permitidos || ['.mp4', '.webm', '.mov', '.hevc'];
         const pesoMaximoMb = metadata.peso_maximo_mb || 500;
         const rubrica = metadata.rubrica_evaluacion || [];
 
@@ -989,7 +995,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tiposArchivo = archivosPermitidos.map(ext => {
             if (ext.includes('jpg') || ext.includes('png')) return 'image/*';
             if (ext.includes('pdf')) return 'application/pdf';
-            if (ext.includes('mp4') || ext.includes('webm') || ext.includes('mov')) return 'video/*';
+            if (ext.includes('mp4') || ext.includes('webm') || ext.includes('mov') || ext.includes('hevc') || ext.includes('mkv')) return 'video/*';
             return ext;
         }).join(',');
 
@@ -1021,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
                             <i class="fas fa-upload me-2"></i>Seleccionar Video
                         </button>
-                        <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime" hidden>
+                        <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,video/hevc,.hevc,.mov,.mp4" hidden>
                     </div>
                 </div>
             `;
@@ -1108,7 +1114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="entrega-demo-video">
                     <div class="video-container">
                         <video controls>
-                            <source src="${demoVideo}" type="video/mp4">
+                            <source src="${demoVideo}">
                         </video>
                     </div>
                 </div>
@@ -1237,9 +1243,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function processFile(file) {
         // Validar formato
-        const validTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
-        if (!validTypes.includes(file.type)) {
-            alert('Formato no válido. Solo se permiten archivos MP4, WEBM o MOV.');
+        const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
+        const validExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv'];
+        const fileExtLower = file.name.split('.').pop().toLowerCase();
+        if (!validTypes.includes(file.type) && !validExts.includes(fileExtLower)) {
+            alert('Formato no válido. Solo se permiten archivos MP4, WEBM, MOV o HEVC.');
             return;
         }
 
@@ -1341,11 +1349,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <i class="fas fa-cloud-upload-alt"></i>
                 </div>
                 <div class="upload-text">Arrastra aquí tu archivo o haz clic para seleccionar</div>
-                <div class="upload-hint">Formatos: .mp4, .webm | Máximo: 500MB</div>
+                <div class="upload-hint">Formatos: .mp4, .webm, .mov, .hevc | Máximo: 500MB</div>
                 <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
                     <i class="fas fa-upload me-2"></i>Seleccionar Video
                 </button>
-                <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden>
+                <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,video/hevc,.hevc,.mov,.mp4" hidden>
             `;
 
             // Re-setup event listeners
