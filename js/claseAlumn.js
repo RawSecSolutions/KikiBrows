@@ -981,7 +981,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const instrucciones = metadata.instrucciones_entrega || currentClase.instrucciones || currentClase.descripcion || 'Sube un archivo demostrando la técnica aprendida en este módulo.';
         const demoVideo = currentClase.contenido_url || currentClase.demoVideo || '';
         // Ajustado para que el texto de la UI coincida con la validación de Supabase (Solo video)
-        const archivosPermitidos = metadata.archivos_permitidos || ['.mp4', '.webm'];
+        const archivosPermitidos = metadata.archivos_permitidos || ['.mp4', '.webm', '.mov'];
         const pesoMaximoMb = metadata.peso_maximo_mb || 500;
         const rubrica = metadata.rubrica_evaluacion || [];
 
@@ -989,7 +989,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tiposArchivo = archivosPermitidos.map(ext => {
             if (ext.includes('jpg') || ext.includes('png')) return 'image/*';
             if (ext.includes('pdf')) return 'application/pdf';
-            if (ext.includes('mp4') || ext.includes('webm')) return 'video/*';
+            if (ext.includes('mp4') || ext.includes('webm') || ext.includes('mov')) return 'video/*';
             return ext;
         }).join(',');
 
@@ -1021,7 +1021,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
                             <i class="fas fa-upload me-2"></i>Seleccionar Video
                         </button>
-                        <input type="file" id="videoInput" accept="video/mp4,video/webm" hidden>
+                        <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime" hidden>
                     </div>
                 </div>
             `;
@@ -1237,9 +1237,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function processFile(file) {
         // Validar formato
-        const validTypes = ['video/mp4', 'video/webm'];
+        const validTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
         if (!validTypes.includes(file.type)) {
-            alert('Formato no válido. Solo se permiten archivos MP4 o WEBM.');
+            alert('Formato no válido. Solo se permiten archivos MP4, WEBM o MOV.');
             return;
         }
 

@@ -57,8 +57,8 @@ export const AdminCursosService = {
             const maxSize = 500 * 1024 * 1024; // 500MB
             if (file.size > maxSize) return { success: false, error: 'El archivo excede los 500MB permitidos' };
 
-            const validTypes = ['video/mp4', 'video/webm'];
-            if (!validTypes.includes(file.type)) return { success: false, error: 'Formato no válido. Solo MP4 o WEBM' };
+            const validTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
+            if (!validTypes.includes(file.type)) return { success: false, error: 'Formato no válido. Solo MP4, WEBM o MOV' };
 
             const fileExt = file.name.split('.').pop();
             const timestamp = Date.now();

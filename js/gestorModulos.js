@@ -391,8 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `
                     <div class="mb-3">
                         <label class="form-label">Video de la clase</label>
-                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm">
-                        <small class="text-muted">MP4, WEBM • Máx 500MB</small>
+                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm,.mov">
+                        <small class="text-muted">MP4, WEBM, MOV • Máx 500MB</small>
                         <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
                     </div>
                     <div class="upload-progress-container" id="uploadProgress" style="display: none;">
@@ -687,8 +687,8 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMsg.classList.remove('d-none');
             return { success: false };
         }
-        if (!['video/mp4', 'video/webm'].includes(file.type)) {
-            errorMsg.textContent = "Formato no válido. Solo MP4 o WEBM.";
+        if (!['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type)) {
+            errorMsg.textContent = "Formato no válido. Solo MP4, WEBM o MOV.";
             errorMsg.classList.remove('d-none');
             return { success: false };
         }
