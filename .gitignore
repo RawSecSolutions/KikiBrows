@@ -20,3 +20,6 @@ yarn-error.log*
 # --- Carpetas de Build (si usas empaquetadores en el futuro) ---
 dist/
 build/
+
+# --- Supabase (Edge Functions managed in dashboard) ---
+supabase/
