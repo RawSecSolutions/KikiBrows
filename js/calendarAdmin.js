@@ -4,10 +4,7 @@
  * Conectado a Supabase (consulta_slots, consultas_reservas) + Edge Function zoom-create-meeting
  */
 
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+import { supabase } from './sessionManager.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
