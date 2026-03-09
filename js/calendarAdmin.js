@@ -1,112 +1,103 @@
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * js/calendarAdmin.js
+ * Gestión del Calendario de Consultas Zoom - Panel Admin
+ * Conectado a Supabase (consulta_slots, consultas_reservas) + Edge Function zoom-create-meeting
+ */
 
-    // --- CONFIGURACIÓN ZOOM API ---
-    // Cargar configuración guardada
-    function loadZoomConfig() {
-        const token = localStorage.getItem('zoomAccessToken');
-        const userId = localStorage.getItem('zoomUserId') || 'me';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-        if (token) {
-            document.getElementById('zoom-access-token').value = token;
-        }
-        if (userId) {
-            document.getElementById('zoom-user-id').value = userId;
-        }
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        return { token, userId };
-    }
+document.addEventListener('DOMContentLoaded', async () => {
 
-    // Guardar configuración
-    document.getElementById('btn-save-zoom-config').addEventListener('click', () => {
-        const token = document.getElementById('zoom-access-token').value.trim();
-        const userId = document.getElementById('zoom-user-id').value.trim() || 'me';
-        const statusDiv = document.getElementById('zoom-status');
-
-        if (!token) {
-            statusDiv.className = 'alert alert-warning';
-            statusDiv.textContent = 'Por favor ingresa un Access Token válido';
-            statusDiv.classList.remove('d-none');
-            return;
-        }
-
-        // Guardar en localStorage (en producción esto debería estar en el backend)
-        localStorage.setItem('zoomAccessToken', token);
-        localStorage.setItem('zoomUserId', userId);
-
-        statusDiv.className = 'alert alert-success';
-        statusDiv.textContent = '✓ Configuración guardada exitosamente';
-        statusDiv.classList.remove('d-none');
-
-        showToast('Configuración de Zoom guardada exitosamente');
-
-        setTimeout(() => {
-            bootstrap.Modal.getInstance(document.getElementById('zoomConfigModal')).hide();
-        }, 1500);
-    });
-
-    // Cargar configuración al iniciar
-    loadZoomConfig();
-
-    // --- BASE DE DATOS LOCAL SIMULADA ---
-    let slotsDB = [
-        { 
-            id: 1, 
-            fecha: '2025-10-12', 
-            inicio: '10:00', 
-            fin: '11:00', 
-            cuposMax: 5, 
-            cuposOcupados: 2, 
-            estado: 'available', 
-            zoomStart: 'https://zoom.us/s/ejemplo-start', // Link para el Admin
-            zoomJoin: 'https://zoom.us/j/ejemplo-join',   // Link para la Alumna
-            reservas: [
-                { nombre: "Ana García", email: "ana@mail.com", curso: "Microblading" },
-                { nombre: "Luisa Lane", email: "luisa@mail.com", curso: "Lifting" }
-            ]
-        },
-        { 
-            id: 2, 
-            fecha: '2025-10-15', 
-            inicio: '15:00', 
-            fin: '16:00', 
-            cuposMax: 10, 
-            cuposOcupados: 0, 
-            estado: 'available', 
-            zoomStart: 'https://zoom.us/s/ejemplo-start-2',
-            zoomJoin: 'https://zoom.us/j/ejemplo-join-2',
-            reservas: []
-        }
-    ];
-
+    // --- REFERENCIAS DOM ---
     const tableContainer = document.getElementById('calendar-table-container');
+    const pastTableContainer = document.getElementById('past-table-container');
     const totalResultsSpan = document.getElementById('total-results');
     const toastEl = document.getElementById('liveToast');
     const toastBody = document.getElementById('toast-message');
     const toast = new bootstrap.Toast(toastEl);
 
-    // Helpers
-    function showToast(msg) {
+    // --- HELPERS ---
+    function showToast(msg, type = 'success') {
+        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
         toastBody.textContent = msg;
         toast.show();
     }
 
     function formatDate(dateStr) {
-        // Truco para evitar problemas de zona horaria al formatear
-        const parts = dateStr.split('-');
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        const d = new Date(dateStr);
+        const dia = String(d.getDate()).padStart(2, '0');
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const año = d.getFullYear();
+        return `${dia}/${mes}/${año}`;
+    }
+
+    function formatTime(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
     }
 
     function getBadge(estado) {
-        if(estado === 'available') return '<span class="badge bg-success rounded-pill">Disponible</span>';
-        if(estado === 'full') return '<span class="badge bg-warning text-dark rounded-pill">Lleno</span>';
+        if (estado === 'DISPONIBLE') return '<span class="badge bg-success rounded-pill">Disponible</span>';
+        if (estado === 'LLENO') return '<span class="badge bg-warning text-dark rounded-pill">Lleno</span>';
         return '<span class="badge bg-secondary rounded-pill">Cerrado</span>';
     }
 
-    // --- RENDERIZAR TABLA ---
-    function renderTable() {
-        if(totalResultsSpan) totalResultsSpan.textContent = slotsDB.length;
+    function calculateDuration(inicio, fin) {
+        const [h1, m1] = inicio.split(':').map(Number);
+        const [h2, m2] = fin.split(':').map(Number);
+        return (h2 * 60 + m2) - (h1 * 60 + m1);
+    }
 
-        if (slotsDB.length === 0) {
+    // --- CARGAR SLOTS DESDE SUPABASE ---
+    let slotsCache = [];
+
+    async function loadSlots() {
+        try {
+            const now = new Date().toISOString();
+
+            const { data, error } = await supabase
+                .from('consulta_slots')
+                .select('*')
+                .gte('fecha_inicio', now)
+                .order('fecha_inicio', { ascending: true });
+
+            if (error) throw error;
+
+            slotsCache = data || [];
+            renderTable(slotsCache);
+        } catch (err) {
+            console.error('Error cargando slots:', err);
+            showToast('Error al cargar los slots', 'danger');
+        }
+    }
+
+    async function loadPastSlots() {
+        try {
+            const now = new Date().toISOString();
+
+            const { data, error } = await supabase
+                .from('consulta_slots')
+                .select('*')
+                .lt('fecha_inicio', now)
+                .order('fecha_inicio', { ascending: false })
+                .limit(50);
+
+            if (error) throw error;
+
+            renderPastTable(data || []);
+        } catch (err) {
+            console.error('Error cargando slots pasados:', err);
+        }
+    }
+
+    // --- RENDERIZAR TABLA PRÓXIMAS ---
+    function renderTable(slots) {
+        if (totalResultsSpan) totalResultsSpan.textContent = slots.length;
+
+        if (slots.length === 0) {
             tableContainer.innerHTML = '<div class="text-center p-5 text-muted">No hay slots creados.</div>';
             return;
         }
@@ -126,12 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tbody>
         `;
 
-        slotsDB.forEach(slot => {
+        slots.forEach(slot => {
             html += `
                 <tr data-id="${slot.id}">
-                    <td class="fw-bold">${formatDate(slot.fecha)}</td>
-                    <td>${slot.inicio} - ${slot.fin}</td>
-                    <td>${slot.cuposOcupados}/${slot.cuposMax}</td>
+                    <td class="fw-bold">${formatDate(slot.fecha_inicio)}</td>
+                    <td>${formatTime(slot.fecha_inicio)} - ${formatTime(slot.fecha_fin)}</td>
+                    <td>${slot.cupos_ocupados}/${slot.cupos_maximos}</td>
                     <td>${getBadge(slot.estado)}</td>
                     <td>
                         <button class="btn btn-sm btn-primary btn-icon me-1" title="Ver Detalles y Links" data-action="view">
@@ -148,169 +139,301 @@ document.addEventListener('DOMContentLoaded', () => {
         tableContainer.innerHTML = html;
     }
 
+    // --- RENDERIZAR TABLA PASADAS ---
+    function renderPastTable(slots) {
+        if (!pastTableContainer) return;
+
+        if (slots.length === 0) {
+            pastTableContainer.innerHTML = '<p class="text-center text-muted p-5 fst-italic">No hay historial disponible.</p>';
+            return;
+        }
+
+        let html = `
+            <div class="table-responsive">
+            <table class="table calendar-table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>FECHA</th>
+                        <th>HORARIO</th>
+                        <th>CUPOS USADOS</th>
+                        <th>ESTADO</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        slots.forEach(slot => {
+            html += `
+                <tr>
+                    <td class="fw-bold">${formatDate(slot.fecha_inicio)}</td>
+                    <td>${formatTime(slot.fecha_inicio)} - ${formatTime(slot.fecha_fin)}</td>
+                    <td>${slot.cupos_ocupados}/${slot.cupos_maximos}</td>
+                    <td>${getBadge(slot.estado)}</td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table></div>';
+        pastTableContainer.innerHTML = html;
+    }
+
     // --- ACCIONES DE TABLA ---
-    tableContainer.addEventListener('click', (e) => {
+    tableContainer.addEventListener('click', async (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
-        
-        const id = parseInt(btn.closest('tr').dataset.id);
-        const slot = slotsDB.find(s => s.id === id);
+
+        const id = btn.closest('tr').dataset.id;
+        const slot = slotsCache.find(s => s.id === id);
+        if (!slot) return;
 
         if (btn.dataset.action === 'delete') {
-            if (slot.cuposOcupados > 0) {
-                if(!confirm(`¡OJO! Hay ${slot.cuposOcupados} alumnas inscritas.\nSi borras esto, el sistema les enviará un correo de cancelación.\n¿Confirmas?`)) return;
-                showToast('Slot borrado y correos de cancelación enviados.');
+            if (slot.cupos_ocupados > 0) {
+                if (!confirm(`¡OJO! Hay ${slot.cupos_ocupados} alumnas inscritas.\n¿Confirmas eliminar este slot?`)) return;
             } else {
-                if(!confirm('¿Borrar este slot vacío?')) return;
-                showToast('Slot eliminado.');
+                if (!confirm('¿Borrar este slot vacío?')) return;
             }
-            slotsDB = slotsDB.filter(s => s.id !== id);
-            renderTable();
+
+            try {
+                // Eliminar reservas asociadas primero
+                const { error: resError } = await supabase
+                    .from('consultas_reservas')
+                    .delete()
+                    .eq('slot_id', id);
+
+                if (resError) throw resError;
+
+                // Eliminar el slot
+                const { error } = await supabase
+                    .from('consulta_slots')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showToast('Slot eliminado correctamente.');
+                await loadSlots();
+            } catch (err) {
+                console.error('Error eliminando slot:', err);
+                showToast('Error al eliminar el slot', 'danger');
+            }
         }
 
         if (btn.dataset.action === 'view') {
-            openDetailModal(slot);
+            await openDetailModal(slot);
         }
     });
 
-    // --- MODAL DETALLE (La parte clave para ver los links) ---
+    // --- MODAL DETALLE ---
     const viewModal = new bootstrap.Modal(document.getElementById('viewSlotModal'));
 
-    function openDetailModal(slot) {
-        document.getElementById('detail-date').textContent = formatDate(slot.fecha);
-        document.getElementById('detail-time').textContent = `${slot.inicio} - ${slot.fin}`;
-        document.getElementById('detail-cupos').textContent = `${slot.cuposOcupados}/${slot.cuposMax}`;
+    async function openDetailModal(slot) {
+        document.getElementById('detail-date').textContent = formatDate(slot.fecha_inicio);
+        document.getElementById('detail-time').textContent = `${formatTime(slot.fecha_inicio)} - ${formatTime(slot.fecha_fin)}`;
+        document.getElementById('detail-cupos').textContent = `${slot.cupos_ocupados}/${slot.cupos_maximos}`;
         document.getElementById('detail-badge').innerHTML = getBadge(slot.estado);
-        
+
         // Barra progreso
-        const percent = (slot.cuposOcupados / slot.cuposMax) * 100;
+        const percent = slot.cupos_maximos > 0 ? (slot.cupos_ocupados / slot.cupos_maximos) * 100 : 0;
         document.getElementById('detail-progress').style.width = `${percent}%`;
 
-        // Botones links
-        document.getElementById('btn-join-now').href = slot.zoomStart;
+        // Links de Zoom (columnas directas)
+        const hostUrl = slot.zoom_host_url;
+        const joinUrl = slot.zoom_link;
 
-        // Configurar botones de copiado (Clonamos para limpiar eventos previos)
+        const btnJoin = document.getElementById('btn-join-now');
+        btnJoin.href = hostUrl || '#';
+        if (!hostUrl) btnJoin.classList.add('disabled');
+        else btnJoin.classList.remove('disabled');
+
+        // Botones de copiado (clonar para limpiar eventos previos)
         const btnAdmin = document.getElementById('btn-copy-admin');
         const btnStudent = document.getElementById('btn-copy-student');
-        
+
         const newBtnAdmin = btnAdmin.cloneNode(true);
         const newBtnStudent = btnStudent.cloneNode(true);
-        
+
         btnAdmin.parentNode.replaceChild(newBtnAdmin, btnAdmin);
         btnStudent.parentNode.replaceChild(newBtnStudent, btnStudent);
 
         newBtnAdmin.addEventListener('click', () => {
-            navigator.clipboard.writeText(slot.zoomStart);
-            showToast('Link de HOST (Tu link) copiado.');
+            if (hostUrl) {
+                navigator.clipboard.writeText(hostUrl);
+                showToast('Link de HOST (Tu link) copiado.');
+            } else {
+                showToast('No hay link de host disponible.', 'warning');
+            }
         });
 
         newBtnStudent.addEventListener('click', () => {
-            navigator.clipboard.writeText(slot.zoomJoin);
-            showToast('Link de ALUMNA (Para compartir) copiado.');
+            if (joinUrl) {
+                navigator.clipboard.writeText(joinUrl);
+                showToast('Link de ALUMNA (Para compartir) copiado.');
+            } else {
+                showToast('No hay link de alumna disponible.', 'warning');
+            }
         });
 
-        // Llenar lista alumnas
+        // Cargar lista de alumnas inscritas desde consultas_reservas
         const listBody = document.getElementById('detail-students-list');
         const noMsg = document.getElementById('no-students-msg');
         listBody.innerHTML = '';
 
-        if (slot.reservas.length === 0) {
+        try {
+            const { data: reservas, error } = await supabase
+                .from('consultas_reservas')
+                .select(`
+                    id,
+                    curso_nombre_snapshot,
+                    estado,
+                    created_at,
+                    usuario_id
+                `)
+                .eq('slot_id', slot.id)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+
+            if (!reservas || reservas.length === 0) {
+                noMsg.classList.remove('d-none');
+            } else {
+                noMsg.classList.add('d-none');
+
+                // Obtener perfiles de los usuarios reservados
+                const userIds = reservas.map(r => r.usuario_id);
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, first_name, last_name')
+                    .in('id', userIds);
+
+                const profileMap = {};
+                (profiles || []).forEach(p => {
+                    profileMap[p.id] = p;
+                });
+
+                reservas.forEach(r => {
+                    const profile = profileMap[r.usuario_id];
+                    const nombre = profile
+                        ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
+                        : 'Sin nombre';
+
+                    listBody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${nombre}</td>
+                            <td class="text-muted small">${r.usuario_id.substring(0, 8)}...</td>
+                            <td><span class="badge bg-light text-dark border">${r.curso_nombre_snapshot || 'General'}</span></td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (err) {
+            console.error('Error cargando reservas:', err);
             noMsg.classList.remove('d-none');
-        } else {
-            noMsg.classList.add('d-none');
-            slot.reservas.forEach(r => {
-                listBody.innerHTML += `
-                    <tr>
-                        <td class="fw-bold">${r.nombre}</td>
-                        <td class="text-muted small">${r.email}</td>
-                        <td><span class="badge bg-light text-dark border">${r.curso}</span></td>
-                    </tr>
-                `;
-            });
         }
+
         viewModal.show();
     }
 
-    // --- CREAR SLOT ---
+    // --- CREAR SLOT (con Zoom API via Edge Function) ---
     document.getElementById('create-slot-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const fecha = document.getElementById('slot-date').value;
         const inicio = document.getElementById('start-time').value;
         const fin = document.getElementById('end-time').value;
+        const cuposMax = parseInt(document.getElementById('max-slots').value);
 
-        if(inicio >= fin) {
+        if (inicio >= fin) {
             alert('La hora de fin debe ser después del inicio.');
             return;
         }
 
-        // Obtener configuración de Zoom
-        const zoomConfig = loadZoomConfig();
+        // Mostrar loading en el botón
+        const submitBtn = e.target.querySelector('button[type="submit"]') || document.querySelector('[form="create-slot-form"][type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
 
-        // --- INTEGRACIÓN CON ZOOM API (EJEMPLO) ---
-        // Si tienes configurado el token de Zoom, aquí harías la llamada a la API
-        let zoomStart = `https://zoom.us/s/${Date.now()}?role=host`;
-        let zoomJoin = `https://zoom.us/j/${Date.now()}`;
+        try {
+            // Construir las fechas con timezone de Chile
+            const fechaInicio = `${fecha}T${inicio}:00`;
+            const fechaFin = `${fecha}T${fin}:00`;
+            const duration = calculateDuration(inicio, fin);
+            const topic = `Consulta KikiBrows - ${fecha} ${inicio}-${fin}`;
 
-        if (zoomConfig.token) {
-            // En producción, esto sería una llamada a tu backend que usa Zoom API
-            /*
+            // Obtener sesión para el token de autenticación
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                throw new Error('Sesión expirada. Por favor recarga la página.');
+            }
+
+            // Llamar Edge Function para crear meeting en Zoom
+            let zoomData = null;
             try {
-                const response = await fetch('/api/zoom/create-meeting', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${zoomConfig.token}`
-                    },
-                    body: JSON.stringify({
-                        topic: `Consulta ${fecha} ${inicio}-${fin}`,
-                        type: 2, // Scheduled meeting
-                        start_time: `${fecha}T${inicio}:00`,
-                        duration: calculateDuration(inicio, fin),
-                        timezone: 'America/Mexico_City',
-                        settings: {
-                            host_video: true,
-                            participant_video: true,
-                            join_before_host: false,
-                            mute_upon_entry: true
-                        }
-                    })
+                const { data, error } = await supabase.functions.invoke('zoom-create-meeting', {
+                    body: {
+                        topic,
+                        start_time: fechaInicio,
+                        duration,
+                        timezone: 'America/Santiago'
+                    }
                 });
 
-                const data = await response.json();
-                zoomStart = data.start_url; // Link para el host
-                zoomJoin = data.join_url;   // Link para participantes
-
-                console.log('✓ Meeting de Zoom creado exitosamente');
-                console.log('Meeting ID:', data.id);
-            } catch (error) {
-                console.error('Error al crear meeting de Zoom:', error);
-                showToast('Advertencia: No se pudo crear el meeting de Zoom automáticamente');
+                if (error) throw error;
+                if (data && data.success) {
+                    zoomData = data;
+                    console.log('✓ Meeting de Zoom creado - ID:', data.meeting_id);
+                }
+            } catch (zoomErr) {
+                console.warn('⚠ No se pudo crear el meeting de Zoom:', zoomErr.message);
+                showToast('Slot creado sin meeting de Zoom (revisa la configuración)', 'warning');
             }
-            */
 
-            console.log('📝 Token de Zoom configurado. En producción, aquí se crearía el meeting automáticamente.');
+            // Insertar slot en Supabase con columnas separadas
+            const { data: newSlot, error: insertError } = await supabase
+                .from('consulta_slots')
+                .insert([{
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin,
+                    zoom_link: zoomData ? zoomData.join_url : null,
+                    zoom_host_url: zoomData ? zoomData.start_url : null,
+                    zoom_meeting_id: zoomData ? zoomData.meeting_id : null,
+                    cupos_maximos: cuposMax,
+                    cupos_ocupados: 0,
+                    estado: 'DISPONIBLE'
+                }])
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
+
+            // Cerrar modal y recargar
+            bootstrap.Modal.getInstance(document.getElementById('createSlotModal')).hide();
+            e.target.reset();
+
+            if (zoomData) {
+                showToast('Slot creado exitosamente con meeting de Zoom.');
+            } else {
+                showToast('Slot creado (sin enlace Zoom).', 'warning');
+            }
+
+            await loadSlots();
+
+        } catch (err) {
+            console.error('Error creando slot:', err);
+            showToast(err.message || 'Error al crear el slot', 'danger');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
         }
-
-        const newSlot = {
-            id: Date.now(),
-            fecha: fecha,
-            inicio: inicio,
-            fin: fin,
-            cuposMax: parseInt(document.getElementById('max-slots').value),
-            cuposOcupados: 0,
-            estado: 'available',
-            zoomStart: zoomStart,
-            zoomJoin: zoomJoin,
-            reservas: []
-        };
-
-        slotsDB.push(newSlot);
-        renderTable();
-        bootstrap.Modal.getInstance(document.getElementById('createSlotModal')).hide();
-        e.target.reset();
-        showToast('Slot creado exitosamente.');
     });
 
-    renderTable();
+    // --- TAB DE CLASES PASADAS: cargar al hacer clic ---
+    const pastTab = document.getElementById('past-tab');
+    if (pastTab) {
+        pastTab.addEventListener('shown.bs.tab', () => {
+            loadPastSlots();
+        });
+    }
+
+    // --- INIT ---
+    await loadSlots();
 });
