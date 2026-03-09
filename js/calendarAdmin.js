@@ -51,15 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return (h2 * 60 + m2) - (h1 * 60 + m1);
     }
 
-    function parseZoomLinks(zoomLink) {
-        if (!zoomLink) return { start_url: null, join_url: null };
-        try {
-            return JSON.parse(zoomLink);
-        } catch {
-            return { start_url: null, join_url: zoomLink };
-        }
-    }
-
     // --- CARGAR SLOTS DESDE SUPABASE ---
     let slotsCache = [];
 
@@ -244,12 +235,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const percent = slot.cupos_maximos > 0 ? (slot.cupos_ocupados / slot.cupos_maximos) * 100 : 0;
         document.getElementById('detail-progress').style.width = `${percent}%`;
 
-        // Links de Zoom
-        const links = parseZoomLinks(slot.zoom_link);
+        // Links de Zoom (columnas directas)
+        const hostUrl = slot.zoom_host_url;
+        const joinUrl = slot.zoom_link;
 
         const btnJoin = document.getElementById('btn-join-now');
-        btnJoin.href = links.start_url || '#';
-        if (!links.start_url) btnJoin.classList.add('disabled');
+        btnJoin.href = hostUrl || '#';
+        if (!hostUrl) btnJoin.classList.add('disabled');
         else btnJoin.classList.remove('disabled');
 
         // Botones de copiado (clonar para limpiar eventos previos)
@@ -263,8 +255,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnStudent.parentNode.replaceChild(newBtnStudent, btnStudent);
 
         newBtnAdmin.addEventListener('click', () => {
-            if (links.start_url) {
-                navigator.clipboard.writeText(links.start_url);
+            if (hostUrl) {
+                navigator.clipboard.writeText(hostUrl);
                 showToast('Link de HOST (Tu link) copiado.');
             } else {
                 showToast('No hay link de host disponible.', 'warning');
@@ -272,8 +264,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         newBtnStudent.addEventListener('click', () => {
-            if (links.join_url) {
-                navigator.clipboard.writeText(links.join_url);
+            if (joinUrl) {
+                navigator.clipboard.writeText(joinUrl);
                 showToast('Link de ALUMNA (Para compartir) copiado.');
             } else {
                 showToast('No hay link de alumna disponible.', 'warning');
@@ -395,21 +387,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast('Slot creado sin meeting de Zoom (revisa la configuración)', 'warning');
             }
 
-            // Preparar zoom_link como JSON
-            const zoomLink = zoomData ? JSON.stringify({
-                start_url: zoomData.start_url,
-                join_url: zoomData.join_url,
-                meeting_id: zoomData.meeting_id,
-                password: zoomData.password
-            }) : null;
-
-            // Insertar slot en Supabase
+            // Insertar slot en Supabase con columnas separadas
             const { data: newSlot, error: insertError } = await supabase
                 .from('consulta_slots')
                 .insert([{
                     fecha_inicio: fechaInicio,
                     fecha_fin: fechaFin,
-                    zoom_link: zoomLink,
+                    zoom_link: zoomData ? zoomData.join_url : null,
+                    zoom_host_url: zoomData ? zoomData.start_url : null,
+                    zoom_meeting_id: zoomData ? zoomData.meeting_id : null,
                     cupos_maximos: cuposMax,
                     cupos_ocupados: 0,
                     estado: 'DISPONIBLE'
