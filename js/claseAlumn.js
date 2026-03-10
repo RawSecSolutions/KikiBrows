@@ -195,6 +195,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadClase(currentModuloId, currentClaseId);
         }
 
+        // Si el curso está al 100% pero no hay certificado en DB, intentar generarlo
+        // (cubre el caso donde el cert no se generó en móvil por pérdida de conexión/background kill)
+        const progresoInit = CursosData.calcularProgresoCurso(currentCursoId);
+        if (progresoInit.porcentaje >= 100) {
+            await CursosData.intentarGenerarCertificado(currentCursoId);
+        }
+
         // Actualizar estado del certificado
         updateCertificateStatus();
 

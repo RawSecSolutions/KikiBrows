@@ -461,7 +461,7 @@ const CursosData = {
         return true;
     },
 
-    marcarClaseCompletada(cursoId, moduloId, claseId) {
+    async marcarClaseCompletada(cursoId, moduloId, claseId) {
         if (!this._student) return;
 
         if (!this._student.progreso[cursoId]) {
@@ -481,7 +481,10 @@ const CursosData = {
         this._student.progreso[cursoId].ultimaActividad = new Date().toISOString();
 
         this.saveStudent(this._student);
-        this._guardarProgresoSupabase(cursoId, moduloId, claseId, true);
+        // Awaitar el guardado en Supabase para que el progreso esté disponible
+        // antes de intentar generar el certificado (crítico en móvil donde los
+        // async fire-and-forget se pierden al cambiar de pestaña/app)
+        await this._guardarProgresoSupabase(cursoId, moduloId, claseId, true);
     },
 
     async _guardarProgresoSupabase(cursoId, moduloId, claseId, completado, segundoActual) {
