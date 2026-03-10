@@ -1019,6 +1019,24 @@ export const CursosService = {
     },
 
     /**
+     * Enviar email de consulta (booking o reminder) via Edge Function
+     * @param {string} reservaId - UUID de la reserva
+     * @param {string} type - 'booking' (inicial con zoom link) o 'reminder' (recordatorio con link de confirmación)
+     */
+    async enviarEmailConsulta(reservaId, type = 'booking') {
+        try {
+            const { data, error } = await supabase.functions.invoke('send-consultation-email', {
+                body: { reservaId, type }
+            });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.warn('Error al enviar email de consulta:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
      * Obtener el historial de reservas de un usuario
      * @param {string} usuarioId - UUID del usuario
      */
