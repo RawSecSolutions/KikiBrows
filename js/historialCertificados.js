@@ -35,6 +35,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
+    // Intentar generar certificados pendientes para cursos completados al 100%
+    try {
+        const cursosAdquiridos = CursosData.getCursosAdquiridos();
+        if (cursosAdquiridos && cursosAdquiridos.length > 0) {
+            await Promise.all(cursosAdquiridos.map(async (curso) => {
+                const progreso = CursosData.calcularProgresoCurso(curso.id);
+                if (progreso.porcentaje >= 100 && !CursosData.getCertificado(curso.id)) {
+                    await CursosData.intentarGenerarCertificado(curso.id);
+                }
+            }));
+        }
+    } catch (err) {
+        console.warn('Error al intentar generar certificados pendientes:', err);
+    }
+
     // FUNCIÓN PARA OBTENER CERTIFICADOS DESDE SUPABASE
     function obtenerCertificados() {
         const certificados = CursosData.getCertificados();
