@@ -1027,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
                             <i class="fas fa-upload me-2"></i>Seleccionar Video
                         </button>
-                        <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,video/hevc,.hevc,.mov,.mp4" hidden>
+                        <input type="file" id="videoInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv" hidden>
                     </div>
                 </div>
             `;
@@ -1243,10 +1243,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function processFile(file) {
         // Validar formato
+        // iOS Safari puede reportar MIME types vacíos o genéricos (application/octet-stream)
+        // para videos válidos, por eso priorizamos la validación por extensión
         const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
-        const validExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv'];
+        const validExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv', 'qt'];
         const fileExtLower = file.name.split('.').pop().toLowerCase();
-        if (!validTypes.includes(file.type) && !validExts.includes(fileExtLower)) {
+        const hasValidExt = validExts.includes(fileExtLower);
+        const hasValidType = validTypes.includes(file.type) || (file.type && file.type.startsWith('video/'));
+        const hasEmptyOrGenericType = !file.type || file.type === '' || file.type === 'application/octet-stream';
+
+        if (!hasValidExt && !hasValidType) {
+            alert('Formato no válido. Solo se permiten archivos MP4, WEBM, MOV o HEVC.');
+            return;
+        }
+        // Si el MIME type es vacío/genérico pero la extensión es válida, permitirlo (caso común en iOS)
+        if (!hasValidType && !hasEmptyOrGenericType && !hasValidExt) {
             alert('Formato no válido. Solo se permiten archivos MP4, WEBM, MOV o HEVC.');
             return;
         }
@@ -1353,7 +1364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
                     <i class="fas fa-upload me-2"></i>Seleccionar Video
                 </button>
-                <input type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,video/hevc,.hevc,.mov,.mp4" hidden>
+                <input type="file" id="videoInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv" hidden>
             `;
 
             // Re-setup event listeners
