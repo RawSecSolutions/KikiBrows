@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `
                     <div class="mb-3">
                         <label class="form-label">Video de la clase</label>
-                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm,.mov,.hevc,.mkv">
+                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv">
                         <small class="text-muted">MP4, WEBM, MOV, HEVC • Máx 500MB</small>
                         <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
                     </div>
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold">1. Video Demostrativo (Instructora)</label>
-                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept=".mp4,.webm,.mov,.hevc,.mkv">
+                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv">
                         <small class="text-muted">Sube el ejemplo que las alumnas deben imitar. (MP4, WEBM, MOV, HEVC)</small>
                         <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
                     </div>
@@ -688,9 +688,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return { success: false };
         }
         const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
-        const validVideoExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv'];
+        const validVideoExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv', 'qt'];
         const fileExt = file.name.split('.').pop().toLowerCase();
-        if (!validVideoTypes.includes(file.type) && !validVideoExts.includes(fileExt)) {
+        const hasValidExt = validVideoExts.includes(fileExt);
+        const hasValidType = validVideoTypes.includes(file.type) || (file.type && file.type.startsWith('video/'));
+        // iOS Safari puede reportar MIME types vacíos o genéricos para videos válidos
+        if (!hasValidExt && !hasValidType) {
             errorMsg.textContent = "Formato no válido. Solo MP4, WEBM, MOV o HEVC.";
             errorMsg.classList.remove('d-none');
             return { success: false };

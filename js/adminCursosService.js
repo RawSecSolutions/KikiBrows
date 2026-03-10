@@ -58,9 +58,13 @@ export const AdminCursosService = {
             if (file.size > maxSize) return { success: false, error: 'El archivo excede los 500MB permitidos' };
 
             const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
-            const validExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv'];
+            const validExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv', 'qt'];
             const fileExtCheck = file.name.split('.').pop().toLowerCase();
-            if (!validTypes.includes(file.type) && !validExts.includes(fileExtCheck)) {
+            const hasValidExt = validExts.includes(fileExtCheck);
+            const hasValidType = validTypes.includes(file.type) || (file.type && file.type.startsWith('video/'));
+            const hasEmptyOrGenericType = !file.type || file.type === '' || file.type === 'application/octet-stream';
+            // iOS Safari puede reportar MIME types vacíos o genéricos para videos válidos
+            if (!hasValidExt && !hasValidType) {
                 return { success: false, error: 'Formato no válido. Solo MP4, WEBM, MOV o HEVC' };
             }
 
