@@ -931,7 +931,12 @@ export const CursosService = {
 
             if (rpcError) {
                 // Si el RPC no existe aún, usar el método legacy como fallback
-                if (rpcError.code === '42883' || rpcError.message?.includes('does not exist')) {
+                // Cubre tanto el código PostgreSQL 42883 como el error PostgREST PGRST202
+                const isRpcMissing = rpcError.code === '42883'
+                    || rpcError.code === 'PGRST202'
+                    || rpcError.message?.includes('does not exist')
+                    || rpcError.message?.includes('Could not find the function');
+                if (isRpcMissing) {
                     console.warn('RPC crear_reserva_consulta no existe, usando método legacy');
                     return await this._crearReservaConsultaLegacy(reservaData);
                 }
