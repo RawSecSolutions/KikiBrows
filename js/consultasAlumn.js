@@ -5,6 +5,10 @@
  */
 
 import { CursosService } from './cursosService.js';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUserId = null;
 let selectedSlotId = null;
@@ -50,6 +54,14 @@ async function initData() {
 
     // 3. Cargar horarios disponibles en pantalla
     await loadSlots();
+
+    // 4. Suscribirse a cambios en tiempo real para actualizar cupos automáticamente
+    supabase
+        .channel('student-slots-changes')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'consulta_slots' }, () => {
+            loadSlots();
+        })
+        .subscribe();
 }
 
 // --- HELPERS DE FECHA Y DISEÑO ---

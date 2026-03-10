@@ -920,6 +920,43 @@ export const CursosService = {
      */
     async crearReservaConsulta(reservaData) {
         try {
+            // Intentar usar RPC atómico (server-side) para evitar problemas de RLS y race conditions
+            const { data: rpcResult, error: rpcError } = await supabase
+                .rpc('crear_reserva_consulta', {
+                    p_slot_id: reservaData.slotId,
+                    p_usuario_id: reservaData.usuarioId,
+                    p_curso_id: reservaData.cursoId || null,
+                    p_curso_nombre_snapshot: reservaData.cursoNombreSnapshot || null
+                });
+
+            if (rpcError) {
+                // Si el RPC no existe aún, usar el método legacy como fallback
+                if (rpcError.code === '42883' || rpcError.message?.includes('does not exist')) {
+                    console.warn('RPC crear_reserva_consulta no existe, usando método legacy');
+                    return await this._crearReservaConsultaLegacy(reservaData);
+                }
+                // Errores de negocio del RPC (slot lleno, duplicado, etc.)
+                if (rpcError.message) {
+                    return { success: false, error: { message: rpcError.message } };
+                }
+                throw rpcError;
+            }
+
+            return { success: true, data: rpcResult };
+        } catch (error) {
+            console.error('Error al crear reserva de consulta:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Método legacy: crea reserva y actualiza cupos desde el frontend.
+     * Se usa solo si el RPC server-side aún no está desplegado.
+     * NOTA: La actualización de cupos puede fallar silenciosamente si el alumno
+     * no tiene permisos UPDATE en consulta_slots (RLS).
+     */
+    async _crearReservaConsultaLegacy(reservaData) {
+        try {
             // 1. Obtener el slot actual para verificar cupos
             const { data: slot, error: fetchError } = await supabase
                 .from('consulta_slots')
@@ -947,7 +984,7 @@ export const CursosService = {
                 .single();
 
             if (reservaError) {
-                if (reservaError.code === '23505') { // Error de UNIQUE constraint
+                if (reservaError.code === '23505') {
                     return { success: false, error: { message: 'Ya tienes una reserva para este horario.' } };
                 }
                 throw reservaError;
@@ -959,17 +996,19 @@ export const CursosService = {
 
             const { error: slotError } = await supabase
                 .from('consulta_slots')
-                .update({ 
+                .update({
                     cupos_ocupados: nuevosCupos,
                     estado: nuevoEstado
                 })
                 .eq('id', reservaData.slotId);
 
-            if (slotError) throw slotError;
+            if (slotError) {
+                console.warn('Error al actualizar cupos (posible RLS):', slotError);
+            }
 
             return { success: true, data: reserva };
         } catch (error) {
-            console.error('Error al crear reserva de consulta:', error);
+            console.error('Error al crear reserva de consulta (legacy):', error);
             return { success: false, error };
         }
     },

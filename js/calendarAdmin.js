@@ -434,6 +434,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- REALTIME: Auto-refresh cuando cambian los slots ---
+    const slotsChannel = supabase
+        .channel('admin-slots-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'consulta_slots' }, () => {
+            console.log('Cambio detectado en consulta_slots, recargando...');
+            loadSlots();
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'consultas_reservas' }, () => {
+            console.log('Nueva reserva detectada, recargando slots...');
+            loadSlots();
+        })
+        .subscribe();
+
     // --- INIT ---
     await loadSlots();
 });

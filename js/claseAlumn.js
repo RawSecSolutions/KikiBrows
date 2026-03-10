@@ -543,7 +543,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Marcar como completado al 90%
                     if (videoWatchProgress >= 90 && !isClaseCompleted()) {
-                        markAsCompleted();
+                        markAsCompleted(); // fire-and-forget from event handler is OK, markAsCompleted handles cert generation
                     }
 
                     // Guardar segundo_actual cada 10 segundos de reproducción
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showQuizResults(respuestas, porcentaje, aprobado, questions);
     };
 
-    function showQuizResults(respuestas, porcentaje, aprobado, questions) {
+    async function showQuizResults(respuestas, porcentaje, aprobado, questions) {
         const modal = new bootstrap.Modal(document.getElementById('quizResultsModal'));
         const header = document.getElementById('quizResultHeader');
         const title = document.getElementById('quizResultTitle');
@@ -878,8 +878,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <i class="fas fa-arrow-right me-2"></i>Continuar
                 </button>
             `;
-            // Marcar como completado
-            markAsCompleted();
+            // Marcar como completado (await para que el certificado se genere antes de que el usuario continúe)
+            await markAsCompleted();
         } else {
             footer.innerHTML = `
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -1520,19 +1520,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function navigateNext() {
+    async function navigateNext() {
         // Marcar como completado si es texto/pdf y no está marcado
         const tipoActual = (currentClase?.tipo || '').toLowerCase();
         if (['texto', 'pdf'].includes(tipoActual) && !isClaseCompleted()) {
-            markAsCompleted();
+            await markAsCompleted();
         }
 
         const { nextClase } = getAdjacentClases();
         if (nextClase) {
             loadClase(nextClase.moduloId, nextClase.claseId);
         } else {
-            // Fin del curso
-            updateCertificateStatus();
+            // Fin del curso - intentar generar certificado y luego verificar
+            await CursosData.intentarGenerarCertificado(currentCursoId);
+            await updateCertificateStatus();
             const canGet = CursosData.puedeObtenerCertificado(currentCursoId);
             if (canGet.puede) {
                 showCertificate();
@@ -1549,16 +1550,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         return estado.completado;
     }
 
-    function markAsCompleted() {
+    async function markAsCompleted() {
         CursosData.marcarClaseCompletada(currentCursoId, currentModuloId, currentClaseId);
         renderSidebar();
-        updateCertificateStatus();
         enableNext();
         showCompletionStatus('Completado');
 
         // Intentar generar certificado automáticamente (RPC server-side)
         // Si el curso está al 100%, Supabase crea el certificado con snapshots
-        CursosData.intentarGenerarCertificado(currentCursoId);
+        // IMPORTANTE: awaitar para que updateCertificateStatus refleje el certificado recién creado
+        await CursosData.intentarGenerarCertificado(currentCursoId);
+
+        // Actualizar estado del certificado DESPUÉS de intentar generarlo
+        updateCertificateStatus();
     }
 
     function enableNext() {
