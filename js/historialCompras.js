@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // --- 2. Lógica de Historial de Compras ---
     const container = document.getElementById("purchases-list");
-    const searchInput = document.getElementById('searchHistory');
 
     if (!container) return;
 
@@ -152,17 +151,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Funcionalidad Buscador
-    if(searchInput) {
-        searchInput.addEventListener('keyup', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = transactions.filter(t =>
-                t.title.toLowerCase().includes(term) ||
-                t.author.toLowerCase().includes(term)
-            );
-            renderHistory(filtered);
-        });
-    }
 
     // ==================== FUNCIONES PARA GENERAR BOLETA ====================
 

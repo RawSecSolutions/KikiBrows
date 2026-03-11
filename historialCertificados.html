@@ -1,53 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mis Certificados - KIKIBROWS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Certificados | KikiBrows</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-<link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/layout.css">
-<link rel="stylesheet" href="css/account.css">
-
-
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/account.css">
+    <style>
+        .main-navbar {
+            margin-bottom: 0 !important;
+        }
+        #main-layout {
+            padding-top: 2rem;
+        }
+        #content-area {
+            padding-top: 30px !important;
+        }
+    </style>
 </head>
 <body>
-    <div id="navbar-global"></div>
-    <main class="container py-5">
-        <div class="row mb-3">
-            <div class="col-12">
-                <a href="javascript:history.back()" class="btn" style="background-color: #8A835A; color: white; border: none;">
+
+    <div id="header-component"></div>
+
+    <div id="main-layout">
+        <main id="content-area" class="container" style="max-width: 900px;">
+
+            <!-- Botón Regresar -->
+            <div class="mb-3">
+                <a href="javascript:history.back()" class="btn btn-kiki btn-sm">
                     <i class="fas fa-arrow-left me-2"></i>Regresar
                 </a>
             </div>
-        </div>
-        <div class="row mb-4">
-            <div class="col-12">
-                <h1 class="text-center text-uppercase" style="color: #8A835A; font-weight: bold;">Mis Certificados</h1>
-                <p class="text-center" style="color: #8A835A; font-size: 1.1rem;">Visualiza y descarga tus diplomas obtenidos.</p>
+
+            <!-- Header del Dashboard -->
+            <div class="dashboard-header mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1" style="color: var(--text-dark); text-align: left;">Mis Certificados</h2>
+                    <p class="text-muted mb-0">Visualiza y descarga tus diplomas obtenidos.</p>
+                </div>
             </div>
-        </div>
 
-        <div id="certificados-container" class="row g-4 justify-content-center">
-        </div>
-        <div id="no-certs-message" class="text-center d-none mt-5" style="color: #8A835A;">
-            <i class="fa-solid fa-graduation-cap fa-3x mb-3"></i>
-            <h3>Aún no tienes certificados disponibles.</h3>
-            <a href="cursosAlumn.html" class="btn mt-3" style="background-color: #8A835A; color: white; border: none;">Ver Cursos Disponibles</a>
-        </div>
-    </main>
+            <div id="certificados-container" class="row g-4 justify-content-center"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <div id="no-certs-message" class="text-center d-none mt-5">
+                <div class="empty-state-container p-5 rounded-4" style="background: rgba(255,255,255,0.9);">
+                    <i class="fa-solid fa-graduation-cap fa-4x text-muted mb-4"></i>
+                    <h3 class="fw-bold mb-3">No tienes certificados disponibles</h3>
+                    <p class="text-muted mb-4">Completa tus cursos al 100% para obtener tus diplomas</p>
+                    <a href="cursosAlumn.html" class="btn btn-kiki btn-lg px-5">
+                        <i class="fas fa-compass me-2"></i>Ver Mis Cursos
+                    </a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="js/authGuard.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="js/certificateGenerator.js"></script>
     <script type="module" src="js/componentsAlumn.js"></script>
     <script type="module" src="js/historialCertificados.js"></script>
-
 </body>
-
 </html>
