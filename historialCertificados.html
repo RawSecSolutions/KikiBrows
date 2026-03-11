@@ -16,7 +16,7 @@
             margin-bottom: 0 !important;
         }
         #main-layout {
-            padding-top: 2rem;
+            padding-top: 160px;
         }
         #content-area {
             padding-top: 30px !important;
@@ -31,18 +31,16 @@
         <main id="content-area" class="container" style="max-width: 900px;">
 
             <!-- Botón Regresar -->
-            <div class="mb-3">
+            <div class="mb-3 text-start">
                 <a href="javascript:history.back()" class="btn btn-kiki btn-sm">
                     <i class="fas fa-arrow-left me-2"></i>Regresar
                 </a>
             </div>
 
             <!-- Header del Dashboard -->
-            <div class="dashboard-header mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1" style="color: var(--text-dark); text-align: left;">Mis Certificados</h2>
-                    <p class="text-muted mb-0">Visualiza y descarga tus diplomas obtenidos.</p>
-                </div>
+            <div class="dashboard-header mb-4 text-center">
+                <h2 class="fw-bold mb-1" style="color: var(--text-dark);">Mis Certificados</h2>
+                <p class="text-muted mb-0">Visualiza y descarga tus diplomas obtenidos.</p>
             </div>
 
             <div id="certificados-container" class="row g-4 justify-content-center"></div>
