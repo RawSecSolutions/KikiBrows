@@ -1,7 +1,19 @@
-document.addEventListener("DOMContentLoaded", () => {
-    
+/**
+ * js/historialCompras.js
+ * Controlador de la página Historial de Compras.
+ * Carga transacciones reales desde Supabase y genera boletas PDF.
+ */
+
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { CursosData } from './cursosData.js';
+import { CursosService } from './cursosService.js';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+document.addEventListener("DOMContentLoaded", async () => {
+
     // --- 1. Inicialización de Componentes UI (Navbar, Sidebar, etc.) ---
-    // Esto reemplaza al script que tenías en el HTML
     if (typeof UI !== 'undefined' && UI.initNavbar) {
         UI.initNavbar();
     } else {
@@ -9,45 +21,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 2. Lógica de Historial de Compras ---
-    
-    // Simulación de datos
-    const transactions = [
-        {
-            id: "#TRX-001",
-            date: "15 DE DICIEMBRE",
-            title: "Microblading Expert",
-            author: "KikiBrows Academy",
-            image: "https://via.placeholder.com/150",
-            url: "claseAlumn.html",
-            // Datos adicionales para la boleta
-            transaccionId: "TRX-001-2024",
-            cursoId: "microblading-expert",
-            cursoNombre: "Microblading Expert",
-            monto: 350000,
-            metodoPago: "TRANSBANK",
-            codigoAutorizacion: "1234567890",
-            fecha: new Date("2024-12-15T14:30:00")
-        },
-        {
-            id: "#TRX-002",
-            date: "20 DE NOVIEMBRE",
-            title: "Diseño de Mirada Pro",
-            author: "KikiBrows Academy",
-            image: "https://via.placeholder.com/150",
-            url: "claseAlumn.html",
-            // Datos adicionales para la boleta
-            transaccionId: "TRX-002-2024",
-            cursoId: "diseno-mirada-pro",
-            cursoNombre: "Diseño de Mirada Pro",
-            monto: 280000,
-            metodoPago: "TRANSBANK",
-            codigoAutorizacion: "0987654321",
-            fecha: new Date("2024-11-20T16:45:00")
-        }
-    ];
-
     const container = document.getElementById("purchases-list");
     const searchInput = document.getElementById('searchHistory');
+
+    if (!container) return;
+
+    // Mostrar estado de carga
+    container.innerHTML = '<div class="text-center py-5 text-muted fw-bold">Cargando compras...</div>';
+
+    // Obtener usuario autenticado y cargar transacciones
+    let transactions = [];
+
+    try {
+        await CursosData.init();
+        await CursosData.initStudent();
+
+        const student = CursosData.getStudent();
+        if (!student || !student.id) {
+            container.innerHTML = '<div class="text-center py-5 text-muted fw-bold">Debes iniciar sesión para ver tus compras.</div>';
+            return;
+        }
+
+        const result = await CursosService.getTransaccionesUsuario(student.id);
+
+        if (!result.success || !result.data || result.data.length === 0) {
+            container.innerHTML = '<div class="text-center py-5 text-muted fw-bold">No se encontraron compras.</div>';
+            return;
+        }
+
+        // Filtrar solo las transacciones pagadas
+        const comprasExitosas = result.data.filter(t => t.estado === 'PAGADO');
+
+        if (comprasExitosas.length === 0) {
+            container.innerHTML = '<div class="text-center py-5 text-muted fw-bold">No se encontraron compras.</div>';
+            return;
+        }
+
+        // Mapear datos de la BD al formato que usa el render
+        transactions = comprasExitosas.map(trx => {
+            const fechaCompra = new Date(trx.fecha_compra);
+            const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+                           'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+            const dateLabel = `${fechaCompra.getDate()} DE ${meses[fechaCompra.getMonth()]}`;
+
+            const nombreCurso = trx.cursos?.nombre || trx.curso_titulo_snapshot || 'Curso KikiBrows';
+            const portada = trx.cursos?.portada_url || 'https://via.placeholder.com/150';
+            const cursoId = trx.cursos?.id || trx.curso_id;
+
+            return {
+                id: trx.id,
+                date: dateLabel,
+                title: nombreCurso,
+                author: "KikiBrows Academy",
+                image: portada,
+                url: cursoId ? `claseAlumn.html?id=${cursoId}` : 'cursosAlumn.html',
+                // Datos para la boleta PDF
+                transaccionId: trx.folio_visual ? `BOL-${trx.folio_visual}` : trx.id,
+                cursoId: cursoId,
+                cursoNombre: nombreCurso,
+                monto: trx.monto,
+                metodoPago: trx.metodo_pago,
+                codigoAutorizacion: trx.codigo_autorizacion,
+                fecha: fechaCompra
+            };
+        });
+
+        renderHistory(transactions);
+
+    } catch (error) {
+        console.error("Error cargando historial de compras:", error);
+        container.innerHTML = '<div class="text-center py-5 text-muted fw-bold">Error al cargar las compras. Intenta recargar la página.</div>';
+        return;
+    }
 
     function renderHistory(data) {
         container.innerHTML = "";
@@ -106,9 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
-
-    // Inicializar renderizado
-    renderHistory(transactions);
 
     // Funcionalidad Buscador
     if(searchInput) {
@@ -205,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
         doc.setFont('helvetica', 'bold');
         doc.text('ID de Transacción:', 20, y);
         doc.setFont('helvetica', 'normal');
-        doc.text(transaccion.transaccionId || 'N/A', 60, y);
+        doc.text(String(transaccion.transaccionId || 'N/A'), 60, y);
 
         // Línea separadora
         y += 15;
