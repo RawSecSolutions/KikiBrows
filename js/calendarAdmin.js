@@ -48,7 +48,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     function getBadge(estado) {
         if (estado === 'DISPONIBLE') return '<span class="badge bg-success rounded-pill">Disponible</span>';
         if (estado === 'LLENO') return '<span class="badge bg-warning text-dark rounded-pill">Lleno</span>';
-        return '<span class="badge bg-secondary rounded-pill">Cerrado</span>';
+        if (estado === 'COMPLETADO') return '<span class="badge bg-info text-dark rounded-pill">Completado</span>';
+        if (estado === 'CANCELADO') return '<span class="badge bg-danger rounded-pill">Cancelado</span>';
+        
+        // Fallback por si acaso llega algo raro
+        return `<span class="badge bg-secondary rounded-pill">${estado}</span>`;
     }
 
     function calculateDuration(inicio, fin) {
