@@ -28,15 +28,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function formatDate(dateStr) {
         const d = new Date(dateStr);
-        const dia = String(d.getDate()).padStart(2, '0');
-        const mes = String(d.getMonth() + 1).padStart(2, '0');
-        const año = d.getFullYear();
+        // Usamos getUTC para evitar que la fecha salte un día hacia atrás por la zona horaria
+        const dia = String(d.getUTCDate()).padStart(2, '0');
+        const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const año = d.getUTCFullYear();
         return `${dia}/${mes}/${año}`;
     }
 
     function formatTime(dateStr) {
         const d = new Date(dateStr);
-        return d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+        // Forzamos a UTC para mostrar la hora cruda de la base de datos (Ej: 13:00 se queda en 13:00)
+        return d.toLocaleTimeString('es-CL', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'UTC'
+        });
     }
 
     function getBadge(estado) {
