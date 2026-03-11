@@ -298,6 +298,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     usuario_id
                 `)
                 .eq('slot_id', slot.id)
+                // Ocultamos las que ya fueron canceladas para mantener tu lista limpia
+                .neq('estado', 'CANCELADA') 
                 .order('created_at', { ascending: true });
 
             if (error) throw error;
@@ -311,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const userIds = reservas.map(r => r.usuario_id);
                 const { data: profiles } = await supabase
                     .from('profiles')
-                    .select('id, first_name, last_name')
+                    .select('id, first_name, last_name, email') // Ahora sí pedimos el email
                     .in('id', userIds);
 
                 const profileMap = {};
@@ -324,11 +326,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const nombre = profile
                         ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
                         : 'Sin nombre';
+                    const email = profile && profile.email ? profile.email : 'Sin email registrado';
+
+                    // Agregamos un semáforo visual para saber si ya confirmaron
+                    let estadoBadge = '';
+                    if (r.estado === 'CONFIRMADA') {
+                        estadoBadge = '<span class="badge bg-success ms-2" style="font-size: 0.7em;">Confirmada</span>';
+                    } else if (r.estado === 'PENDIENTE') {
+                        estadoBadge = '<span class="badge bg-warning text-dark ms-2" style="font-size: 0.7em;">Pendiente</span>';
+                    }
 
                     listBody.innerHTML += `
                         <tr>
-                            <td class="fw-bold">${nombre}</td>
-                            <td class="text-muted small">${r.usuario_id.substring(0, 8)}...</td>
+                            <td>
+                                <div class="fw-bold">${nombre}</div>
+                                <div>${estadoBadge}</div>
+                            </td>
+                            <td class="text-muted small">${email}</td>
                             <td><span class="badge bg-light text-dark border">${r.curso_nombre_snapshot || 'General'}</span></td>
                         </tr>
                     `;
@@ -338,7 +352,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Error cargando reservas:', err);
             noMsg.classList.remove('d-none');
         }
-
+        
         viewModal.show();
     }
 
