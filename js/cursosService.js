@@ -865,6 +865,8 @@ export const CursosService = {
                 .from('transacciones')
                 .select(`
                     id,
+                    folio_visual,
+                    curso_titulo_snapshot,
                     monto,
                     estado,
                     metodo_pago,
