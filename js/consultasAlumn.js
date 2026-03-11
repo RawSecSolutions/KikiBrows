@@ -269,13 +269,19 @@ async function handleConfirmReservation() {
     btn.innerHTML = originalText;
 
     if (result.success) {
+        // Enviar email con zoom link (fire-and-forget, no bloquea UI)
+        const reservaId = result.data?.id;
+        if (reservaId) {
+            CursosService.enviarEmailConsulta(reservaId, 'booking');
+        }
+
         confirmModal.hide();
         setTimeout(() => {
             successModal.show();
         }, 300); // Pequeño delay visual para que no choquen las animaciones
-        
+
         // Recargar los slots para actualizar los cupos en pantalla (ej: si se llenó, desaparecerá)
-        await loadSlots(); 
+        await loadSlots();
     } else {
         alert(result.error?.message || 'Error al procesar la reserva. Es posible que el horario ya se haya llenado.');
         confirmModal.hide();

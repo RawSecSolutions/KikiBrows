@@ -931,7 +931,12 @@ export const CursosService = {
 
             if (rpcError) {
                 // Si el RPC no existe aún, usar el método legacy como fallback
-                if (rpcError.code === '42883' || rpcError.message?.includes('does not exist')) {
+                // Cubre tanto el código PostgreSQL 42883 como el error PostgREST PGRST202
+                const isRpcMissing = rpcError.code === '42883'
+                    || rpcError.code === 'PGRST202'
+                    || rpcError.message?.includes('does not exist')
+                    || rpcError.message?.includes('Could not find the function');
+                if (isRpcMissing) {
                     console.warn('RPC crear_reserva_consulta no existe, usando método legacy');
                     return await this._crearReservaConsultaLegacy(reservaData);
                 }
@@ -1009,6 +1014,24 @@ export const CursosService = {
             return { success: true, data: reserva };
         } catch (error) {
             console.error('Error al crear reserva de consulta (legacy):', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
+     * Enviar email de consulta (booking o reminder) via Edge Function
+     * @param {string} reservaId - UUID de la reserva
+     * @param {string} type - 'booking' (inicial con zoom link) o 'reminder' (recordatorio con link de confirmación)
+     */
+    async enviarEmailConsulta(reservaId, type = 'booking') {
+        try {
+            const { data, error } = await supabase.functions.invoke('send-consultation-email', {
+                body: { reservaId, type }
+            });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.warn('Error al enviar email de consulta:', error);
             return { success: false, error };
         }
     },
