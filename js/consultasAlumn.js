@@ -69,18 +69,24 @@ async function initData() {
 function formatShortDate(dateObj) {
     const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    return `${dias[dateObj.getDay()]} ${dateObj.getDate()} ${meses[dateObj.getMonth()]}`;
+    // getUTC asegura que no cambie de día por diferencias de zona horaria
+    return `${dias[dateObj.getUTCDay()]} ${dateObj.getUTCDate()} ${meses[dateObj.getUTCMonth()]}`;
 }
 
 function formatFullDate(dateObj) {
-    const dia = String(dateObj.getDate()).padStart(2, '0');
-    const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const año = dateObj.getFullYear();
+    const dia = String(dateObj.getUTCDate()).padStart(2, '0');
+    const mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+    const año = dateObj.getUTCFullYear();
     return `${dia}/${mes}/${año}`;
 }
 
 function formatTime(dateObj) {
-    return dateObj.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    // Forzar el timezone a UTC para que muestre la hora cruda de la base de datos
+    return dateObj.toLocaleTimeString('es-CL', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'UTC'
+    });
 }
 
 function getAvailabilityBadge(slot) {
