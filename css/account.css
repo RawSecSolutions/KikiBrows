@@ -34,6 +34,41 @@ main, #content-area {
 }
 
 /* =======================================================
+   2b. TARJETA CLICKEABLE (Enlace envolvente)
+   ======================================================= */
+.account-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+    cursor: pointer;
+}
+
+.account-card-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.account-card-link:hover .account-card {
+    box-shadow: 0 8px 32px rgba(138, 131, 90, 0.18);
+    transform: translateY(-2px);
+}
+
+.account-card-link .card-footer-actions span {
+    color: var(--primary-color);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    font-family: 'Lato', sans-serif;
+    transition: color 0.3s ease;
+}
+
+.account-card-link:hover .card-footer-actions span {
+    color: var(--accent-color);
+}
+
+/* =======================================================
    3. MI CUENTA (Vertical)
    ======================================================= */
 
