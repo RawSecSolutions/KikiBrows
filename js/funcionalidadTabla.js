@@ -148,39 +148,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (rpcData === null) {
             console.warn('RPC devolvió null, intentando upsert directo en inscripciones...');
 
-            const { data: existing } = await supabase
+            const { error: upsertError } = await supabase
                 .from('inscripciones')
-                .select('id')
-                .eq('usuario_id', targetUserId)
-                .eq('curso_id', targetCursoId)
-                .maybeSingle();
+                .upsert({
+                    usuario_id: targetUserId,
+                    curso_id: targetCursoId,
+                    estado: 'ACTIVO',
+                    origen_acceso: 'ASIGNACION_ADMIN',
+                    fecha_expiracion: fechaExpiracion || null
+                }, {
+                    onConflict: 'usuario_id,curso_id'
+                });
 
-            if (existing) {
-                const { error: updateError } = await supabase
-                    .from('inscripciones')
-                    .update({
-                        estado: 'ACTIVO',
-                        origen_acceso: 'ASIGNACION_ADMIN',
-                        fecha_expiracion: fechaExpiracion || null
-                    })
-                    .eq('id', existing.id);
-
-                if (updateError) throw new Error('Error actualizando inscripción: ' + updateError.message);
-                console.log('Inscripción existente actualizada correctamente');
-            } else {
-                const { error: insertError } = await supabase
-                    .from('inscripciones')
-                    .insert({
-                        usuario_id: targetUserId,
-                        curso_id: targetCursoId,
-                        estado: 'ACTIVO',
-                        origen_acceso: 'ASIGNACION_ADMIN',
-                        fecha_expiracion: fechaExpiracion || null
-                    });
-
-                if (insertError) throw new Error('Error creando inscripción: ' + insertError.message);
-                console.log('Inscripción creada correctamente via fallback');
-            }
+            if (upsertError) throw new Error('Error en upsert de inscripción: ' + upsertError.message);
+            console.log('Inscripción asignada correctamente via upsert fallback');
         }
     }
 
