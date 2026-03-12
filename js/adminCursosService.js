@@ -40,6 +40,19 @@ async function ensureBucketExists(bucketName) {
     );
 }
 
+/**
+ * Verifica que existe una sesión activa de admin antes de operaciones de Storage.
+ * Esto fuerza al cliente a cargar el token JWT del localStorage, evitando
+ * que las peticiones se envíen sin autenticación y fallen por RLS.
+ */
+async function verificarSesionAdmin() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+        throw new Error('No hay sesión activa. Inicia sesión de nuevo.');
+    }
+    return session;
+}
+
 export const AdminCursosService = {
 
     // Exponer cliente Supabase para consultas directas
@@ -52,6 +65,7 @@ export const AdminCursosService = {
      */
     async subirVideo(file, cursoId, claseId = 'temp', onProgress = null) {
         try {
+            await verificarSesionAdmin();
             if (!file) return { success: false, error: 'No se proporcionó archivo' };
 
             const maxSize = 500 * 1024 * 1024; // 500MB
@@ -101,6 +115,7 @@ export const AdminCursosService = {
      */
     async subirImagenPortada(file) {
         try {
+            await verificarSesionAdmin();
             if (!file) return { success: false, error: 'No se proporcionó archivo' };
 
             const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
@@ -141,6 +156,7 @@ export const AdminCursosService = {
      */
     async subirPDF(file, cursoId, claseId = 'temp') {
         try {
+            await verificarSesionAdmin();
             if (!file) return { success: false, error: 'No se proporcionó archivo' };
             if (file.type !== 'application/pdf') return { success: false, error: 'El archivo debe ser PDF' };
 
