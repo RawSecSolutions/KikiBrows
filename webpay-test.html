@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Webpay Plus - KIKIBROWS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root { --kiki-primary: #8A835A; --kiki-secondary: #D8B6B1; --kiki-dark: #2c2c2c; }
+        body { background: #f8f6f3; font-family: 'Segoe UI', sans-serif; color: var(--kiki-dark); }
+        .test-header { background: linear-gradient(135deg, var(--kiki-primary), #6b6545); color: #fff; padding: 2rem 0; }
+        .test-header h1 { font-size: 1.8rem; margin: 0; }
+        .test-header p { opacity: 0.85; margin: 0.5rem 0 0; }
+        .card-test { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); margin-bottom: 1.5rem; overflow: hidden; }
+        .card-test .card-header { font-weight: 600; font-size: 1rem; }
+        .badge-approved { background: #28a745; }
+        .badge-rejected { background: #dc3545; }
+        .badge-debit { background: #17a2b8; }
+        .badge-pending { background: #ffc107; color: #333; }
+        .badge-not-tested { background: #6c757d; }
+        .test-card-info { background: #f1f1f1; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.95rem; }
+        .test-card-info strong { color: var(--kiki-primary); }
+        .btn-test { background: var(--kiki-primary); color: #fff; border: none; border-radius: 8px; padding: 0.6rem 1.5rem; font-weight: 600; }
+        .btn-test:hover { background: #6b6545; color: #fff; }
+        .btn-test:disabled { opacity: 0.5; }
+        .auth-info { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; }
+        .result-box { border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+        .result-success { background: #d4edda; border: 1px solid #28a745; }
+        .result-error { background: #f8d7da; border: 1px solid #dc3545; }
+        .result-info { background: #d1ecf1; border: 1px solid #17a2b8; }
+        .checklist-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        .checklist-item:last-child { border-bottom: none; }
+        .step-number { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .step-pending { background: #e9ecef; color: #6c757d; }
+        .step-done { background: #28a745; color: #fff; }
+        .step-fail { background: #dc3545; color: #fff; }
+        .db-results { max-height: 400px; overflow-y: auto; }
+        .db-results table { font-size: 0.85rem; }
+        #loginSection { max-width: 500px; margin: 3rem auto; }
+        .commerce-code { font-family: monospace; background: #ffe0e6; color: #c41e3a; padding: 2px 6px; border-radius: 4px; }
+        .api-key-secret { font-family: monospace; font-size: 0.75rem; background: #ffe0e6; color: #c41e3a; padding: 2px 6px; border-radius: 4px; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="test-header text-center">
+    <div class="container">
+        <h1><i class="fas fa-vial me-2"></i>Test Webpay Plus - Ambiente de Integracion</h1>
+        <p>Verificacion sistematica de tarjetas de prueba Transbank</p>
+    </div>
+</div>
+
+<div class="container py-4">
+
+    <!-- Login Section -->
+    <div id="loginSection" style="display:none;">
+        <div class="card card-test">
+            <div class="card-body text-center p-4">
+                <i class="fas fa-lock fa-3x mb-3" style="color:var(--kiki-primary)"></i>
+                <h3>Iniciar Sesion</h3>
+                <p class="text-muted">Necesitas estar logueado para testear pagos</p>
+                <a href="login.html" class="btn btn-test"><i class="fas fa-sign-in-alt me-2"></i>Ir a Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Test Content -->
+    <div id="testContent" style="display:none;">
+
+        <!-- Info del ambiente -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card card-test">
+                    <div class="card-header bg-white"><i class="fas fa-store me-2"></i>Credenciales de Integracion</div>
+                    <div class="card-body">
+                        <p><strong>Producto:</strong> Webpay Plus</p>
+                        <p><strong>Codigo de Comercio:</strong> <span class="commerce-code">597055555532</span></p>
+                        <p class="mb-0"><strong>Api Key Secret:</strong></p>
+                        <p class="api-key-secret">579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C</p>
+                        <small class="text-muted">Estas credenciales estan en tu Edge Function de Supabase</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-test">
+                    <div class="card-header bg-white"><i class="fas fa-key me-2"></i>Datos de Autenticacion Transbank</div>
+                    <div class="card-body">
+                        <div class="auth-info">
+                            <p class="mb-1"><strong>RUT:</strong> <code>11.111.111-1</code></p>
+                            <p class="mb-0"><strong>Clave:</strong> <code>123</code></p>
+                        </div>
+                        <small class="text-muted mt-2 d-block">Usar estos datos cuando Transbank pida autenticacion</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selector de curso -->
+        <div class="card card-test mb-4">
+            <div class="card-header bg-white"><i class="fas fa-graduation-cap me-2"></i>Curso para Testing</div>
+            <div class="card-body">
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Selecciona un curso:</label>
+                        <select id="selectCurso" class="form-select">
+                            <option value="">Cargando cursos...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <div id="cursoInfo" class="text-muted">Selecciona un curso</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas de prueba -->
+        <h4 class="mb-3"><i class="fas fa-credit-card me-2"></i>Tarjetas de Prueba</h4>
+
+        <!-- Test 1: VISA Aprobada -->
+        <div class="card card-test" id="test-visa">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span><i class="fab fa-cc-visa me-2 text-primary"></i>Test 1: VISA - Transaccion Aprobada</span>
+                <span class="badge badge-approved" id="badge-visa">YA PROBADA</span>
+            </div>
+            <div class="card-body">
+                <div class="test-card-info mb-3">
+                    <strong>Numero:</strong> 4051 8856 0044 6623 &nbsp;|&nbsp;
+                    <strong>CVV:</strong> 123 &nbsp;|&nbsp;
+                    <strong>Exp:</strong> cualquier fecha futura
+                </div>
+                <p><strong>Resultado esperado:</strong> Transaccion <span class="badge badge-approved">APROBADA</span> - Se crea registro en BD con estado PAGADO + inscripcion</p>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-test" onclick="iniciarTest('visa')" id="btn-visa">
+                        <i class="fas fa-play me-2"></i>Re-testear VISA
+                    </button>
+                </div>
+                <div id="result-visa"></div>
+            </div>
+        </div>
+
+        <!-- Test 2: AMEX Aprobada -->
+        <div class="card card-test" id="test-amex">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span><i class="fab fa-cc-amex me-2 text-info"></i>Test 2: AMEX - Transaccion Aprobada</span>
+                <span class="badge badge-not-tested" id="badge-amex">PENDIENTE</span>
+            </div>
+            <div class="card-body">
+                <div class="test-card-info mb-3">
+                    <strong>Numero:</strong> 3700 0000 0002 032 &nbsp;|&nbsp;
+                    <strong>CVV:</strong> 1234 &nbsp;|&nbsp;
+                    <strong>Exp:</strong> cualquier fecha futura
+                </div>
+                <p><strong>Resultado esperado:</strong> Transaccion <span class="badge badge-approved">APROBADA</span> - Se crea registro en BD con estado PAGADO + inscripcion</p>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-test" onclick="iniciarTest('amex')" id="btn-amex">
+                        <i class="fas fa-play me-2"></i>Iniciar Test AMEX
+                    </button>
+                </div>
+                <div id="result-amex"></div>
+            </div>
+        </div>
+
+        <!-- Test 3: MASTERCARD Rechazada -->
+        <div class="card card-test" id="test-mastercard">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span><i class="fab fa-cc-mastercard me-2 text-warning"></i>Test 3: MASTERCARD - Transaccion Rechazada</span>
+                <span class="badge badge-not-tested" id="badge-mastercard">PENDIENTE</span>
+            </div>
+            <div class="card-body">
+                <div class="test-card-info mb-3">
+                    <strong>Numero:</strong> 5186 0595 5959 0568 &nbsp;|&nbsp;
+                    <strong>CVV:</strong> 123 &nbsp;|&nbsp;
+                    <strong>Exp:</strong> cualquier fecha futura
+                </div>
+                <p><strong>Resultado esperado:</strong> Transaccion <span class="badge badge-rejected">RECHAZADA</span> - NO se debe crear inscripcion. Transaccion en BD con estado RECHAZADO o no se crea.</p>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-test" onclick="iniciarTest('mastercard')" id="btn-mastercard">
+                        <i class="fas fa-play me-2"></i>Iniciar Test MASTERCARD
+                    </button>
+                </div>
+                <div id="result-mastercard"></div>
+            </div>
+        </div>
+
+        <!-- Test 4: Redcompra 1 -->
+        <div class="card card-test" id="test-redcompra1">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-money-check-alt me-2 text-success"></i>Test 4: Redcompra (Debito) - Aprobada</span>
+                <span class="badge badge-not-tested" id="badge-redcompra1">PENDIENTE</span>
+            </div>
+            <div class="card-body">
+                <div class="test-card-info mb-3">
+                    <strong>Numero:</strong> 4051 8842 3993 7763
+                </div>
+                <p><strong>Resultado esperado:</strong> Transaccion <span class="badge badge-debit">APROBADA (Debito)</span> - Se crea registro en BD con estado PAGADO + inscripcion</p>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-test" onclick="iniciarTest('redcompra1')" id="btn-redcompra1">
+                        <i class="fas fa-play me-2"></i>Iniciar Test Redcompra 1
+                    </button>
+                </div>
+                <div id="result-redcompra1"></div>
+            </div>
+        </div>
+
+        <!-- Test 5: Redcompra 2 -->
+        <div class="card card-test" id="test-redcompra2">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-money-check-alt me-2 text-success"></i>Test 5: Redcompra (Debito) - Aprobada</span>
+                <span class="badge badge-not-tested" id="badge-redcompra2">PENDIENTE</span>
+            </div>
+            <div class="card-body">
+                <div class="test-card-info mb-3">
+                    <strong>Numero:</strong> 4511 3466 6003 7060
+                </div>
+                <p><strong>Resultado esperado:</strong> Transaccion <span class="badge badge-debit">APROBADA (Debito)</span> - Se crea registro en BD con estado PAGADO + inscripcion</p>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-test" onclick="iniciarTest('redcompra2')" id="btn-redcompra2">
+                        <i class="fas fa-play me-2"></i>Iniciar Test Redcompra 2
+                    </button>
+                </div>
+                <div id="result-redcompra2"></div>
+            </div>
+        </div>
+
+        <!-- Verificacion de BD -->
+        <h4 class="mb-3 mt-4"><i class="fas fa-database me-2"></i>Verificacion en Base de Datos</h4>
+        <div class="card card-test">
+            <div class="card-header bg-white">Transacciones Recientes</div>
+            <div class="card-body">
+                <div class="d-flex gap-2 mb-3">
+                    <button class="btn btn-test" onclick="consultarTransacciones()">
+                        <i class="fas fa-sync me-2"></i>Consultar Transacciones
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="consultarInscripciones()">
+                        <i class="fas fa-user-check me-2"></i>Consultar Inscripciones
+                    </button>
+                </div>
+                <div id="dbResults" class="db-results"></div>
+            </div>
+        </div>
+
+        <!-- Checklist resumen -->
+        <h4 class="mb-3 mt-4"><i class="fas fa-clipboard-check me-2"></i>Checklist de Verificacion</h4>
+        <div class="card card-test">
+            <div class="card-body" id="checklistContainer">
+                <div class="checklist-item">
+                    <span class="step-number step-done" id="check-1">1</span>
+                    <span>VISA aprobada: transaccion PAGADO + inscripcion creada</span>
+                    <span class="badge badge-approved ms-auto">HECHO</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="step-number step-done" id="check-1b">-</span>
+                    <span>VISA rechazada en Transbank: NO se crea inscripcion</span>
+                    <span class="badge badge-approved ms-auto">HECHO</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="step-number step-pending" id="check-2">2</span>
+                    <span>AMEX aprobada: transaccion PAGADO + inscripcion creada</span>
+                    <span class="badge badge-not-tested ms-auto" id="checkbadge-2">PENDIENTE</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="step-number step-pending" id="check-3">3</span>
+                    <span>MASTERCARD rechazada: NO genera transaccion PAGADO ni inscripcion</span>
+                    <span class="badge badge-not-tested ms-auto" id="checkbadge-3">PENDIENTE</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="step-number step-pending" id="check-4">4</span>
+                    <span>Redcompra (debito) aprobada: transaccion PAGADO + inscripcion creada</span>
+                    <span class="badge badge-not-tested ms-auto" id="checkbadge-4">PENDIENTE</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="step-number step-pending" id="check-5">5</span>
+                    <span>Verificar codigos de autorizacion distintos por cada transaccion</span>
+                    <span class="badge badge-not-tested ms-auto" id="checkbadge-5">PENDIENTE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center my-4">
+            <a href="index.html" class="btn btn-outline-secondary me-2"><i class="fas fa-home me-2"></i>Volver al Inicio</a>
+            <a href="historialCompras.html" class="btn btn-outline-secondary"><i class="fas fa-history me-2"></i>Historial Compras</a>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://wrmelwftwumsfwzjjoxa.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybWVsd2Z0d3Vtc2Z3empqb3hhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzODM3NjUsImV4cCI6MjA4NDk1OTc2NX0.upHE7sTVioEYsccEFmr4bqDxS__UuT-uXzqUJozNqd0';
+    const EDGE_URL = SUPABASE_URL + '/functions/v1';
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let usuarioActual = null;
+    let cursoSeleccionado = null;
+
+    // ── Init ──
+    (async () => {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) {
+            document.getElementById('loginSection').style.display = 'block';
+            return;
+        }
+        usuarioActual = session.user;
+        document.getElementById('testContent').style.display = 'block';
+        await cargarCursos();
+        cargarEstadoTests();
+    })();
+
+    // ── Cargar cursos ──
+    async function cargarCursos() {
+        const { data: cursos, error } = await sb
+            .from('cursos')
+            .select('id, nombre, precio')
+            .eq('publicado', true)
+            .order('nombre');
+
+        const select = document.getElementById('selectCurso');
+        if (error || !cursos?.length) {
+            select.innerHTML = '<option value="">No hay cursos disponibles</option>';
+            return;
+        }
+
+        select.innerHTML = cursos.map(c =>
+            `<option value="${c.id}" data-precio="${c.precio}" data-nombre="${c.nombre}">
+                ${c.nombre} - $${c.precio?.toLocaleString('es-CL')} CLP
+            </option>`
+        ).join('');
+
+        select.addEventListener('change', () => {
+            const opt = select.selectedOptions[0];
+            if (opt?.value) {
+                cursoSeleccionado = {
+                    id: opt.value,
+                    nombre: opt.dataset.nombre,
+                    precio: parseInt(opt.dataset.precio)
+                };
+                document.getElementById('cursoInfo').innerHTML =
+                    `<strong>${cursoSeleccionado.nombre}</strong><br>Precio: $${cursoSeleccionado.precio.toLocaleString('es-CL')} CLP`;
+            }
+        });
+
+        // Auto-seleccionar primero
+        select.dispatchEvent(new Event('change'));
+    }
+
+    // ── Iniciar test de pago ──
+    async function iniciarTest(tipo) {
+        if (!cursoSeleccionado) {
+            alert('Selecciona un curso primero');
+            return;
+        }
+
+        const btn = document.getElementById(`btn-${tipo}`);
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Iniciando...';
+
+        // Guardar que test estamos haciendo
+        localStorage.setItem('webpay_test_tipo', tipo);
+        localStorage.setItem('webpay_test_curso', JSON.stringify(cursoSeleccionado));
+        localStorage.setItem('webpay_test_timestamp', Date.now());
+
+        try {
+            const resp = await fetch(`${EDGE_URL}/dynamic-worker`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cursoId: cursoSeleccionado.id,
+                    cursoNombre: cursoSeleccionado.nombre,
+                    monto: cursoSeleccionado.precio,
+                    usuarioId: usuarioActual.id,
+                    returnUrl: window.location.origin + '/webpay-test.html'
+                })
+            });
+
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.error || `Error ${resp.status}`);
+            }
+
+            const { token, url } = await resp.json();
+
+            // Redirigir a Webpay via form POST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'token_ws';
+            input.value = token;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+
+        } catch (err) {
+            console.error('Error iniciando test:', err);
+            document.getElementById(`result-${tipo}`).innerHTML =
+                `<div class="result-box result-error"><i class="fas fa-exclamation-triangle me-2"></i><strong>Error:</strong> ${err.message}</div>`;
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-play me-2"></i>Reintentar`;
+        }
+    }
+
+    // ── Procesar retorno de Webpay ──
+    (async () => {
+        const params = new URLSearchParams(window.location.search);
+        const tokenWs = params.get('token_ws');
+        const tbkToken = params.get('TBK_TOKEN');
+
+        if (!tokenWs && !tbkToken) return;
+
+        // Esperar a que Supabase este listo
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) return;
+
+        const tipo = localStorage.getItem('webpay_test_tipo') || 'unknown';
+
+        try {
+            const resp = await fetch(`${EDGE_URL}/webpay-confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token_ws: tokenWs || null,
+                    tbk_token: tbkToken || null
+                })
+            });
+
+            const data = await resp.json();
+            console.log('[webpay-test] Resultado confirmacion:', data);
+
+            // Limpiar URL
+            window.history.replaceState({}, '', window.location.pathname);
+
+            // Mostrar resultado
+            const resultDiv = document.getElementById(`result-${tipo}`);
+            const badgeDiv = document.getElementById(`badge-${tipo}`);
+
+            if (data.estado === 'PAGADO') {
+                if (resultDiv) resultDiv.innerHTML = `
+                    <div class="result-box result-success">
+                        <h6><i class="fas fa-check-circle me-2"></i>APROBADA</h6>
+                        <p class="mb-1"><strong>Curso:</strong> ${data.cursoNombre || '-'}</p>
+                        <p class="mb-1"><strong>Monto:</strong> $${data.monto?.toLocaleString('es-CL') || '-'} CLP</p>
+                        <p class="mb-1"><strong>Cod. Autorizacion:</strong> ${data.codigoAutorizacion || '-'}</p>
+                        <p class="mb-1"><strong>Transaccion ID:</strong> ${data.transaccionId || '-'}</p>
+                        <p class="mb-0"><strong>Fecha:</strong> ${data.fecha || '-'}</p>
+                    </div>`;
+                if (badgeDiv) { badgeDiv.className = 'badge badge-approved'; badgeDiv.textContent = 'APROBADA'; }
+                guardarEstadoTest(tipo, 'approved');
+            } else {
+                if (resultDiv) resultDiv.innerHTML = `
+                    <div class="result-box result-error">
+                        <h6><i class="fas fa-times-circle me-2"></i>RECHAZADA / ANULADA</h6>
+                        <p class="mb-1"><strong>Estado:</strong> ${data.estado || 'RECHAZADO'}</p>
+                        <p class="mb-0"><strong>Curso ID:</strong> ${data.cursoId || '-'}</p>
+                    </div>`;
+                if (badgeDiv) { badgeDiv.className = 'badge badge-rejected'; badgeDiv.textContent = 'RECHAZADA'; }
+                guardarEstadoTest(tipo, 'rejected');
+            }
+
+        } catch (err) {
+            console.error('[webpay-test] Error confirmando:', err);
+            const resultDiv = document.getElementById(`result-${tipo}`);
+            if (resultDiv) resultDiv.innerHTML =
+                `<div class="result-box result-error"><i class="fas fa-exclamation-triangle me-2"></i>Error: ${err.message}</div>`;
+        }
+    })();
+
+    // ── Consultar transacciones en BD ──
+    async function consultarTransacciones() {
+        const { data, error } = await sb
+            .from('transacciones')
+            .select('id, folio_visual, curso_titulo_snapshot, monto, estado, metodo_pago, codigo_autorizacion, gateway_token, fecha_compra')
+            .eq('usuario_id', usuarioActual.id)
+            .order('fecha_compra', { ascending: false })
+            .limit(20);
+
+        const container = document.getElementById('dbResults');
+        if (error) {
+            container.innerHTML = `<div class="result-box result-error">Error: ${error.message}</div>`;
+            return;
+        }
+
+        if (!data?.length) {
+            container.innerHTML = '<div class="result-box result-info">No hay transacciones para este usuario</div>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead><tr>
+                        <th>Fecha</th><th>Curso</th><th>Monto</th><th>Estado</th>
+                        <th>Metodo</th><th>Cod. Auth</th><th>Token</th>
+                    </tr></thead>
+                    <tbody>
+                        ${data.map(t => `<tr>
+                            <td>${new Date(t.fecha_compra).toLocaleString('es-CL')}</td>
+                            <td>${t.curso_titulo_snapshot || '-'}</td>
+                            <td>$${t.monto?.toLocaleString('es-CL')}</td>
+                            <td><span class="badge ${t.estado === 'PAGADO' ? 'badge-approved' : t.estado === 'RECHAZADO' ? 'badge-rejected' : 'badge-pending'}">${t.estado}</span></td>
+                            <td>${t.metodo_pago || '-'}</td>
+                            <td><code>${t.codigo_autorizacion || '-'}</code></td>
+                            <td><code style="font-size:0.7rem">${(t.gateway_token || '-').substring(0, 12)}...</code></td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    // ── Consultar inscripciones en BD ──
+    async function consultarInscripciones() {
+        const { data, error } = await sb
+            .from('inscripciones')
+            .select('id, curso_id, estado, origen_acceso, fecha_inscripcion, fecha_expiracion, cursos(nombre)')
+            .eq('usuario_id', usuarioActual.id)
+            .order('fecha_inscripcion', { ascending: false })
+            .limit(20);
+
+        const container = document.getElementById('dbResults');
+        if (error) {
+            container.innerHTML = `<div class="result-box result-error">Error: ${error.message}</div>`;
+            return;
+        }
+
+        if (!data?.length) {
+            container.innerHTML = '<div class="result-box result-info">No hay inscripciones para este usuario</div>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead><tr>
+                        <th>Fecha Inscripcion</th><th>Curso</th><th>Estado</th>
+                        <th>Origen</th><th>Expiracion</th>
+                    </tr></thead>
+                    <tbody>
+                        ${data.map(i => `<tr>
+                            <td>${new Date(i.fecha_inscripcion).toLocaleString('es-CL')}</td>
+                            <td>${i.cursos?.nombre || i.curso_id}</td>
+                            <td><span class="badge ${i.estado === 'ACTIVO' ? 'badge-approved' : 'badge-not-tested'}">${i.estado}</span></td>
+                            <td>${i.origen_acceso || '-'}</td>
+                            <td>${i.fecha_expiracion ? new Date(i.fecha_expiracion).toLocaleDateString('es-CL') : '-'}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    // ── Persistir estado de tests ──
+    function guardarEstadoTest(tipo, resultado) {
+        const estados = JSON.parse(localStorage.getItem('webpay_test_estados') || '{}');
+        estados[tipo] = { resultado, fecha: new Date().toISOString() };
+        localStorage.setItem('webpay_test_estados', JSON.stringify(estados));
+    }
+
+    function cargarEstadoTests() {
+        const estados = JSON.parse(localStorage.getItem('webpay_test_estados') || '{}');
+        for (const [tipo, info] of Object.entries(estados)) {
+            const badge = document.getElementById(`badge-${tipo}`);
+            if (badge) {
+                if (info.resultado === 'approved') {
+                    badge.className = 'badge badge-approved';
+                    badge.textContent = 'APROBADA';
+                } else if (info.resultado === 'rejected') {
+                    badge.className = 'badge badge-rejected';
+                    badge.textContent = 'RECHAZADA';
+                }
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
