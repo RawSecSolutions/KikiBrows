@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     usuario_id,
                     curso_id
                 `)
+                .eq('estado', 'PAGADO')
                 .order('fecha_compra', { ascending: false });
 
             if (error) throw error;
