@@ -5,6 +5,13 @@ import { CursosData } from './cursosData.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
 
+    // Inicializar Navbar de estudiante
+    if (typeof UI !== 'undefined' && UI.initNavbar) {
+        UI.initNavbar();
+    } else {
+        console.warn("UI no está definido o initNavbar no existe.");
+    }
+
     const container = document.getElementById('certificados-container');
     const noCertsMsg = document.getElementById('no-certs-message');
 
