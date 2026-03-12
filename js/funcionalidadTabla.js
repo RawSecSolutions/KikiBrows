@@ -443,12 +443,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
                     const fechaExp = calcularFechaExpiracion(selectedCourse);
-                    const { error: inscripError } = await supabase.rpc('admin_asignar_curso', {
+                    console.log('Asignando curso via RPC:', {
+                        target_user_id: id,
+                        target_curso_id: selectedCourse,
+                        p_fecha_expiracion: fechaExp || null
+                    });
+                    const { data: rpcData, error: inscripError } = await supabase.rpc('admin_asignar_curso', {
                         target_user_id: id,
                         target_curso_id: selectedCourse,
                         p_origen_acceso: 'ASIGNACION_ADMIN',
                         p_fecha_expiracion: fechaExp || null
                     });
+                    console.log('RPC resultado:', { data: rpcData, error: inscripError });
 
                     if (inscripError) {
                         console.warn('Error asignando curso:', inscripError);
