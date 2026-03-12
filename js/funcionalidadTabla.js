@@ -442,33 +442,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
-                    const yaInscrito = inscripcionesDB.some(i =>
-                        (i.usuario_id === id || i.user_id === id || i.perfil_id === id) &&
-                        (i.curso_id === selectedCourse || i.course_id === selectedCourse)
-                    );
+                    const fechaExp = calcularFechaExpiracion(selectedCourse);
+                    const { error: inscripError } = await supabase.rpc('admin_asignar_curso', {
+                        target_user_id: id,
+                        target_curso_id: selectedCourse,
+                        p_origen_acceso: 'ASIGNACION_ADMIN',
+                        p_fecha_expiracion: fechaExp || null
+                    });
 
-                    if (!yaInscrito) {
-                        const inscripcionData = {
-                            usuario_id: id,
-                            curso_id: selectedCourse,
-                            origen_acceso: 'ASIGNACION_ADMIN',
-                            estado: 'ACTIVO'
-                        };
-                        const fechaExp = calcularFechaExpiracion(selectedCourse);
-                        if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
-
-                        const { error: inscripError } = await supabase
-                            .from('inscripciones')
-                            .insert(inscripcionData);
-
-                        if (inscripError) {
-                            console.warn('Error asignando curso:', inscripError);
-                            showToast('Perfil actualizado, pero hubo un error al asignar el curso.');
-                        } else {
-                            showToast('Datos actualizados con curso asignado.');
-                        }
+                    if (inscripError) {
+                        console.warn('Error asignando curso:', inscripError);
+                        showToast('Perfil actualizado, pero hubo un error al asignar el curso.');
                     } else {
-                        showToast('Datos actualizados.');
+                        showToast('Datos actualizados con curso asignado.');
                     }
                 } else {
                     showToast('Datos actualizados.');
@@ -531,19 +517,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // 3. Asignar el curso en la tabla de inscripciones si es necesario
                 if (selectedCourse) {
-                    const inscripcionData = {
-                        usuario_id: newUserId,
-                        curso_id: selectedCourse,
-                        origen_acceso: 'ASIGNACION_ADMIN',
-                        estado: 'ACTIVO'
-                    };
-                    
                     const fechaExp = calcularFechaExpiracion(selectedCourse);
-                    if (fechaExp) inscripcionData.fecha_expiracion = fechaExp;
-
-                    const { error: inscripError } = await supabase
-                        .from('inscripciones')
-                        .insert(inscripcionData);
+                    const { error: inscripError } = await supabase.rpc('admin_asignar_curso', {
+                        target_user_id: newUserId,
+                        target_curso_id: selectedCourse,
+                        p_origen_acceso: 'ASIGNACION_ADMIN',
+                        p_fecha_expiracion: fechaExp || null
+                    });
 
                     if (inscripError) {
                         console.warn('Error asignando curso:', inscripError);
