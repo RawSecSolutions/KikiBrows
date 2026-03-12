@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let usersDB = [];
     let coursesDB = [];
     let inscripcionesDB = [];
+    let certificadosDB = [];
 
     const userListContainer = document.getElementById('user-list');
     const modalEl = document.getElementById('userModal');
@@ -67,9 +68,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         inscripcionesDB = data || [];
     }
 
+    async function fetchCertificados() {
+        const { data, error } = await supabase
+            .from('certificados')
+            .select('id, usuario_id, curso_id, nombre_curso_snapshot');
+
+        if (error) {
+            console.error('Error cargando certificados:', error);
+            return;
+        }
+        certificadosDB = data || [];
+    }
+
     async function loadAllData() {
         userListContainer.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin me-2"></i>Cargando usuarios...</div>';
-        await Promise.all([fetchUsers(), fetchCourses(), fetchInscripciones()]);
+        await Promise.all([fetchUsers(), fetchCourses(), fetchInscripciones(), fetchCertificados()]);
         loadCoursesIntoSelect();
         renderUsers();
     }
@@ -118,26 +131,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         return '<span class="badge bg-secondary">Estudiante</span>';
     }
 
-    function getStatus(is_blocked) {
-        if (is_blocked) {
+    function getStatus(user) {
+        if (user.is_blocked) {
             return '<span class="text-danger fw-bold"><i class="fas fa-lock me-1"></i>Bloqueado</span>';
         }
+
+        // Verificar si tiene inscripciones activas (no expiradas)
+        const userInscripciones = inscripcionesDB.filter(i =>
+            (i.user_id === user.id || i.perfil_id === user.id || i.usuario_id === user.id)
+        );
+
+        const tieneAccesoActivo = userInscripciones.some(i => {
+            if (!i.fecha_expiracion) return i.estado === 'ACTIVO';
+            return new Date(i.fecha_expiracion) > new Date() && i.estado === 'ACTIVO';
+        });
+
+        if (tieneAccesoActivo) {
+            return '<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Activo</span>';
+        }
+
+        // Si tiene certificados pero no cursos activos
+        const userCerts = certificadosDB.filter(c => c.usuario_id === user.id);
+        if (userCerts.length > 0) {
+            return '<span class="text-muted fw-bold"><i class="fas fa-graduation-cap me-1"></i>Completado</span>';
+        }
+
         return '<span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Activo</span>';
     }
 
     function getUserCourses(userId) {
+        // Contar certificados del usuario (persisten incluso después de eliminar inscripción)
+        const userCerts = certificadosDB.filter(c => c.usuario_id === userId);
+        const certCount = userCerts.length;
+
+        // También contar inscripciones activas
         const userInscripciones = inscripcionesDB.filter(i =>
             i.user_id === userId || i.perfil_id === userId || i.usuario_id === userId
         );
-        if (userInscripciones.length === 0) return '<span class="text-muted small">-</span>';
+        const activeCount = userInscripciones.filter(i => {
+            if (!i.fecha_expiracion) return i.estado === 'ACTIVO';
+            return new Date(i.fecha_expiracion) > new Date() && i.estado === 'ACTIVO';
+        }).length;
 
-        const courseNames = userInscripciones.map(i => {
-            const course = coursesDB.find(c => c.id === (i.curso_id || i.course_id));
-            return course ? (course.nombre || course.name) : null;
-        }).filter(Boolean);
+        const parts = [];
+        if (activeCount > 0) {
+            parts.push(`<span class="badge bg-info text-dark"><i class="fas fa-book me-1"></i>${activeCount} activo${activeCount > 1 ? 's' : ''}</span>`);
+        }
+        if (certCount > 0) {
+            parts.push(`<span class="badge bg-success"><i class="fas fa-graduation-cap me-1"></i>${certCount} cert.</span>`);
+        }
 
-        if (courseNames.length === 0) return '<span class="text-muted small">-</span>';
-        return courseNames.map(n => `<span class="badge bg-info text-dark">${n}</span>`).join(' ');
+        return parts.length > 0 ? parts.join(' ') : '<span class="text-muted small">-</span>';
     }
 
     // --- 3. RENDERIZADO ---
@@ -182,13 +226,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const row = document.createElement('div');
-            row.className = 'row d-flex align-items-center p-3 mb-2 rounded border bg-white-50';
-            row.style.backgroundColor = 'rgba(255,255,255,0.5)';
+            row.className = 'row d-flex align-items-center p-3 mb-2 rounded border user-row';
             row.innerHTML = `
                 <div class="col-2 fw-bold text-truncate">${getUserName(u)}</div>
                 <div class="col-3 text-truncate text-muted small">${u.email || '<span class="text-muted">-</span>'}</div>
                 <div class="col-2">${getBadge(u.role)}</div>
-                <div class="col-2">${getStatus(u.is_blocked)}</div>
+                <div class="col-2">${getStatus(u)}</div>
                 <div class="col-1">${getUserCourses(u.id)}</div>
                 <div class="col-2 text-end">${buttonsHTML}</div>
             `;

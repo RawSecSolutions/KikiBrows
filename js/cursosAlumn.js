@@ -56,6 +56,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         return { texto: `Acceso: ${diffDays} días`, urgente: false };
     }
 
+    /**
+     * Filtra cursos expirados hace más de 10 días (no se muestran en "Mis Cursos")
+     */
+    function filtrarCursosVisibles(cursos) {
+        const hoy = new Date();
+        return cursos.filter(curso => {
+            if (!curso.fechaExpiracion) return true;
+            const exp = new Date(curso.fechaExpiracion);
+            const diffDays = Math.ceil((hoy - exp) / (1000 * 60 * 60 * 24));
+            // Ocultar si expiró hace más de 10 días
+            return diffDays <= 10;
+        });
+    }
+
     // Función principal de renderizado
     function renderCourses(cursos) {
         if (!coursesGrid) return;
@@ -150,7 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const result = await CursosService.getCursosAdquiridos(session.user.id);
             if (result.success) {
-                cursosCargados = result.data;
+                cursosCargados = filtrarCursosVisibles(result.data);
                 // Renderizar inmediatamente con los datos de inscripciones
                 renderCourses(cursosCargados);
 

@@ -69,6 +69,27 @@ main, #content-area {
 }
 
 /* =======================================================
+   2c. CERTIFICADOS STATUS CLICKEABLE
+   ======================================================= */
+.certificados-status-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    border-radius: 8px;
+    padding: 8px;
+    margin: -8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.certificados-status-link:hover {
+    background-color: rgba(138, 131, 90, 0.08);
+    color: inherit;
+    text-decoration: none;
+    transform: translateX(4px);
+}
+
+/* =======================================================
    3. MI CUENTA (Vertical)
    ======================================================= */
 
