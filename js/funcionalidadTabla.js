@@ -125,6 +125,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         return false;
     }
 
+    // Asignar curso: intenta RPC, si devuelve null hace upsert directo
+    async function asignarCurso(targetUserId, targetCursoId, fechaExpiracion) {
+        const params = {
+            target_user_id: targetUserId,
+            target_curso_id: targetCursoId,
+            p_origen_acceso: 'ASIGNACION_ADMIN',
+            p_fecha_expiracion: fechaExpiracion || null
+        };
+
+        console.log('Asignando curso via RPC:', params);
+
+        const { data: rpcData, error: rpcError } = await supabase.rpc('admin_asignar_curso', params);
+        console.log('RPC resultado:', { data: rpcData, error: rpcError });
+
+        if (rpcError) {
+            throw new Error('Error asignando curso: ' + rpcError.message);
+        }
+
+        // Si el RPC no devolvió error pero tampoco hizo nada (data null),
+        // hacer upsert directo como fallback (caso superadmin)
+        if (rpcData === null) {
+            console.warn('RPC devolvió null, intentando upsert directo en inscripciones...');
+
+            const { data: existing } = await supabase
+                .from('inscripciones')
+                .select('id')
+                .eq('usuario_id', targetUserId)
+                .eq('curso_id', targetCursoId)
+                .maybeSingle();
+
+            if (existing) {
+                const { error: updateError } = await supabase
+                    .from('inscripciones')
+                    .update({
+                        estado: 'ACTIVO',
+                        origen_acceso: 'ASIGNACION_ADMIN',
+                        fecha_expiracion: fechaExpiracion || null
+                    })
+                    .eq('id', existing.id);
+
+                if (updateError) throw new Error('Error actualizando inscripción: ' + updateError.message);
+                console.log('Inscripción existente actualizada correctamente');
+            } else {
+                const { error: insertError } = await supabase
+                    .from('inscripciones')
+                    .insert({
+                        usuario_id: targetUserId,
+                        curso_id: targetCursoId,
+                        estado: 'ACTIVO',
+                        origen_acceso: 'ASIGNACION_ADMIN',
+                        fecha_expiracion: fechaExpiracion || null
+                    });
+
+                if (insertError) throw new Error('Error creando inscripción: ' + insertError.message);
+                console.log('Inscripción creada correctamente via fallback');
+            }
+        }
+    }
+
     function calcularFechaExpiracion(cursoId) {
         const curso = coursesDB.find(c => c.id === cursoId);
         if (!curso || !curso.dias_duracion_acceso) return null;
@@ -443,24 +502,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
                     const fechaExp = calcularFechaExpiracion(selectedCourse);
-                    console.log('Asignando curso via RPC:', {
-                        target_user_id: id,
-                        target_curso_id: selectedCourse,
-                        p_fecha_expiracion: fechaExp || null
-                    });
-                    const { data: rpcData, error: inscripError } = await supabase.rpc('admin_asignar_curso', {
-                        target_user_id: id,
-                        target_curso_id: selectedCourse,
-                        p_origen_acceso: 'ASIGNACION_ADMIN',
-                        p_fecha_expiracion: fechaExp || null
-                    });
-                    console.log('RPC resultado:', { data: rpcData, error: inscripError });
-
-                    if (inscripError) {
-                        console.warn('Error asignando curso:', inscripError);
-                        showToast('Perfil actualizado, pero hubo un error al asignar el curso.');
-                    } else {
+                    try {
+                        await asignarCurso(id, selectedCourse, fechaExp);
                         showToast('Datos actualizados con curso asignado.');
+                    } catch (assignErr) {
+                        console.warn('Error asignando curso:', assignErr);
+                        showToast('Perfil actualizado, pero hubo un error al asignar el curso.');
                     }
                 } else {
                     showToast('Datos actualizados.');
@@ -524,18 +571,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 3. Asignar el curso en la tabla de inscripciones si es necesario
                 if (selectedCourse) {
                     const fechaExp = calcularFechaExpiracion(selectedCourse);
-                    const { error: inscripError } = await supabase.rpc('admin_asignar_curso', {
-                        target_user_id: newUserId,
-                        target_curso_id: selectedCourse,
-                        p_origen_acceso: 'ASIGNACION_ADMIN',
-                        p_fecha_expiracion: fechaExp || null
-                    });
-
-                    if (inscripError) {
-                        console.warn('Error asignando curso:', inscripError);
-                        showToast('Usuario creado, pero hubo un error al asignar el curso.');
-                    } else {
+                    try {
+                        await asignarCurso(newUserId, selectedCourse, fechaExp);
                         showToast('Usuario creado con curso asignado exitosamente.');
+                    } catch (assignErr) {
+                        console.warn('Error asignando curso:', assignErr);
+                        showToast('Usuario creado, pero hubo un error al asignar el curso.');
                     }
                 } else {
                     showToast('Usuario creado exitosamente.');
