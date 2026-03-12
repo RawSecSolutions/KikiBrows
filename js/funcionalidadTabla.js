@@ -401,9 +401,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const updateData = { first_name: firstName, last_name: lastName };
-                if (!roleEl.disabled) {
-                    updateData.role = roleEl.value;
-                }
 
                 const { error } = await supabase
                     .from('profiles')
@@ -411,6 +408,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     .eq('id', id);
 
                 if (error) throw new Error('Error al actualizar perfil: ' + error.message);
+
+                // Actualizar rol usando RPC (bypasa RLS)
+                if (!roleEl.disabled && user.role !== roleEl.value) {
+                    const { error: roleError } = await supabase.rpc('admin_set_role', {
+                        target_user_id: id,
+                        new_role: roleEl.value
+                    });
+
+                    if (roleError) throw new Error('Error al cambiar rol: ' + roleError.message);
+                }
 
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
@@ -480,18 +487,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 2. Esperar a que el trigger de base de datos cree el Perfil
                 await waitForProfile(newUserId);
 
-                // 2.5 Actualizar el perfil con el rol y nombre seleccionados
+                // 2.5 Actualizar nombre del perfil
                 const { error: profileError } = await supabase
                     .from('profiles')
-                    .update({
-                        role: roleEl.value,
-                        first_name: firstName,
-                        last_name: lastName
-                    })
+                    .update({ first_name: firstName, last_name: lastName })
                     .eq('id', newUserId);
 
                 if (profileError) {
-                    console.warn('Error actualizando rol del perfil:', profileError);
+                    console.warn('Error actualizando nombre del perfil:', profileError);
+                }
+
+                // 2.6 Asignar rol usando RPC (bypasa RLS)
+                const { error: roleError } = await supabase.rpc('admin_set_role', {
+                    target_user_id: newUserId,
+                    new_role: roleEl.value
+                });
+
+                if (roleError) {
+                    console.error('Error asignando rol:', roleError);
+                    showToast('Usuario creado pero hubo un error al asignar el rol.');
                 }
 
                 // 3. Asignar el curso en la tabla de inscripciones si es necesario
