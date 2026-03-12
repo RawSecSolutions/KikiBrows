@@ -19,14 +19,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const roleFilter = document.getElementById('role-filter');
     const courseSelect = document.getElementById('userCourse');
 
-    // Obtener usuario actual para evitar auto-bloqueo y cargar email
+    // Obtener usuario actual para evitar auto-bloqueo y cargar email/rol
     let currentUserId = null;
     let currentUserEmail = null;
+    let currentUserRole = null;
     const { data: { user: currentAuthUser } } = await supabase.auth.getUser();
     if (currentAuthUser) {
         currentUserId = currentAuthUser.id;
         currentUserEmail = currentAuthUser.email;
+        const { data: myProfile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', currentUserId)
+            .single();
+        currentUserRole = myProfile?.role || 'student';
     }
+    const isSuperAdmin = currentUserRole === 'superadmin';
 
     // --- 1. CARGA DE DATOS DESDE SUPABASE ---
 
@@ -208,21 +216,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         filtered.forEach(u => {
             let buttonsHTML = '';
             const isSuper = u.role === 'superadmin';
+            const isAdmin = u.role === 'admin';
 
-            buttonsHTML += `
-                <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser('${u.id}')" title="Editar">
-                    <i class="fas fa-pencil-alt"></i>
-                </button>
-            `;
+            // Admin solo puede gestionar students; superadmin gestiona a todos menos superadmins
+            const canManage = isSuperAdmin ? !isSuper : (u.role === 'student');
 
-            if (!isSuper) {
+            if (canManage) {
+                buttonsHTML += `
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser('${u.id}')" title="Editar">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                `;
                 buttonsHTML += `
                     <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${u.id}')" title="Eliminar">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 `;
             } else {
-                buttonsHTML += `<span class="d-inline-block" style="width: 32px;"></span>`;
+                buttonsHTML += `<span class="d-inline-block" style="width: 64px;"></span>`;
             }
 
             const row = document.createElement('div');
@@ -315,13 +326,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (user.role === 'superadmin') {
             roleSelect.innerHTML = '<option value="superadmin">Super Admin</option>';
             roleSelect.disabled = true;
-        } else {
+        } else if (isSuperAdmin) {
+            // Superadmin puede cambiar roles entre admin y student
             roleSelect.innerHTML = `
                 <option value="admin">Administrador</option>
                 <option value="student">Estudiante</option>
             `;
             roleSelect.value = user.role;
             roleSelect.disabled = false;
+        } else {
+            // Admin solo gestiona students, no puede cambiar roles
+            roleSelect.innerHTML = `<option value="${user.role}">${user.role === 'admin' ? 'Administrador' : 'Estudiante'}</option>`;
+            roleSelect.disabled = true;
         }
 
         document.getElementById('passwordGroup').classList.add('d-none');
@@ -347,11 +363,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             blockGroup.title = '';
 
             const roleSelect = document.getElementById('userRole');
-            roleSelect.innerHTML = `
-                <option value="admin">Administrador</option>
-                <option value="student" selected>Estudiante</option>
-            `;
-            roleSelect.disabled = false;
+            if (isSuperAdmin) {
+                roleSelect.innerHTML = `
+                    <option value="admin">Administrador</option>
+                    <option value="student" selected>Estudiante</option>
+                `;
+                roleSelect.disabled = false;
+            } else {
+                roleSelect.innerHTML = '<option value="student" selected>Estudiante</option>';
+                roleSelect.disabled = true;
+            }
 
             document.getElementById('passwordGroup').classList.remove('d-none');
             userModal.show();
@@ -401,9 +422,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const updateData = { first_name: firstName, last_name: lastName };
-                if (!roleEl.disabled) {
-                    updateData.role = roleEl.value;
-                }
 
                 const { error } = await supabase
                     .from('profiles')
@@ -411,6 +429,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     .eq('id', id);
 
                 if (error) throw new Error('Error al actualizar perfil: ' + error.message);
+
+                // Actualizar rol usando RPC (bypasa RLS)
+                if (!roleEl.disabled && user.role !== roleEl.value) {
+                    const { error: roleError } = await supabase.rpc('admin_set_role', {
+                        target_user_id: id,
+                        new_role: roleEl.value
+                    });
+
+                    if (roleError) throw new Error('Error al cambiar rol: ' + roleError.message);
+                }
 
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
@@ -480,18 +508,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 2. Esperar a que el trigger de base de datos cree el Perfil
                 await waitForProfile(newUserId);
 
-                // 2.5 Actualizar el perfil con el rol y nombre seleccionados
+                // 2.5 Actualizar nombre del perfil
                 const { error: profileError } = await supabase
                     .from('profiles')
-                    .update({
-                        role: roleEl.value,
-                        first_name: firstName,
-                        last_name: lastName
-                    })
+                    .update({ first_name: firstName, last_name: lastName })
                     .eq('id', newUserId);
 
                 if (profileError) {
-                    console.warn('Error actualizando rol del perfil:', profileError);
+                    console.warn('Error actualizando nombre del perfil:', profileError);
+                }
+
+                // 2.6 Asignar rol usando RPC (bypasa RLS)
+                const { error: roleError } = await supabase.rpc('admin_set_role', {
+                    target_user_id: newUserId,
+                    new_role: roleEl.value
+                });
+
+                if (roleError) {
+                    console.error('Error asignando rol:', roleError);
+                    showToast('Usuario creado pero hubo un error al asignar el rol.');
                 }
 
                 // 3. Asignar el curso en la tabla de inscripciones si es necesario
