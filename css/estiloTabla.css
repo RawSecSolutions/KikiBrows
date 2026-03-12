@@ -85,3 +85,81 @@
     border-radius: 8px;
     padding: 0.5rem 1.5rem;
 }
+
+/* =======================================================
+   GESTIÓN DE USUARIOS - Estilos extraídos de usersGest.html
+   ======================================================= */
+
+/* Icono del título */
+.users-gest-icon {
+    color: #8A835A;
+}
+
+/* Inputs con fondo semi-transparente */
+.users-gest-input {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Encabezado de la tabla */
+.user-table-header {
+    background-color: #D4E1C5;
+}
+
+/* Botón flotante Nuevo Usuario */
+.btn-nuevo-usuario {
+    background-color: #8A835A;
+    z-index: 1000;
+}
+
+.btn-nuevo-usuario:hover {
+    background-color: var(--accent-color);
+}
+
+/* Fila de usuario */
+.user-row {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Modal: inputs */
+.modal-input-light {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Modal: sección bloquear usuario */
+.block-user-section {
+    background-color: rgba(220, 53, 69, 0.05);
+    border-color: rgba(220, 53, 69, 0.2) !important;
+}
+
+.block-user-section .block-note {
+    font-size: 0.75rem;
+}
+
+/* Modal: switch de bloqueo */
+.block-switch {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+/* Modal: sección asignar curso */
+.assign-course-section {
+    background-color: rgba(139, 157, 111, 0.1);
+}
+
+.assign-course-select {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.assign-course-note {
+    font-size: 0.75rem;
+}
+
+/* Modal: botón guardar */
+.btn-save-modal {
+    background-color: #8A835A;
+}
+
+.btn-save-modal:hover {
+    background-color: var(--accent-color);
+}

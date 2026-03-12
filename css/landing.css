@@ -106,6 +106,17 @@ body {
     height: 100%;
 }
 
+.social-icons a {
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+}
+
+.social-icons a:hover {
+    color: var(--accent-color) !important;
+    transform: scale(1.15);
+}
+
 .contacto-block {
     /* Fallback para navegadores sin soporte de backdrop-filter */
     background-color: rgb(253, 252, 250);
