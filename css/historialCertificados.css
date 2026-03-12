@@ -51,8 +51,8 @@ h1 {
 
 /* Estilos de Botones */
 .btn-kiki-primary {
-    background-color: #4A4A4A;
-    color: #fff;
+    background-color: var(--primary-color, #8A835A);
+    color: var(--white, #FFFFFF);
     border: none;
     padding: 8px 20px;
     border-radius: 4px;
@@ -62,8 +62,8 @@ h1 {
 }
 
 .btn-kiki-primary:hover {
-    background-color: #333;
-    color: #fff;
+    background-color: var(--accent-color, #6B664A);
+    color: var(--white, #FFFFFF);
 }
 
 .btn-kiki-outline {
