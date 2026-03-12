@@ -442,12 +442,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {
-                    const yaInscrito = inscripcionesDB.some(i =>
-                        (i.usuario_id === id || i.user_id === id || i.perfil_id === id) &&
-                        (i.curso_id === selectedCourse || i.course_id === selectedCourse)
-                    );
+                    // Verificar directamente en BD si ya está inscrito (evita datos en caché desactualizados)
+                    const { data: existingInscrip } = await supabase
+                        .from('inscripciones')
+                        .select('id')
+                        .eq('usuario_id', id)
+                        .eq('curso_id', selectedCourse)
+                        .maybeSingle();
 
-                    if (!yaInscrito) {
+                    if (!existingInscrip) {
                         const inscripcionData = {
                             usuario_id: id,
                             curso_id: selectedCourse,
@@ -459,7 +462,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         const { error: inscripError } = await supabase
                             .from('inscripciones')
-                            .insert(inscripcionData);
+                            .upsert(inscripcionData, { onConflict: 'usuario_id,curso_id' });
 
                         if (inscripError) {
                             console.warn('Error asignando curso:', inscripError);
@@ -468,7 +471,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             showToast('Datos actualizados con curso asignado.');
                         }
                     } else {
-                        showToast('Datos actualizados.');
+                        showToast('Datos actualizados (ya inscrito en este curso).');
                     }
                 } else {
                     showToast('Datos actualizados.');
@@ -543,7 +546,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const { error: inscripError } = await supabase
                         .from('inscripciones')
-                        .insert(inscripcionData);
+                        .upsert(inscripcionData, { onConflict: 'usuario_id,curso_id' });
 
                     if (inscripError) {
                         console.warn('Error asignando curso:', inscripError);
