@@ -21,58 +21,60 @@
     <div id="main-container" class="d-flex">
         <aside id="sidebar"></aside>
 
-        <main class="p-4 w-100" id="dashboard-content">
-            <div class="account-card p-4 h-100">
+        <main id="dashboard-content" class="p-4 w-100">
+            <div class="account-card p-4 h-100 d-flex flex-column">
 
-                <div class="d-flex align-items-center mb-4 gap-3">
-                    <div class="d-flex align-items-center justify-content-center rounded p-2" style="background-color: #D4E1C5; width: 50px; height: 50px;">
+                <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                    <div class="d-flex align-items-center justify-content-center rounded p-2 me-3" style="background-color: #D4E1C5; width: 50px; height: 50px;">
                         <i class="fas fa-clipboard-check fs-2" style="color: #8A835A;"></i>
                     </div>
                     <h1 class="m-0 fs-3">Revisiones</h1>
                 </div>
 
-                <div class="mb-4 border-bottom pb-2">
-                    <button id="tab-pendientes" class="btn fw-bold me-3" style="border-bottom: 3px solid #8A835A; color: #333; border-radius: 0;">Pendientes</button>
-                    <button id="tab-finalizadas" class="btn fw-bold text-muted" style="border-radius: 0;">Finalizadas</button>
+                <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex w-100 border-bottom pb-2">
+                        <button id="tab-pendientes" class="btn fw-bold me-3" style="border-bottom: 3px solid #8A835A; color: #333; border-radius: 0;">Pendientes</button>
+                        <button id="tab-finalizadas" class="btn fw-bold text-muted" style="border-radius: 0;">Finalizadas</button>
+                    </div>
                 </div>
 
-                <div class="revision-table-container">
-                    <!-- Header de la tabla -->
-                    <div class="row g-0 mb-3 fw-bold p-2 rounded" style="background-color: #D4E1C5;">
-                        <div class="col-1 text-center">#</div>
-                        <div class="col-3">Curso</div>
-                        <div class="col-3">Clase</div>
-                        <div class="col-2">Fecha</div>
-                        <div class="col-2">Usuario</div>
-                        <div class="col-1 text-center">Estado</div>
+                <div id="loading-indicator" class="text-center py-4">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Cargando...</span>
                     </div>
-
-                    <!-- Loading indicator -->
-                    <div id="loading-indicator" class="text-center py-4">
-                        <div class="spinner-border text-warning" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p class="text-muted mt-2">Cargando entregas...</p>
-                    </div>
-
-                    <!-- Empty state -->
-                    <div id="empty-state-revisiones" class="d-none text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted fst-italic">No hay entregas pendientes de revisión.</p>
-                    </div>
-
-                    <!-- Rows dinámicas -->
-                    <div id="entregas-table-body"></div>
-
-                    <!-- Paginación dinámica -->
-                    <div id="pagination-container" class="d-flex justify-content-center mt-4"></div>
-
+                    <p class="text-muted mt-2">Cargando entregas...</p>
                 </div>
+
+                <div id="empty-state-revisiones" class="d-none text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted fst-italic">No hay entregas pendientes de revisión.</p>
+                </div>
+
+                <div class="table-responsive flex-grow-1">
+                    <table class="table table-hover align-middle">
+                        <thead style="background-color: #D4E1C5;">
+                            <tr>
+                                <th scope="col" class="py-3 text-center">#</th>
+                                <th scope="col" class="py-3">Curso</th>
+                                <th scope="col" class="py-3">Clase</th>
+                                <th scope="col" class="py-3">Fecha</th>
+                                <th scope="col" class="py-3">Usuario</th>
+                                <th scope="col" class="py-3 text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entregas-table-body">
+                            </tbody>
+                    </table>
+                </div>
+
+                <nav aria-label="Paginación" class="mt-4">
+                    <div id="pagination-container" class="d-flex justify-content-center"></div>
+                </nav>
+
             </div>
         </main>
     </div>
 
-    <!-- Modal de Revisión -->
     <div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content account-card border-0 p-3">

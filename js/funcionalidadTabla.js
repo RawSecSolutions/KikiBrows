@@ -186,6 +186,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 3. RENDERIZADO ---
 
+    // --- 3. RENDERIZADO ---
+
     function renderUsers() {
         userListContainer.innerHTML = '';
 
@@ -201,7 +203,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (filtered.length === 0) {
-            userListContainer.innerHTML = '<div class="text-center p-4 text-muted">No se encontraron usuarios.</div>';
+            userListContainer.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center p-4 text-muted">
+                        No se encontraron usuarios.
+                    </td>
+                </tr>
+            `;
             return;
         }
 
@@ -210,7 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isSuper = u.role === 'superadmin';
 
             buttonsHTML += `
-                <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser('${u.id}')" title="Editar">
+                <button class="btn btn-sm text-white me-1" style="background-color: #8A835A;" onclick="editUser('${u.id}')" title="Editar">
                     <i class="fas fa-pencil-alt"></i>
                 </button>
             `;
@@ -225,16 +233,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 buttonsHTML += `<span class="d-inline-block" style="width: 32px;"></span>`;
             }
 
-            const row = document.createElement('div');
-            row.className = 'row d-flex align-items-center p-3 mb-2 rounded border user-row';
+            // CORRECCIÓN: Usar <tr> y <td> en lugar de divs con cols
+            const row = document.createElement('tr');
+            row.style.cursor = 'pointer';
+            
+            // Si el usuario está bloqueado, le damos un tono ligeramente rojizo/gris a la fila
+            if (u.is_blocked) {
+                row.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+            }
+            
             row.innerHTML = `
-                <div class="col-2 fw-bold text-truncate">${getUserName(u)}</div>
-                <div class="col-3 text-truncate text-muted small">${u.email || '<span class="text-muted">-</span>'}</div>
-                <div class="col-2">${getBadge(u.role)}</div>
-                <div class="col-2">${getStatus(u)}</div>
-                <div class="col-1">${getUserCourses(u.id)}</div>
-                <div class="col-2 text-end">${buttonsHTML}</div>
+                <td class="fw-bold">${getUserName(u)}</td>
+                <td class="text-muted small">${u.email || '<span class="text-muted">-</span>'}</td>
+                <td>${getBadge(u.role)}</td>
+                <td>${getStatus(u)}</td>
+                <td class="text-center">${getUserCourses(u.id)}</td>
+                <td class="text-end">${buttonsHTML}</td>
             `;
+            
             userListContainer.appendChild(row);
         });
     }

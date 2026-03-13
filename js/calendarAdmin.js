@@ -12,8 +12,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 document.addEventListener('DOMContentLoaded', async () => {
 
     // --- REFERENCIAS DOM ---
-    const tableContainer = document.getElementById('calendar-table-container');
-    const pastTableContainer = document.getElementById('past-table-container');
     const totalResultsSpan = document.getElementById('total-results');
     const toastEl = document.getElementById('liveToast');
     const toastBody = document.getElementById('toast-message');
@@ -28,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function formatDate(dateStr) {
         const d = new Date(dateStr);
-        // Usamos getUTC para evitar que la fecha salte un día hacia atrás por la zona horaria
         const dia = String(d.getUTCDate()).padStart(2, '0');
         const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
         const año = d.getUTCFullYear();
@@ -37,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function formatTime(dateStr) {
         const d = new Date(dateStr);
-        // Forzamos a UTC para mostrar la hora cruda de la base de datos (Ej: 13:00 se queda en 13:00)
         return d.toLocaleTimeString('es-CL', { 
             hour: '2-digit', 
             minute: '2-digit',
@@ -50,8 +46,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (estado === 'LLENO') return '<span class="badge bg-warning text-dark rounded-pill">Lleno</span>';
         if (estado === 'COMPLETADO') return '<span class="badge bg-info text-dark rounded-pill">Completado</span>';
         if (estado === 'CANCELADO') return '<span class="badge bg-danger rounded-pill">Cancelado</span>';
-        
-        // Fallback por si acaso llega algo raro
         return `<span class="badge bg-secondary rounded-pill">${estado}</span>`;
     }
 
@@ -107,26 +101,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderTable(slots) {
         if (totalResultsSpan) totalResultsSpan.textContent = slots.length;
 
+        const tableBody = document.getElementById('calendar-table-body');
+        if (!tableBody) return;
+
         if (slots.length === 0) {
-            tableContainer.innerHTML = '<div class="text-center p-5 text-muted">No hay slots creados.</div>';
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center p-5 text-muted">No hay slots creados.</td></tr>';
             return;
         }
 
-        let html = `
-            <div class="table-responsive">
-            <table class="table calendar-table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>FECHA</th>
-                        <th>HORARIO</th>
-                        <th>CUPOS</th>
-                        <th>ESTADO</th>
-                        <th>ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
+        let html = '';
         slots.forEach(slot => {
             html += `
                 <tr data-id="${slot.id}">
@@ -134,44 +117,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td>${formatTime(slot.fecha_inicio)} - ${formatTime(slot.fecha_fin)}</td>
                     <td>${slot.cupos_ocupados}/${slot.cupos_maximos}</td>
                     <td>${getBadge(slot.estado)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary btn-icon me-1" title="Ver Detalles y Links" data-action="view">
+                    <td class="text-end">
+                        <button class="btn btn-sm text-white btn-icon me-1" style="background-color: #8A835A;" title="Ver Detalles y Links" data-action="view">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger btn-icon" title="Eliminar" data-action="delete">
+                        <button class="btn btn-sm btn-outline-danger btn-icon" title="Eliminar" data-action="delete">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
                 </tr>
             `;
         });
-        html += '</tbody></table></div>';
-        tableContainer.innerHTML = html;
+        tableBody.innerHTML = html;
     }
 
     // --- RENDERIZAR TABLA PASADAS ---
     function renderPastTable(slots) {
-        if (!pastTableContainer) return;
+        const pastTableBody = document.getElementById('past-table-body');
+        if (!pastTableBody) return;
 
         if (slots.length === 0) {
-            pastTableContainer.innerHTML = '<p class="text-center text-muted p-5 fst-italic">No hay historial disponible.</p>';
+            pastTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-5 fst-italic">No hay historial disponible.</td></tr>';
             return;
         }
 
-        let html = `
-            <div class="table-responsive">
-            <table class="table calendar-table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>FECHA</th>
-                        <th>HORARIO</th>
-                        <th>CUPOS USADOS</th>
-                        <th>ESTADO</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
+        let html = '';
         slots.forEach(slot => {
             html += `
                 <tr>
@@ -182,58 +152,67 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </tr>
             `;
         });
-        html += '</tbody></table></div>';
-        pastTableContainer.innerHTML = html;
+        pastTableBody.innerHTML = html;
     }
 
     // --- ACCIONES DE TABLA ---
-    tableContainer.addEventListener('click', async (e) => {
-        const btn = e.target.closest('button');
-        if (!btn) return;
+    const tableBodyUpcoming = document.getElementById('calendar-table-body');
+    if (tableBodyUpcoming) {
+        tableBodyUpcoming.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
 
-        const id = btn.closest('tr').dataset.id;
-        const slot = slotsCache.find(s => s.id === id);
-        if (!slot) return;
+            const tr = btn.closest('tr');
+            if (!tr) return;
+            
+            const id = tr.dataset.id;
+            const slot = slotsCache.find(s => s.id === id);
+            if (!slot) return;
 
-        if (btn.dataset.action === 'delete') {
-            if (slot.cupos_ocupados > 0) {
-                if (!confirm(`¡OJO! Hay ${slot.cupos_ocupados} alumnas inscritas.\n¿Confirmas eliminar este slot?`)) return;
-            } else {
-                if (!confirm('¿Borrar este slot vacío?')) return;
+            if (btn.dataset.action === 'delete') {
+                if (slot.cupos_ocupados > 0) {
+                    if (!confirm(`¡OJO! Hay ${slot.cupos_ocupados} alumnas inscritas.\n¿Confirmas eliminar este slot?`)) return;
+                } else {
+                    if (!confirm('¿Borrar este slot vacío?')) return;
+                }
+
+                try {
+                    // Eliminar reservas asociadas primero
+                    const { error: resError } = await supabase
+                        .from('consultas_reservas')
+                        .delete()
+                        .eq('slot_id', id);
+
+                    if (resError) throw resError;
+
+                    // Eliminar el slot
+                    const { error } = await supabase
+                        .from('consulta_slots')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+
+                    showToast('Slot eliminado correctamente.');
+                    await loadSlots();
+                } catch (err) {
+                    console.error('Error eliminando slot:', err);
+                    showToast('Error al eliminar el slot', 'danger');
+                }
             }
 
-            try {
-                // Eliminar reservas asociadas primero
-                const { error: resError } = await supabase
-                    .from('consultas_reservas')
-                    .delete()
-                    .eq('slot_id', id);
-
-                if (resError) throw resError;
-
-                // Eliminar el slot
-                const { error } = await supabase
-                    .from('consulta_slots')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                showToast('Slot eliminado correctamente.');
-                await loadSlots();
-            } catch (err) {
-                console.error('Error eliminando slot:', err);
-                showToast('Error al eliminar el slot', 'danger');
+            if (btn.dataset.action === 'view') {
+                await openDetailModal(slot);
             }
-        }
-
-        if (btn.dataset.action === 'view') {
-            await openDetailModal(slot);
-        }
-    });
+        });
+    }
 
     // --- MODAL DETALLE ---
-    const viewModal = new bootstrap.Modal(document.getElementById('viewSlotModal'));
+    const viewModalElement = document.getElementById('viewSlotModal');
+    let viewModal = null;
+    if(viewModalElement) {
+        viewModal = new bootstrap.Modal(viewModalElement);
+    }
 
     async function openDetailModal(slot) {
         document.getElementById('detail-date').textContent = formatDate(slot.fecha_inicio);
@@ -313,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const userIds = reservas.map(r => r.usuario_id);
                 const { data: profiles } = await supabase
                     .from('profiles')
-                    .select('id, first_name, last_name, email') // Ahora sí pedimos el email
+                    .select('id, first_name, last_name, email')
                     .in('id', userIds);
 
                 const profileMap = {};
@@ -353,102 +332,105 @@ document.addEventListener('DOMContentLoaded', async () => {
             noMsg.classList.remove('d-none');
         }
         
-        viewModal.show();
+        if (viewModal) viewModal.show();
     }
 
     // --- CREAR SLOT (con Zoom API via Edge Function) ---
-    document.getElementById('create-slot-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const createSlotForm = document.getElementById('create-slot-form');
+    if (createSlotForm) {
+        createSlotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const fecha = document.getElementById('slot-date').value;
-        const inicio = document.getElementById('start-time').value;
-        const fin = document.getElementById('end-time').value;
-        const cuposMax = parseInt(document.getElementById('max-slots').value);
+            const fecha = document.getElementById('slot-date').value;
+            const inicio = document.getElementById('start-time').value;
+            const fin = document.getElementById('end-time').value;
+            const cuposMax = parseInt(document.getElementById('max-slots').value);
 
-        if (inicio >= fin) {
-            alert('La hora de fin debe ser después del inicio.');
-            return;
-        }
-
-        // Mostrar loading en el botón
-        const submitBtn = e.target.querySelector('button[type="submit"]') || document.querySelector('[form="create-slot-form"][type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
-
-        try {
-            // Construir las fechas con timezone de Chile
-            const fechaInicio = `${fecha}T${inicio}:00`;
-            const fechaFin = `${fecha}T${fin}:00`;
-            const duration = calculateDuration(inicio, fin);
-            const topic = `Consulta KikiBrows - ${fecha} ${inicio}-${fin}`;
-
-            // Obtener sesión para el token de autenticación
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                throw new Error('Sesión expirada. Por favor recarga la página.');
+            if (inicio >= fin) {
+                alert('La hora de fin debe ser después del inicio.');
+                return;
             }
 
-            // Llamar Edge Function para crear meeting en Zoom
-            let zoomData = null;
+            // Mostrar loading en el botón
+            const submitBtn = e.target.querySelector('button[type="submit"]') || document.querySelector('[form="create-slot-form"][type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+
             try {
-                const { data, error } = await supabase.functions.invoke('zoom-create-meeting', {
-                    body: {
-                        topic,
-                        start_time: fechaInicio,
-                        duration,
-                        timezone: 'America/Santiago'
-                    }
-                });
+                // Construir las fechas con timezone de Chile
+                const fechaInicio = `${fecha}T${inicio}:00`;
+                const fechaFin = `${fecha}T${fin}:00`;
+                const duration = calculateDuration(inicio, fin);
+                const topic = `Consulta KikiBrows - ${fecha} ${inicio}-${fin}`;
 
-                if (error) throw error;
-                if (data && data.success) {
-                    zoomData = data;
-                    console.log('✓ Meeting de Zoom creado - ID:', data.meeting_id);
+                // Obtener sesión para el token de autenticación
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    throw new Error('Sesión expirada. Por favor recarga la página.');
                 }
-            } catch (zoomErr) {
-                console.warn('⚠ No se pudo crear el meeting de Zoom:', zoomErr.message);
-                showToast('Slot creado sin meeting de Zoom (revisa la configuración)', 'warning');
+
+                // Llamar Edge Function para crear meeting en Zoom
+                let zoomData = null;
+                try {
+                    const { data, error } = await supabase.functions.invoke('zoom-create-meeting', {
+                        body: {
+                            topic,
+                            start_time: fechaInicio,
+                            duration,
+                            timezone: 'America/Santiago'
+                        }
+                    });
+
+                    if (error) throw error;
+                    if (data && data.success) {
+                        zoomData = data;
+                        console.log('✓ Meeting de Zoom creado - ID:', data.meeting_id);
+                    }
+                } catch (zoomErr) {
+                    console.warn('⚠ No se pudo crear el meeting de Zoom:', zoomErr.message);
+                    showToast('Slot creado sin meeting de Zoom (revisa la configuración)', 'warning');
+                }
+
+                // Insertar slot en Supabase con columnas separadas
+                const { data: newSlot, error: insertError } = await supabase
+                    .from('consulta_slots')
+                    .insert([{
+                        fecha_inicio: fechaInicio,
+                        fecha_fin: fechaFin,
+                        zoom_link: zoomData ? zoomData.join_url : null,
+                        zoom_host_url: zoomData ? zoomData.start_url : null,
+                        zoom_meeting_id: zoomData ? zoomData.meeting_id : null,
+                        cupos_maximos: cuposMax,
+                        cupos_ocupados: 0,
+                        estado: 'DISPONIBLE'
+                    }])
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+
+                // Cerrar modal y recargar
+                bootstrap.Modal.getInstance(document.getElementById('createSlotModal')).hide();
+                e.target.reset();
+
+                if (zoomData) {
+                    showToast('Slot creado exitosamente con meeting de Zoom.');
+                } else {
+                    showToast('Slot creado (sin enlace Zoom).', 'warning');
+                }
+
+                await loadSlots();
+
+            } catch (err) {
+                console.error('Error creando slot:', err);
+                showToast(err.message || 'Error al crear el slot', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             }
-
-            // Insertar slot en Supabase con columnas separadas
-            const { data: newSlot, error: insertError } = await supabase
-                .from('consulta_slots')
-                .insert([{
-                    fecha_inicio: fechaInicio,
-                    fecha_fin: fechaFin,
-                    zoom_link: zoomData ? zoomData.join_url : null,
-                    zoom_host_url: zoomData ? zoomData.start_url : null,
-                    zoom_meeting_id: zoomData ? zoomData.meeting_id : null,
-                    cupos_maximos: cuposMax,
-                    cupos_ocupados: 0,
-                    estado: 'DISPONIBLE'
-                }])
-                .select()
-                .single();
-
-            if (insertError) throw insertError;
-
-            // Cerrar modal y recargar
-            bootstrap.Modal.getInstance(document.getElementById('createSlotModal')).hide();
-            e.target.reset();
-
-            if (zoomData) {
-                showToast('Slot creado exitosamente con meeting de Zoom.');
-            } else {
-                showToast('Slot creado (sin enlace Zoom).', 'warning');
-            }
-
-            await loadSlots();
-
-        } catch (err) {
-            console.error('Error creando slot:', err);
-            showToast(err.message || 'Error al crear el slot', 'danger');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-        }
-    });
+        });
+    }
 
     // --- TAB DE CLASES PASADAS: cargar al hacer clic ---
     const pastTab = document.getElementById('past-tab');
