@@ -258,12 +258,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             row.className = 'user-row';
             row.innerHTML = `
-                <td class="fw-bold">${getUserName(u)}</td>
-                <td class="text-muted small">${u.email || '<span class="text-muted">-</span>'}</td>
-                <td>${getBadge(u.role)}</td>
-                <td>${getStatus(u)}</td>
-                <td>${getUserCourses(u.id)}</td>
-                <td class="text-end text-nowrap">${buttonsHTML}</td>
+                <td class="fw-bold" data-label="Usuario">${getUserName(u)}</td>
+                <td class="text-muted small" data-label="Email">${u.email || '<span class="text-muted">-</span>'}</td>
+                <td data-label="Rol">${getBadge(u.role)}</td>
+                <td data-label="Estado">${getStatus(u)}</td>
+                <td data-label="Cursos">${getUserCourses(u.id)}</td>
+                <td class="text-end text-nowrap" data-label="Acciones">${buttonsHTML}</td>
             `;
             userListContainer.appendChild(row);
         });
