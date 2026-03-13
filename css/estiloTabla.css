@@ -105,6 +105,7 @@
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 0;
+    min-width: 700px;
 }
 
 .user-table thead th {
