@@ -125,7 +125,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return false;
     }
 
-    // Asignar curso: intenta RPC, si devuelve null hace upsert directo
+    // Asignar curso via RPC (SECURITY DEFINER, retorna void)
+    // Una función void siempre retorna data:null en éxito — solo error importa
     async function asignarCurso(targetUserId, targetCursoId, fechaExpiracion) {
         const params = {
             target_user_id: targetUserId,
@@ -136,33 +137,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         console.log('Asignando curso via RPC:', params);
 
-        const { data: rpcData, error: rpcError } = await supabase.rpc('admin_asignar_curso', params);
-        console.log('RPC resultado:', { data: rpcData, error: rpcError });
+        const { error: rpcError } = await supabase.rpc('admin_asignar_curso', params);
 
         if (rpcError) {
             throw new Error('Error asignando curso: ' + rpcError.message);
         }
 
-        // Si el RPC no devolvió error pero tampoco hizo nada (data null),
-        // hacer upsert directo como fallback (caso superadmin)
-        if (rpcData === null) {
-            console.warn('RPC devolvió null, intentando upsert directo en inscripciones...');
-
-            const { error: upsertError } = await supabase
-                .from('inscripciones')
-                .upsert({
-                    usuario_id: targetUserId,
-                    curso_id: targetCursoId,
-                    estado: 'ACTIVO',
-                    origen_acceso: 'ASIGNACION_ADMIN',
-                    fecha_expiracion: fechaExpiracion || null
-                }, {
-                    onConflict: 'usuario_id,curso_id'
-                });
-
-            if (upsertError) throw new Error('Error en upsert de inscripción: ' + upsertError.message);
-            console.log('Inscripción asignada correctamente via upsert fallback');
-        }
+        console.log('Curso asignado correctamente via RPC');
     }
 
     function calcularFechaExpiracion(cursoId) {
