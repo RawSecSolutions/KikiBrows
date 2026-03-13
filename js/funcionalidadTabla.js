@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadAllData() {
-        userListContainer.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin me-2"></i>Cargando usuarios...</div>';
+        userListContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4"><i class="fas fa-spinner fa-spin me-2"></i>Cargando usuarios...</td></tr>';
         await Promise.all([fetchUsers(), fetchCourses(), fetchInscripciones(), fetchCertificados()]);
         loadCoursesIntoSelect();
         renderUsers();
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (filtered.length === 0) {
-            userListContainer.innerHTML = '<div class="text-center p-4 text-muted">No se encontraron usuarios.</div>';
+            userListContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-muted">No se encontraron usuarios.</td></tr>';
             return;
         }
 
@@ -253,19 +253,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 `;
-            } else {
-                buttonsHTML += `<span class="d-inline-block" style="width: 64px;"></span>`;
             }
 
-            const row = document.createElement('div');
-            row.className = 'row d-flex align-items-center p-3 mb-2 rounded border user-row';
+            const row = document.createElement('tr');
+            row.className = 'user-row';
             row.innerHTML = `
-                <div class="col-2 fw-bold text-truncate">${getUserName(u)}</div>
-                <div class="col-3 text-truncate text-muted small">${u.email || '<span class="text-muted">-</span>'}</div>
-                <div class="col-2">${getBadge(u.role)}</div>
-                <div class="col-2">${getStatus(u)}</div>
-                <div class="col-1">${getUserCourses(u.id)}</div>
-                <div class="col-2 text-end">${buttonsHTML}</div>
+                <td class="fw-bold">${getUserName(u)}</td>
+                <td class="text-muted small">${u.email || '<span class="text-muted">-</span>'}</td>
+                <td>${getBadge(u.role)}</td>
+                <td>${getStatus(u)}</td>
+                <td>${getUserCourses(u.id)}</td>
+                <td class="text-end text-nowrap">${buttonsHTML}</td>
             `;
             userListContainer.appendChild(row);
         });

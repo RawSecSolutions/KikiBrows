@@ -37,16 +37,6 @@
                 </div>
 
                 <div class="revision-table-container">
-                    <!-- Header de la tabla -->
-                    <div class="row g-0 mb-3 fw-bold p-2 rounded" style="background-color: #D4E1C5;">
-                        <div class="col-1 text-center">#</div>
-                        <div class="col-3">Curso</div>
-                        <div class="col-3">Clase</div>
-                        <div class="col-2">Fecha</div>
-                        <div class="col-2">Usuario</div>
-                        <div class="col-1 text-center">Estado</div>
-                    </div>
-
                     <!-- Loading indicator -->
                     <div id="loading-indicator" class="text-center py-4">
                         <div class="spinner-border text-warning" role="status">
@@ -61,8 +51,22 @@
                         <p class="text-muted fst-italic">No hay entregas pendientes de revisión.</p>
                     </div>
 
-                    <!-- Rows dinámicas -->
-                    <div id="entregas-table-body"></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle revision-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="py-3 text-center">#</th>
+                                    <th scope="col" class="py-3">Curso</th>
+                                    <th scope="col" class="py-3">Clase</th>
+                                    <th scope="col" class="py-3">Fecha</th>
+                                    <th scope="col" class="py-3">Usuario</th>
+                                    <th scope="col" class="py-3 text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entregas-table-body">
+                            </tbody>
+                        </table>
+                    </div>
 
                     <!-- Paginación dinámica -->
                     <div id="pagination-container" class="d-flex justify-content-center mt-4"></div>
