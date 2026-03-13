@@ -53,7 +53,6 @@
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 0;
-    min-width: 650px;
 }
 
 .revision-table thead th {
@@ -131,4 +130,55 @@
 
 .btn-calificar:hover {
     background-color: var(--accent-color);
+}
+
+/* ====== MOBILE: Card layout para tabla de revisiones ====== */
+@media (max-width: 768px) {
+    .revision-table thead {
+        display: none;
+    }
+
+    .revision-table tbody tr {
+        display: block;
+        background-color: rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
+        margin-bottom: 12px;
+        padding: 12px 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .revision-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border: none;
+        font-size: 0.9rem;
+    }
+
+    .revision-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: var(--text-dark, #2C2A25);
+        min-width: 70px;
+        flex-shrink: 0;
+    }
+
+    .revision-table tbody td:first-child {
+        display: none;
+    }
+
+    .revision-table tbody td:last-child {
+        justify-content: flex-end;
+        padding-top: 10px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        margin-top: 4px;
+    }
+
+    .revision-table tbody td:last-child::before {
+        content: "";
+    }
 }

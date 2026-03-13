@@ -152,12 +152,12 @@ const RevisionesAdmin = {
                 <tr class="entrega-row" style="cursor:pointer;"
                     data-entrega-id="${entrega.id}"
                     data-bs-toggle="modal" data-bs-target="#revisionModal">
-                    <td class="text-center fw-bold">${globalIndex}</td>
-                    <td>${cursoNombre}</td>
-                    <td title="${claseNombre}">${claseNombre}</td>
-                    <td class="text-nowrap">${fecha}</td>
-                    <td>${usuarioNombre}</td>
-                    <td class="text-center">${estadoBadge}</td>
+                    <td class="text-center fw-bold" data-label="#">${globalIndex}</td>
+                    <td data-label="Curso">${cursoNombre}</td>
+                    <td title="${claseNombre}" data-label="Clase">${claseNombre}</td>
+                    <td class="text-nowrap" data-label="Fecha">${fecha}</td>
+                    <td data-label="Usuario">${usuarioNombre}</td>
+                    <td class="text-center" data-label="Estado">${estadoBadge}</td>
                 </tr>
             `;
         }).join('');
