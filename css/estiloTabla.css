@@ -194,9 +194,16 @@
 }
 
 /* ====== MOBILE: Card layout para tabla de usuarios ====== */
-@media (max-width: 768px) {
+/* Breakpoint alineado con layoutAdmin.css (991.98px) */
+@media (max-width: 991.98px) {
     .user-table thead {
-        display: none;
+        display: none !important;
+    }
+
+    .user-table,
+    .user-table tbody {
+        display: block;
+        width: 100%;
     }
 
     .user-table tbody tr {
@@ -204,7 +211,7 @@
         background-color: rgba(255, 255, 255, 0.6);
         border-radius: 10px;
         margin-bottom: 12px;
-        padding: 12px 15px;
+        padding: 14px 16px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         border: 1px solid rgba(0, 0, 0, 0.06);
     }
@@ -213,9 +220,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 6px 0;
+        padding: 7px 0;
         border: none;
         font-size: 0.9rem;
+        text-align: right;
+        word-break: break-word;
     }
 
     .user-table tbody td::before {
@@ -226,6 +235,8 @@
         color: var(--text-dark, #2C2A25);
         min-width: 80px;
         flex-shrink: 0;
+        text-align: left;
+        margin-right: 10px;
     }
 
     .user-table tbody td:last-child {
@@ -239,7 +250,13 @@
         display: none;
     }
 
+    /* Override Bootstrap text-end that conflicts with card layout */
     .user-table tbody td.text-end {
         text-align: right !important;
+    }
+
+    /* Ensure text-nowrap doesn't break card layout */
+    .user-table tbody td.text-nowrap {
+        white-space: normal !important;
     }
 }

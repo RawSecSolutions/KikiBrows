@@ -133,9 +133,16 @@
 }
 
 /* ====== MOBILE: Card layout para tabla de revisiones ====== */
-@media (max-width: 768px) {
+/* Breakpoint alineado con layoutAdmin.css (991.98px) */
+@media (max-width: 991.98px) {
     .revision-table thead {
-        display: none;
+        display: none !important;
+    }
+
+    .revision-table,
+    .revision-table tbody {
+        display: block;
+        width: 100%;
     }
 
     .revision-table tbody tr {
@@ -143,7 +150,7 @@
         background-color: rgba(255, 255, 255, 0.6);
         border-radius: 10px;
         margin-bottom: 12px;
-        padding: 12px 15px;
+        padding: 14px 16px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         border: 1px solid rgba(0, 0, 0, 0.06);
     }
@@ -152,9 +159,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 6px 0;
+        padding: 7px 0;
         border: none;
         font-size: 0.9rem;
+        text-align: right;
+        word-break: break-word;
     }
 
     .revision-table tbody td::before {
@@ -165,6 +174,8 @@
         color: var(--text-dark, #2C2A25);
         min-width: 70px;
         flex-shrink: 0;
+        text-align: left;
+        margin-right: 10px;
     }
 
     .revision-table tbody td:first-child {
@@ -180,5 +191,10 @@
 
     .revision-table tbody td:last-child::before {
         content: "";
+    }
+
+    /* Ensure text-nowrap doesn't break card layout */
+    .revision-table tbody td.text-nowrap {
+        white-space: normal !important;
     }
 }
