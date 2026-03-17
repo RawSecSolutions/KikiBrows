@@ -3,8 +3,6 @@ import { supabase } from './sessionManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.querySelector('.user-registration-form');
-    const mostrarPassCheckbox = document.getElementById('mostrar-password');
-    const passwordInput = document.getElementById('password');
     const loginErrorMsg = document.getElementById('login-error-msg');
     const tituloPrincipal = document.querySelector('h1');
 
@@ -18,12 +16,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgErrorCodigo = document.getElementById('msg-error-codigo-login');
     const msgExitoCodigo = document.getElementById('msg-exito-codigo-login');
 
-    // 1. MOSTRAR/OCULTAR CONTRASEÑA
-    if (mostrarPassCheckbox && passwordInput) {
-        mostrarPassCheckbox.addEventListener('change', () => {
-            passwordInput.type = mostrarPassCheckbox.checked ? 'text' : 'password';
+    // 1. MOSTRAR/OCULTAR CONTRASEÑA (toggle con ícono de ojo)
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = button.querySelector('i');
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
         });
-    }
+    });
 
     // --- FUNCIONES VISUALES ---
     const mostrarErrorCampo = (input) => {
