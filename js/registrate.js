@@ -16,6 +16,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgErrorCodigo = document.getElementById('msg-error-codigo');
     const emailMostrado = document.getElementById('email-mostrado');
 
+    // --- TOGGLE MOSTRAR/OCULTAR CONTRASEÑA ---
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = button.querySelector('i');
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        });
+    });
+
     // --- FUNCIONES DE AYUDA PARA ERRORES ---
     const mostrarError = (input, mensaje) => {
         const formGroup = input.closest('.form-group') || input.parentElement;
@@ -39,8 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorText = formGroup.querySelector('.invalid-feedback');
             if (errorText) errorText.remove();
         });
-        const terminos = document.getElementById('terminos');
-        if (terminos) terminos.classList.remove('is-invalid');
     };
 
     const mostrarErrorCodigo = (mensaje) => {
@@ -67,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const emailInput = document.getElementById('email');
             const passInput = document.getElementById('password');
             const confirmPassInput = document.getElementById('confirm-password');
-            const terminosInput = document.getElementById('terminos');
 
             const nombre = nombreInput.value.trim();
             const apellido = apellidoInput.value.trim();
@@ -95,11 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!confirmPass) {
                 mostrarError(confirmPassInput, "Debe completar este campo");
-                hayErrores = true;
-            }
-            if (!terminosInput.checked) {
-                terminosInput.classList.add('is-invalid');
-                alert("Debes aceptar los términos y condiciones");
                 hayErrores = true;
             }
 

@@ -66,6 +66,21 @@
     margin-bottom: 0;
 }
 
+/* Toggle de mostrar contraseña */
+.password-input-wrapper .form-control {
+    padding-right: 50px;
+}
+
+.toggle-password {
+    padding: 8px;
+    color: var(--text-grey);
+    transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+    color: var(--primary-color);
+}
+
 .register-button {
     background-color: var(--primary-color);
     color: var(--white);
