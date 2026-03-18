@@ -9,22 +9,33 @@ async function checkAdminAuth() {
     console.log("AuthGuard: Iniciando verificación...");
 
     try {
-        // Pequeño delay para asegurar que Supabase esté listo
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log("AuthGuard: Validando sesión con getUser()...");
 
-        console.log("AuthGuard: Obteniendo sesión...");
-
-        // Usar timeout para evitar que getSession() se quede colgado indefinidamente
-        const getSessionWithTimeout = () => {
+        // Usar getUser() para forzar validación del JWT contra el servidor.
+        // getSession() solo devuelve datos cacheados y puede tener un JWT expirado,
+        // lo que causa que RLS bloquee silenciosamente las queries (0 filas, sin error).
+        // getUser() valida el token y lo refresca automáticamente si está expirado.
+        const getUserWithTimeout = () => {
             return Promise.race([
-                supabase.auth.getSession(),
+                supabase.auth.getUser(),
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Timeout obteniendo sesión')), 8000)
+                    setTimeout(() => reject(new Error('Timeout validando sesión')), 8000)
                 )
             ]);
         };
 
-        const { data, error: sessionError } = await getSessionWithTimeout();
+        const { data: userData, error: userError } = await getUserWithTimeout();
+
+        if (userError || !userData?.user) {
+            console.error("AuthGuard: Error validando usuario:", userError?.message || 'No user');
+            handleLogout();
+            return null;
+        }
+
+        console.log("AuthGuard: Usuario validado:", userData.user.id);
+
+        // Ahora obtener la sesión (ya refrescada por getUser si estaba expirada)
+        const { data, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError) {
             console.error("AuthGuard: Error obteniendo sesión:", sessionError);

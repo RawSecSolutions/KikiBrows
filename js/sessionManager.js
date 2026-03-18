@@ -71,8 +71,29 @@ function initAuthListener() {
     console.log('Auth listener inicializado (centralizado)');
 }
 
+/**
+ * Asegura que la sesión tenga un JWT válido antes de hacer queries.
+ * Llama a getUser() que valida el token contra el servidor y lo refresca si expiró.
+ * Retorna la sesión actualizada o null si no hay sesión válida.
+ */
+async function ensureFreshSession() {
+    try {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData?.user) {
+            console.warn('[SessionManager] No se pudo validar el usuario:', userError?.message);
+            return null;
+        }
+        const { data } = await supabase.auth.getSession();
+        return data?.session || null;
+    } catch (err) {
+        console.error('[SessionManager] Error refrescando sesión:', err.message);
+        return null;
+    }
+}
+
 // Exportar funciones y cliente de Supabase
 export {
     supabase,
-    initAuthListener
+    initAuthListener,
+    ensureFreshSession
 };

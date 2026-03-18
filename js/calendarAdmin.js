@@ -4,7 +4,7 @@
  * Conectado a Supabase (consulta_slots, consultas_reservas) + Edge Function zoom-create-meeting
  */
 
-import { supabase } from './sessionManager.js';
+import { supabase, ensureFreshSession } from './sessionManager.js';
 import { authReady } from './authGuardAdmin.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -62,8 +62,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const now = new Date().toISOString();
             console.log('[Calendar] Consultando consulta_slots con fecha_inicio >=', now);
 
-            // Verificar sesión
-            const { data: { session } } = await supabase.auth.getSession();
+            // Asegurar que el JWT sea válido antes de consultar
+            const session = await ensureFreshSession();
             console.log('[Calendar] Sesión activa:', !!session, session ? `| uid: ${session.user.id}` : '');
 
             const { data, error, status, statusText } = await supabase
