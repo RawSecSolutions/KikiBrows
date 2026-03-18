@@ -92,6 +92,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
+            // Diagnóstico RLS: si no hay datos, podría ser un problema de permisos
+            if (!data || data.length === 0) {
+                console.warn('⚠ transacciones: La consulta devolvió 0 filas. Esto puede indicar que las RLS policies de Supabase no permiten lectura para el rol admin. Revisa las policies de la tabla "transacciones" en Supabase Dashboard.');
+            } else {
+                console.log(`✓ transacciones: ${data.length} registros cargados.`);
+            }
+
             // Fetch profiles separately since there's no FK relationship
             const usuarioIds = [...new Set((data || []).map(t => t.usuario_id).filter(Boolean))];
             let profilesMap = {};

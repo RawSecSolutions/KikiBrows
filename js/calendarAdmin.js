@@ -68,6 +68,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
+            // Diagnóstico RLS
+            if (!data || data.length === 0) {
+                console.warn('⚠ consulta_slots: La consulta devolvió 0 filas. Esto puede indicar que las RLS policies no permiten lectura para el rol admin. Revisa las policies de la tabla "consulta_slots" en Supabase Dashboard.');
+            } else {
+                console.log(`✓ consulta_slots: ${data.length} slots cargados.`);
+            }
+
             slotsCache = data || [];
             renderTable(slotsCache);
         } catch (err) {
@@ -295,6 +302,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .order('created_at', { ascending: true });
 
             if (error) throw error;
+
+            // Diagnóstico RLS
+            if (!reservas || reservas.length === 0) {
+                console.warn('⚠ consultas_reservas: 0 reservas para slot', slot.id, '— Puede ser RLS o realmente no hay reservas.');
+            }
 
             if (!reservas || reservas.length === 0) {
                 noMsg.classList.remove('d-none');
