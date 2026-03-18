@@ -122,9 +122,10 @@ const RevisionesAdmin = {
 
         if (this.emptyState) this.emptyState.classList.add('d-none');
 
-        this.tableContainer.innerHTML = this.entregas.map((entrega, index) => {
+        this.tableContainer.innerHTML = '';
+
+        this.entregas.forEach((entrega, index) => {
             const cursoNombre = entrega.clases?.modulos?.cursos?.nombre || 'Curso';
-            const moduloNombre = entrega.clases?.modulos?.nombre || 'Módulo';
             const claseNombre = entrega.clases?.nombre || 'Clase';
             const usuarioNombre = entrega.profiles
                 ? `${entrega.profiles.first_name || ''} ${entrega.profiles.last_name || ''}`.trim()
@@ -148,28 +149,26 @@ const RevisionesAdmin = {
 
             const globalIndex = ((this.currentPage - 1) * this.perPage) + index + 1;
 
-            return `
-                <a href="#" class="row g-0 align-items-center p-3 mb-2 rounded text-decoration-none text-dark border entrega-row"
-                   style="background-color: rgba(255,255,255,0.6);"
-                   data-entrega-id="${entrega.id}"
-                   data-bs-toggle="modal" data-bs-target="#revisionModal">
-                    <div class="col-1 text-center fw-bold">${globalIndex}</div>
-                    <div class="col-3 text-truncate">${cursoNombre}</div>
-                    <div class="col-3 text-truncate" title="${claseNombre}">${claseNombre}</div>
-                    <div class="col-2">${fecha}</div>
-                    <div class="col-2 text-truncate">${usuarioNombre}</div>
-                    <div class="col-1 text-center">${estadoBadge}</div>
-                </a>
+            const row = document.createElement('tr');
+            row.style.cursor = 'pointer';
+            row.setAttribute('data-entrega-id', entrega.id);
+            row.setAttribute('data-bs-toggle', 'modal');
+            row.setAttribute('data-bs-target', '#revisionModal');
+            row.innerHTML = `
+                <td class="text-center fw-bold">${globalIndex}</td>
+                <td>${cursoNombre}</td>
+                <td title="${claseNombre}">${claseNombre}</td>
+                <td>${fecha}</td>
+                <td>${usuarioNombre}</td>
+                <td class="text-center">${estadoBadge}</td>
             `;
-        }).join('');
 
-        // Bind click events to rows for loading modal data
-        this.tableContainer.querySelectorAll('.entrega-row').forEach(row => {
-            row.addEventListener('click', (e) => {
-                const entregaId = row.getAttribute('data-entrega-id');
-                this.selectedEntrega = this.entregas.find(ent => ent.id === entregaId);
+            row.addEventListener('click', () => {
+                this.selectedEntrega = this.entregas.find(ent => ent.id === entrega.id);
                 this.loadModal();
             });
+
+            this.tableContainer.appendChild(row);
         });
     },
 
