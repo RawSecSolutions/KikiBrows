@@ -57,41 +57,65 @@ document.addEventListener('DOMContentLoaded', async () => {
     let slotsCache = [];
 
     async function loadSlots() {
+        console.log('[Calendar] Iniciando loadSlots()...');
         try {
             const now = new Date().toISOString();
+            console.log('[Calendar] Consultando consulta_slots con fecha_inicio >=', now);
 
-            const { data, error } = await supabase
+            // Verificar sesión
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('[Calendar] Sesión activa:', !!session, session ? `| uid: ${session.user.id}` : '');
+
+            const { data, error, status, statusText } = await supabase
                 .from('consulta_slots')
                 .select('*')
                 .gte('fecha_inicio', now)
                 .order('fecha_inicio', { ascending: true });
 
-            if (error) throw error;
+            console.log('[Calendar] Respuesta consulta_slots:', { status, statusText, filas: data?.length ?? 0, error: error || 'ninguno' });
+
+            if (error) {
+                console.error('[Calendar] Error de Supabase en consulta_slots:', { mensaje: error.message, codigo: error.code, detalles: error.details, hint: error.hint });
+                throw error;
+            }
+
+            if (!data || data.length === 0) {
+                console.warn('[Calendar] 0 slots futuros. Verificando si hay slots en general...');
+                const { data: allSlots, error: testErr } = await supabase
+                    .from('consulta_slots')
+                    .select('id, fecha_inicio, estado')
+                    .limit(5);
+                console.log('[Calendar] Test sin filtro fecha:', { filas: allSlots?.length ?? 0, datos: allSlots, error: testErr?.message || 'ninguno' });
+            } else {
+                console.log(`[Calendar] ${data.length} slots futuros cargados OK.`);
+            }
 
             slotsCache = data || [];
             renderTable(slotsCache);
         } catch (err) {
-            console.error('Error cargando slots:', err);
+            console.error('[Calendar] Error CATCH en loadSlots:', err.message || err, err);
             showToast('Error al cargar los slots', 'danger');
         }
     }
 
     async function loadPastSlots() {
+        console.log('[Calendar] Cargando slots pasados...');
         try {
             const now = new Date().toISOString();
 
-            const { data, error } = await supabase
+            const { data, error, status } = await supabase
                 .from('consulta_slots')
                 .select('*')
                 .lt('fecha_inicio', now)
                 .order('fecha_inicio', { ascending: false })
                 .limit(50);
 
+            console.log('[Calendar] Slots pasados:', { status, filas: data?.length ?? 0, error: error?.message || 'ninguno' });
             if (error) throw error;
 
             renderPastTable(data || []);
         } catch (err) {
-            console.error('Error cargando slots pasados:', err);
+            console.error('[Calendar] Error cargando slots pasados:', err.message || err, err);
         }
     }
 
@@ -175,6 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 try {
+                    console.log('[Calendar] Eliminando slot:', id, '| cupos_ocupados:', slot.cupos_ocupados, '| zoom_meeting_id:', slot.zoom_meeting_id);
                     // Eliminar meeting de Zoom si existe
                     if (slot.zoom_meeting_id) {
                         try {
@@ -191,12 +216,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     // Eliminar reservas asociadas primero
+                    console.log('[Calendar] Eliminando reservas del slot', id, '...');
                     const { error: resError } = await supabase
                         .from('consultas_reservas')
                         .delete()
                         .eq('slot_id', id);
 
-                    if (resError) throw resError;
+                    if (resError) {
+                        console.error('[Calendar] Error eliminando reservas:', { mensaje: resError.message, codigo: resError.code });
+                        throw resError;
+                    }
+                    console.log('[Calendar] Reservas eliminadas OK. Eliminando slot...');
 
                     // Eliminar el slot
                     const { error } = await supabase
@@ -204,12 +234,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         .delete()
                         .eq('id', id);
 
-                    if (error) throw error;
+                    if (error) {
+                        console.error('[Calendar] Error eliminando slot:', { mensaje: error.message, codigo: error.code });
+                        throw error;
+                    }
 
+                    console.log('[Calendar] Slot eliminado OK.');
                     showToast('Slot eliminado correctamente.');
                     await loadSlots();
                 } catch (err) {
-                    console.error('Error eliminando slot:', err);
+                    console.error('[Calendar] Error CATCH eliminando slot:', err.message || err, err);
                     showToast('Error al eliminar el slot', 'danger');
                 }
             }
@@ -280,7 +314,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         listBody.innerHTML = '';
 
         try {
-            const { data: reservas, error } = await supabase
+            console.log('[Calendar] Cargando reservas para slot:', slot.id);
+            const { data: reservas, error, status } = await supabase
                 .from('consultas_reservas')
                 .select(`
                     id,
@@ -290,11 +325,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     usuario_id
                 `)
                 .eq('slot_id', slot.id)
-                // Ocultamos las que ya fueron canceladas para mantener tu lista limpia
-                .neq('estado', 'CANCELADA') 
+                .neq('estado', 'CANCELADA')
                 .order('created_at', { ascending: true });
 
-            if (error) throw error;
+            console.log('[Calendar] Respuesta consultas_reservas:', { status, filas: reservas?.length ?? 0, error: error?.message || 'ninguno' });
+
+            if (error) {
+                console.error('[Calendar] Error en consultas_reservas:', { mensaje: error.message, codigo: error.code, detalles: error.details, hint: error.hint });
+                throw error;
+            }
+
+            if (!reservas || reservas.length === 0) {
+                console.warn('[Calendar] 0 reservas para slot', slot.id, '(cupos_ocupados del slot:', slot.cupos_ocupados, '). Si cupos_ocupados > 0 pero reservas = 0, es un problema de RLS en consultas_reservas.');
+            } else {
+                console.log('[Calendar]', reservas.length, 'reservas cargadas. Estados:', reservas.map(r => r.estado));
+            }
 
             if (!reservas || reservas.length === 0) {
                 noMsg.classList.remove('d-none');
@@ -303,10 +348,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Obtener perfiles de los usuarios reservados
                 const userIds = reservas.map(r => r.usuario_id);
-                const { data: profiles } = await supabase
+                console.log('[Calendar] Cargando perfiles de', userIds.length, 'usuarios con reservas...');
+                const { data: profiles, error: profErr } = await supabase
                     .from('profiles')
                     .select('id, first_name, last_name, email')
                     .in('id', userIds);
+
+                if (profErr) {
+                    console.error('[Calendar] Error cargando profiles de reservas:', profErr.message);
+                } else {
+                    console.log('[Calendar]', (profiles || []).length, 'perfiles cargados para reservas.');
+                }
 
                 const profileMap = {};
                 (profiles || []).forEach(p => {
@@ -376,9 +428,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const fechaFin = `${fecha}T${fin}:00`;
                 const duration = calculateDuration(inicio, fin);
                 const topic = `Consulta KikiBrows - ${fecha} ${inicio}-${fin}`;
+                console.log('[Calendar] Creando slot:', { fechaInicio, fechaFin, duration, cuposMax });
 
                 // Obtener sesión para el token de autenticación
                 const { data: { session } } = await supabase.auth.getSession();
+                console.log('[Calendar] Sesión para crear slot:', !!session);
                 if (!session) {
                     throw new Error('Sesión expirada. Por favor recarga la página.');
                 }
@@ -406,6 +460,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 // Insertar slot en Supabase con columnas separadas
+                console.log('[Calendar] Insertando slot en consulta_slots...');
                 const { data: newSlot, error: insertError } = await supabase
                     .from('consulta_slots')
                     .insert([{
@@ -421,7 +476,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     .select()
                     .single();
 
-                if (insertError) throw insertError;
+                if (insertError) {
+                    console.error('[Calendar] Error insertando slot:', { mensaje: insertError.message, codigo: insertError.code, detalles: insertError.details });
+                    throw insertError;
+                }
+                console.log('[Calendar] Slot insertado OK:', newSlot?.id);
 
                 // Cerrar modal y recargar
                 bootstrap.Modal.getInstance(document.getElementById('createSlotModal')).hide();
@@ -436,7 +495,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await loadSlots();
 
             } catch (err) {
-                console.error('Error creando slot:', err);
+                console.error('[Calendar] Error CATCH creando slot:', err.message || err, err);
                 showToast(err.message || 'Error al crear el slot', 'danger');
             } finally {
                 submitBtn.disabled = false;
@@ -467,7 +526,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         .subscribe();
 
     // --- INIT ---
-    // Esperar a que la autenticación esté lista antes de cargar datos
+    console.log('[Calendar] Esperando authReady...');
     await authReady;
+    console.log('[Calendar] Auth lista. Iniciando carga de slots.');
     await loadSlots();
 });
