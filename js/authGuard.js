@@ -1,92 +1,131 @@
 // js/authGuard.js
-// Protección de páginas - Verifica sesión de Supabase
+// Protección de páginas de ESTUDIANTE - Verifica sesión de Supabase
 import { supabase, initAuthListener } from './sessionManager.js';
 
 // NO inicializar listener aquí - lo hacemos después de verificar auth
 // para evitar race conditions con getSession()
 
 async function checkAuth() {
-    // Pequeño delay para asegurar que Supabase esté listo
-    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log("AuthGuard: Iniciando verificación...");
 
-    // Usar timeout para evitar que getSession() se quede colgado
-    const getSessionWithTimeout = () => {
-        return Promise.race([
-            supabase.auth.getSession(),
-            new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Timeout obteniendo sesión')), 8000)
-            )
-        ]);
-    };
-
-    let session = null;
     try {
-        const { data, error } = await getSessionWithTimeout();
-        if (error) {
-            console.error('Error obteniendo sesión:', error);
+        console.log("AuthGuard: Validando sesión con getUser()...");
+
+        // Usar getUser() para forzar validación del JWT contra el servidor.
+        // getSession() solo devuelve datos cacheados y puede tener un JWT expirado,
+        // lo que causa que RLS bloquee silenciosamente las queries (0 filas, sin error).
+        // getUser() valida el token y lo refresca automáticamente si está expirado.
+        const getUserWithTimeout = () => {
+            return Promise.race([
+                supabase.auth.getUser(),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout validando sesión')), 8000)
+                )
+            ]);
+        };
+
+        const { data: userData, error: userError } = await getUserWithTimeout();
+
+        if (userError || !userData?.user) {
+            console.error("AuthGuard: Error validando usuario:", userError?.message || 'No user');
+            handleLogout();
+            return null;
         }
-        session = data?.session;
-    } catch (err) {
-        console.error('Timeout o error en getSession:', err);
-    }
 
-    if (!session) {
-        // Guardar la URL actual para redirigir después del login
-        localStorage.setItem('redirectAfterLogin', window.location.href);
+        console.log("AuthGuard: Usuario validado:", userData.user.id);
 
-        // Limpiar localStorage
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('usuarioActual');
-        localStorage.removeItem('userRole');
+        // Ahora obtener la sesión (ya refrescada por getUser si estaba expirada)
+        const { data, error: sessionError } = await supabase.auth.getSession();
 
-        // Redirigir al login
-        window.location.href = 'login.html';
-        return null;
-    }
-
-    // Obtener perfil para verificar rol y bloqueo
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-    // Si no existe el perfil, cerrar sesión y redirigir
-    if (error || !profile) {
-        console.error('No se encontró perfil para el usuario:', error);
-        await supabase.auth.signOut();
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('usuarioActual');
-        localStorage.removeItem('userRole');
-
-        let msg = 'No se encontró tu perfil de usuario. Contacta soporte.';
-        if (error?.code === '42P17') {
-            msg = 'Error de configuración en la base de datos. Contacta al administrador.';
+        if (sessionError) {
+            console.error("AuthGuard: Error obteniendo sesión:", sessionError);
+            handleLogout();
+            return null;
         }
-        alert(msg);
-        window.location.href = 'login.html';
+
+        const session = data?.session;
+        console.log("AuthGuard: getSession completado", session ? "(con sesión)" : "(sin sesión)");
+
+        if (!session) {
+            console.warn("AuthGuard: No hay sesión activa.");
+            handleLogout();
+            return null;
+        }
+
+        console.log("AuthGuard: Sesión encontrada. Verificando perfil...");
+
+        // Obtener perfil para verificar rol y bloqueo
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+        // Si no existe el perfil, cerrar sesión y redirigir
+        if (error || !profile) {
+            console.error('AuthGuard: No se encontró perfil para el usuario:', error);
+
+            let msg = 'No se encontró tu perfil de usuario. Contacta soporte.';
+            if (error?.code === '42P17') {
+                msg = 'Error de configuración en la base de datos. Contacta al administrador.';
+            }
+            alert(msg);
+            handleLogout();
+            return null;
+        }
+
+        // Verificar si el usuario está bloqueado
+        if (profile.is_blocked) {
+            alert('Tu cuenta ha sido bloqueada. Contacta soporte.');
+            handleLogout();
+            return null;
+        }
+
+        // --- ÉXITO: USUARIO AUTENTICADO ---
+        console.log("AuthGuard: Usuario autorizado. Desbloqueando UI...");
+
+        // 1. Actualizar localStorage
+        updateLocalStorage(session, profile);
+
+        // 2. Inicializar listener DESPUÉS de verificar auth (evita race condition)
+        initAuthListener();
+
+        // 3. DESBLOQUEAR LA UI
+        requestAnimationFrame(() => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            if (loadingScreen) loadingScreen.style.display = 'none';
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+            document.body.classList.add('loaded');
+
+            console.log("UI Desbloqueada");
+        });
+
+        return { session, profile };
+
+    } catch (error) {
+        console.error('Error crítico de autenticación:', error);
+        handleLogout();
         return null;
     }
+}
 
-    // Verificar si el usuario está bloqueado
-    if (profile.is_blocked) {
-        await supabase.auth.signOut();
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('usuarioActual');
-        localStorage.removeItem('userRole');
-        alert('Tu cuenta ha sido bloqueada. Contacta soporte.');
-        window.location.href = 'login.html';
-        return null;
-    }
+// Funciones auxiliares
+function handleLogout() {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('usuarioActual');
+    localStorage.removeItem('userRole');
+    localStorage.setItem('redirectAfterLogin', window.location.href);
+    window.location.href = 'login.html';
+}
 
-    // Actualizar localStorage con datos actualizados
+function updateLocalStorage(session, profile) {
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userName', profile.first_name || session.user.email.split('@')[0]);
     localStorage.setItem('userRole', profile.role || 'student');
-
     const usuarioActual = {
         id: session.user.id,
         email: session.user.email,
@@ -95,11 +134,6 @@ async function checkAuth() {
         role: profile.role || 'student'
     };
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
-
-    // Inicializar listener DESPUÉS de verificar auth (evita race condition)
-    initAuthListener();
-
-    return { session, profile };
 }
 
 // Verificar rol de admin
@@ -118,8 +152,23 @@ async function checkAdminAuth() {
     return result;
 }
 
-// Ejecutar verificación automáticamente
-checkAuth();
+// --- EJECUCIÓN SEGURA ---
+// Creamos una promesa que se resuelve cuando la autenticación está verificada.
+// Otros scripts pueden importar `authReady` y await-earla antes de hacer queries.
+let _resolveAuthReady;
+const authReady = new Promise((resolve) => { _resolveAuthReady = resolve; });
+
+async function checkAuthAndSignal() {
+    const result = await checkAuth();
+    _resolveAuthReady(result);
+    return result;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkAuthAndSignal);
+} else {
+    checkAuthAndSignal();
+}
 
 // Exportar funciones para uso externo
-export { supabase, checkAuth, checkAdminAuth };
+export { supabase, checkAuth, checkAdminAuth, authReady };
