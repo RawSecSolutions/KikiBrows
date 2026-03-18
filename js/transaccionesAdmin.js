@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDetails = document.getElementById('modal-details');
     const searchInput = document.getElementById('transaction-search');
     const monthFilter = document.getElementById('month-filter');
-    const statusFilter = document.getElementById('status-filter');
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
 
@@ -90,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     usuario_id,
                     curso_id
                 `)
+                .eq('estado', 'PAGADO')
                 .order('fecha_compra', { ascending: false });
 
             if (error) throw error;
@@ -157,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyFilters() {
         const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
         const selectedMonth = monthFilter ? monthFilter.value : 'all';
-        const selectedStatus = statusFilter ? statusFilter.value : 'all';
 
         filteredTransactions = allTransactions.filter(t => {
             // Filtro de búsqueda
@@ -179,13 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 matchesMonth = key === selectedMonth;
             }
 
-            // Filtro de estado
-            let matchesStatus = true;
-            if (selectedStatus !== 'all') {
-                matchesStatus = t.estado === selectedStatus;
-            }
-
-            return matchesSearch && matchesMonth && matchesStatus;
+            return matchesSearch && matchesMonth;
         });
 
         currentPage = 1;
@@ -264,10 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (monthFilter) {
         monthFilter.addEventListener('change', () => applyFilters());
-    }
-
-    if (statusFilter) {
-        statusFilter.addEventListener('change', () => applyFilters());
     }
 
     if (prevBtn) {
