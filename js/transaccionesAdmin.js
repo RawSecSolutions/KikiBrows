@@ -1,9 +1,6 @@
 // js/transaccionesAdmin.js - Transacciones Admin con datos reales de Supabase
 
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+import { supabase } from './sessionManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
