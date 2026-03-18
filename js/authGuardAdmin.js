@@ -135,11 +135,22 @@ function updateLocalStorage(session, profile) {
 }
 
 // --- EJECUCIÓN SEGURA ---
-// Esperamos a que el HTML esté listo antes de correr la lógica
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkAdminAuth);
-} else {
-    checkAdminAuth();
+// Creamos una promesa que se resuelve cuando la autenticación está verificada.
+// Otros scripts pueden importar `authReady` y await-earla antes de hacer queries.
+let _resolveAuthReady;
+const authReady = new Promise((resolve) => { _resolveAuthReady = resolve; });
+
+const _originalCheckAdminAuth = checkAdminAuth;
+async function checkAdminAuthAndSignal() {
+    const result = await _originalCheckAdminAuth();
+    _resolveAuthReady(result);
+    return result;
 }
 
-export { supabase, checkAdminAuth };
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkAdminAuthAndSignal);
+} else {
+    checkAdminAuthAndSignal();
+}
+
+export { supabase, checkAdminAuth, authReady };

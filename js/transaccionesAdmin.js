@@ -1,8 +1,9 @@
 // js/transaccionesAdmin.js - Transacciones Admin con datos reales de Supabase
 
 import { supabase } from './sessionManager.js';
+import { authReady } from './authGuardAdmin.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
     const transactionsPerPage = 8;
     let currentPage = 1;
@@ -353,6 +354,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Esperar a que la autenticación esté lista antes de cargar datos
+    await authReady;
 
     // Iniciar carga
     loadTransactions();

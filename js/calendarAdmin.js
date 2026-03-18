@@ -5,6 +5,7 @@
  */
 
 import { supabase } from './sessionManager.js';
+import { authReady } from './authGuardAdmin.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -466,5 +467,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         .subscribe();
 
     // --- INIT ---
+    // Esperar a que la autenticación esté lista antes de cargar datos
+    await authReady;
     await loadSlots();
 });
