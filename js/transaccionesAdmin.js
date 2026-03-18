@@ -1,6 +1,6 @@
 // js/transaccionesAdmin.js - Transacciones Admin con datos reales de Supabase
 
-import { supabase } from './sessionManager.js';
+import { supabase, ensureFreshSession } from './sessionManager.js';
 import { authReady } from './authGuardAdmin.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -74,9 +74,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            // Verificar sesión antes de consultar
-            const { data: { session } } = await supabase.auth.getSession();
+            // Asegurar que el JWT sea válido antes de consultar (evita RLS bloqueando por token expirado)
+            const session = await ensureFreshSession();
             console.log('[Transacciones] Sesión activa:', !!session, session ? `| uid: ${session.user.id}` : '');
+
+            if (!session) {
+                console.error('[Transacciones] No hay sesión válida. Las queries serán bloqueadas por RLS.');
+            }
 
             console.log('[Transacciones] Consultando tabla "transacciones" con filtro estado=PAGADO...');
             const { data, error, status, statusText } = await supabase
