@@ -2,7 +2,6 @@
 
 import { supabase } from './sessionManager.js';
 import { authReady } from './authGuardAdmin.js';
-import { runDiagnostics } from './debugSupabase.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -61,6 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Cargar transacciones reales desde Supabase
     async function loadTransactions() {
+        console.log('[Transacciones] Iniciando loadTransactions()...');
+
         if (listBody) {
             listBody.innerHTML = `
                 <tr>
@@ -73,7 +74,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const { data, error } = await supabase
+            // Verificar sesión antes de consultar
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('[Transacciones] Sesión activa:', !!session, session ? `| uid: ${session.user.id}` : '');
+
+            console.log('[Transacciones] Consultando tabla "transacciones" con filtro estado=PAGADO...');
+            const { data, error, status, statusText } = await supabase
                 .from('transacciones')
                 .select(`
                     id,
@@ -91,23 +97,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .eq('estado', 'PAGADO')
                 .order('fecha_compra', { ascending: false });
 
-            if (error) throw error;
+            console.log('[Transacciones] Respuesta:', { status, statusText, filas: data?.length ?? 0, error: error || 'ninguno' });
 
-            // Diagnóstico RLS: si no hay datos, podría ser un problema de permisos
+            if (error) {
+                console.error('[Transacciones] Error de Supabase:', { mensaje: error.message, codigo: error.code, detalles: error.details, hint: error.hint });
+                throw error;
+            }
+
             if (!data || data.length === 0) {
-                console.warn('⚠ transacciones: La consulta devolvió 0 filas. Esto puede indicar que las RLS policies de Supabase no permiten lectura para el rol admin. Revisa las policies de la tabla "transacciones" en Supabase Dashboard.');
+                console.warn('[Transacciones] 0 filas devueltas. Posibles causas: RLS bloqueando, tabla vacía, o ninguna transacción con estado PAGADO.');
+                // Prueba sin filtro para descartar que el filtro sea el problema
+                const { data: testData, error: testErr } = await supabase
+                    .from('transacciones')
+                    .select('id, estado')
+                    .limit(5);
+                console.log('[Transacciones] Test sin filtro estado:', { filas: testData?.length ?? 0, estados: testData?.map(t => t.estado), error: testErr?.message || 'ninguno' });
             } else {
-                console.log(`✓ transacciones: ${data.length} registros cargados.`);
+                console.log(`[Transacciones] ${data.length} transacciones PAGADO cargadas OK.`);
             }
 
             // Fetch profiles separately since there's no FK relationship
             const usuarioIds = [...new Set((data || []).map(t => t.usuario_id).filter(Boolean))];
             let profilesMap = {};
             if (usuarioIds.length > 0) {
-                const { data: profiles } = await supabase
+                console.log(`[Transacciones] Cargando perfiles para ${usuarioIds.length} usuarios...`);
+                const { data: profiles, error: profErr } = await supabase
                     .from('profiles')
                     .select('id, first_name, last_name, email')
                     .in('id', usuarioIds);
+
+                if (profErr) {
+                    console.error('[Transacciones] Error cargando profiles:', { mensaje: profErr.message, codigo: profErr.code });
+                } else {
+                    console.log(`[Transacciones] ${(profiles || []).length} perfiles cargados.`);
+                }
                 (profiles || []).forEach(p => { profilesMap[p.id] = p; });
             }
 
@@ -141,17 +164,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
             });
 
+            console.log(`[Transacciones] ${allTransactions.length} transacciones mapeadas. Renderizando tabla...`);
             populateMonthFilter();
             applyFilters();
 
         } catch (err) {
-            console.error('Error cargando transacciones:', err);
+            console.error('[Transacciones] Error CATCH cargando transacciones:', err.message || err, err);
             if (listBody) {
                 listBody.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center text-danger py-4">
                             <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
                             <p class="mb-0">Error al cargar transacciones. Intenta recargar la página.</p>
+                            <p class="small text-muted mt-1">${err.message || 'Error desconocido'}</p>
                         </td>
                     </tr>
                 `;
@@ -364,12 +389,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Esperar a que la autenticación esté lista antes de cargar datos
+    console.log('[Transacciones] Esperando authReady...');
     await authReady;
-
-    // Diagnóstico: ejecutar si hay parámetro ?debug en la URL
-    if (new URLSearchParams(window.location.search).has('debug')) {
-        await runDiagnostics(supabase);
-    }
+    console.log('[Transacciones] Auth lista. Iniciando carga de datos.');
 
     // Iniciar carga
     loadTransactions();
