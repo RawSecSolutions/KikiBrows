@@ -5,6 +5,11 @@ import { supabase, initAuthListener } from './sessionManager.js';
 // NO inicializar listener aquí - lo hacemos después de verificar auth
 // para evitar race conditions con getSession()
 
+// Promesa que se resuelve cuando la autenticación de admin ha sido verificada.
+// Otros scripts de admin pueden hacer: await authReady antes de consultar Supabase.
+let _resolveAuthReady;
+const authReady = new Promise(resolve => { _resolveAuthReady = resolve; });
+
 async function checkAdminAuth() {
     console.log("AuthGuard: Iniciando verificación...");
 
@@ -101,10 +106,14 @@ async function checkAdminAuth() {
             console.log("UI Desbloqueada");
         });
 
+        // Señalar que auth está lista para que otros scripts carguen datos
+        _resolveAuthReady();
+
         return { session, profile };
 
     } catch (error) {
         console.error('Error crítico de autenticación:', error);
+        _resolveAuthReady(); // Resolver igualmente para no bloquear scripts
         handleLogout();
         return null;
     }
@@ -142,4 +151,4 @@ if (document.readyState === 'loading') {
     checkAdminAuth();
 }
 
-export { supabase, checkAdminAuth };
+export { supabase, checkAdminAuth, authReady };
