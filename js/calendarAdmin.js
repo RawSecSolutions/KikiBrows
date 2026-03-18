@@ -469,5 +469,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- INIT ---
     // Esperar a que authGuardAdmin verifique la sesión antes de consultar Supabase
     await authReady;
+
+    // DEBUG: Verificar estado de sesión y RLS
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('CalendarAdmin: sesión activa?', !!session, session?.user?.id);
+
+    const { data: testSlots, error: testErr } = await supabase
+        .from('consulta_slots').select('id').limit(1);
+    console.log('CalendarAdmin: test consulta_slots:', { data: testSlots, error: testErr });
+
+    const { data: testRes, error: testResErr } = await supabase
+        .from('consultas_reservas').select('id').limit(1);
+    console.log('CalendarAdmin: test consultas_reservas:', { data: testRes, error: testResErr });
+
     await loadSlots();
 });

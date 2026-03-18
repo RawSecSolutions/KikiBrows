@@ -357,5 +357,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Esperar a que authGuardAdmin verifique la sesión antes de consultar Supabase
     await authReady;
+
+    // DEBUG: Verificar estado de sesión antes de consultar
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('TransaccionesAdmin: sesión activa?', !!session, session?.user?.id);
+
+    // DEBUG: Test directo para verificar RLS
+    const { data: testData, error: testError } = await supabase
+        .from('transacciones')
+        .select('id')
+        .limit(1);
+    console.log('TransaccionesAdmin: test query result:', { data: testData, error: testError });
+
     loadTransactions();
 });
