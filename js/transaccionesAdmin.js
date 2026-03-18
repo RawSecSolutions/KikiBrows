@@ -16,8 +16,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const listBody = document.getElementById('transaction-list');
     const modalDetails = document.getElementById('modal-details');
     const searchInput = document.getElementById('transaction-search');
+    const monthFilter = document.getElementById('month-filter');
+    const statusFilter = document.getElementById('status-filter');
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
+
+    // Toast
+    const toastEl = document.getElementById('transaToast');
+    const toastBody = document.getElementById('transa-toast-msg');
+    let toast = null;
+    if (toastEl) toast = new bootstrap.Toast(toastEl);
+
+    function showToast(msg, type = 'success') {
+        if (!toastEl || !toast) return;
+        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+        toastBody.textContent = msg;
+        toast.show();
+    }
+
+    // Poblar filtro de meses dinámicamente desde los datos
+    function populateMonthFilter() {
+        if (!monthFilter) return;
+        const months = new Set();
+        allTransactions.forEach(t => {
+            if (t.fechaRaw) {
+                const d = new Date(t.fechaRaw);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                months.add(key);
+            }
+        });
+
+        const sortedMonths = [...months].sort().reverse();
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        monthFilter.innerHTML = '<option value="all">Todos los Meses</option>';
+        sortedMonths.forEach(m => {
+            const [year, mon] = m.split('-');
+            const label = `${monthNames[parseInt(mon) - 1]} ${year}`;
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = label;
+            monthFilter.appendChild(opt);
+        });
+    }
 
     // Cargar transacciones reales desde Supabase
     async function loadTransactions() {
@@ -93,8 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             });
 
-            filteredTransactions = [...allTransactions];
-            renderTable();
+            populateMonthFilter();
+            applyFilters();
 
         } catch (err) {
             console.error('Error cargando transacciones:', err);
@@ -111,6 +153,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Aplicar todos los filtros (búsqueda + mes + estado)
+    function applyFilters() {
+        const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
+        const selectedMonth = monthFilter ? monthFilter.value : 'all';
+        const selectedStatus = statusFilter ? statusFilter.value : 'all';
+
+        filteredTransactions = allTransactions.filter(t => {
+            // Filtro de búsqueda
+            let matchesSearch = true;
+            if (searchTerm) {
+                const matchesName = t.usuario.toLowerCase().includes(searchTerm);
+                const matchesFolio = t.folio && String(t.folio).includes(searchTerm);
+                const matchesId = t.id.toLowerCase().includes(searchTerm);
+                const matchesAuthCode = t.codigo_autorizacion.toLowerCase().includes(searchTerm);
+                const matchesProduct = t.producto.toLowerCase().includes(searchTerm);
+                matchesSearch = matchesName || matchesFolio || matchesId || matchesAuthCode || matchesProduct;
+            }
+
+            // Filtro de mes
+            let matchesMonth = true;
+            if (selectedMonth !== 'all' && t.fechaRaw) {
+                const d = new Date(t.fechaRaw);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                matchesMonth = key === selectedMonth;
+            }
+
+            // Filtro de estado
+            let matchesStatus = true;
+            if (selectedStatus !== 'all') {
+                matchesStatus = t.estado === selectedStatus;
+            }
+
+            return matchesSearch && matchesMonth && matchesStatus;
+        });
+
+        currentPage = 1;
+        renderTable();
+    }
+
     function renderTable() {
         if (!listBody) return;
         listBody.innerHTML = '';
@@ -122,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr>
                     <td colspan="6" class="text-center text-muted py-4">
                         <i class="fas fa-search fa-2x mb-2"></i>
-                        <p class="mb-0">No se encontraron transacciones que coincidan con tu búsqueda</p>
+                        <p class="mb-0">No se encontraron transacciones.</p>
                     </td>
                 </tr>
             `;
@@ -136,6 +217,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         displayData.forEach(t => {
             const displayId = t.folio ? `#${t.folio}` : `#${t.id.substring(0, 8)}`;
+
+            // Badge de estado en la tabla
+            const statusBadges = {
+                'PAGADO': '<span class="badge bg-success">Pagado</span>',
+                'PENDIENTE': '<span class="badge bg-warning text-dark">Pendiente</span>',
+                'RECHAZADO': '<span class="badge bg-danger">Rechazado</span>'
+            };
+            const estadoBadge = statusBadges[t.estado] || `<span class="badge bg-secondary">${t.estado}</span>`;
+
             const row = document.createElement('tr');
             row.style.cursor = 'pointer';
             row.innerHTML = `
@@ -143,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="fw-bold">$ ${t.valor.toLocaleString('es-CL')}</td>
                 <td>${t.usuario}</td>
                 <td>${t.fecha}</td>
-                <td>${displayId}</td>
+                <td>${displayId} ${estadoBadge}</td>
                 <td>
                     <button class="btn btn-sm text-white" style="background-color: #8A835A;"
                             data-id="${t.id}" data-bs-toggle="modal" data-bs-target="#transactionDetailModal">
@@ -167,33 +257,17 @@ document.addEventListener('DOMContentLoaded', () => {
         else nextBtn.classList.remove('disabled');
     }
 
-    // Búsqueda inteligente
-    function searchTransactions(query) {
-        const searchTerm = query.toLowerCase().trim();
-
-        if (!searchTerm) {
-            filteredTransactions = [...allTransactions];
-        } else {
-            filteredTransactions = allTransactions.filter(t => {
-                const matchesName = t.usuario.toLowerCase().includes(searchTerm);
-                const matchesFolio = t.folio && String(t.folio).includes(searchTerm);
-                const matchesId = t.id.toLowerCase().includes(searchTerm);
-                const matchesAuthCode = t.codigo_autorizacion.toLowerCase().includes(searchTerm);
-                const matchesProduct = t.producto.toLowerCase().includes(searchTerm);
-
-                return matchesName || matchesFolio || matchesId || matchesAuthCode || matchesProduct;
-            });
-        }
-
-        currentPage = 1;
-        renderTable();
-    }
-
     // Event listeners
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            searchTransactions(e.target.value);
-        });
+        searchInput.addEventListener('input', () => applyFilters());
+    }
+
+    if (monthFilter) {
+        monthFilter.addEventListener('change', () => applyFilters());
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => applyFilters());
     }
 
     if (prevBtn) {
@@ -221,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (detailModal) {
         detailModal.addEventListener('show.bs.modal', (event) => {
             const btn = event.relatedTarget;
+            if (!btn) return;
             const id = btn.getAttribute('data-id');
             const t = allTransactions.find(x => x.id === id);
 
@@ -286,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     icon.addEventListener('click', () => {
                         const textToCopy = icon.previousElementSibling.textContent.trim();
                         navigator.clipboard.writeText(textToCopy);
+                        showToast('Copiado al portapapeles.');
                     });
                 });
             }

@@ -177,6 +177,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 try {
+                    // Eliminar meeting de Zoom si existe
+                    if (slot.zoom_meeting_id) {
+                        try {
+                            const { data: { session } } = await supabase.auth.getSession();
+                            if (session) {
+                                await supabase.functions.invoke('zoom-delete-meeting', {
+                                    body: { meeting_id: slot.zoom_meeting_id }
+                                });
+                                console.log('✓ Meeting de Zoom eliminado:', slot.zoom_meeting_id);
+                            }
+                        } catch (zoomErr) {
+                            console.warn('⚠ No se pudo eliminar el meeting de Zoom:', zoomErr.message);
+                        }
+                    }
+
                     // Eliminar reservas asociadas primero
                     const { error: resError } = await supabase
                         .from('consultas_reservas')
