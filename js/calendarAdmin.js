@@ -314,6 +314,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         listBody.innerHTML = '';
 
         try {
+            // Asegurar JWT fresco antes de consultar reservas (puede pasar tiempo desde loadSlots)
+            await ensureFreshSession();
+
             console.log('[Calendar] Cargando reservas para slot:', slot.id);
             const { data: reservas, error, status } = await supabase
                 .from('consultas_reservas')
