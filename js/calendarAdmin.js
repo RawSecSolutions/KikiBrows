@@ -6,6 +6,7 @@
 
 import { supabase } from './sessionManager.js';
 import { authReady } from './authGuardAdmin.js';
+import { runDiagnostics } from './debugSupabase.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -481,5 +482,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- INIT ---
     // Esperar a que la autenticación esté lista antes de cargar datos
     await authReady;
+
+    // Diagnóstico: ejecutar si hay parámetro ?debug en la URL
+    if (new URLSearchParams(window.location.search).has('debug')) {
+        await runDiagnostics(supabase);
+    }
+
     await loadSlots();
 });
