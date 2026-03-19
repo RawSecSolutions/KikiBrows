@@ -486,23 +486,30 @@ function configurarEventosPortalPago(curso) {
 
             try {
                 const returnUrl = `${window.location.origin}/payment-confirmation.html?cursoId=${curso.id}`;
-                const reference = `KIKI_${curso.id}_${Date.now()}`;
+                // Getnet exige referencia corta y alfanumérica
+                const shortId = curso.id.replace(/-/g, '').slice(0, 8);
+                const reference = `KIKI${shortId}${Date.now()}`;
 
                 // Registrar transacción pendiente en Supabase ANTES de redirigir
-                const { data: transResult, error: transError } = await supabase
-                    .from('transacciones')
-                    .insert([{
-                        usuario_id: usuarioActual.id,
-                        curso_id: curso.id,
-                        monto: curso.precio,
-                        estado: 'PENDIENTE',
-                        metodo_pago: 'GETNET',
-                        gateway_token: reference
-                    }])
-                    .select('id')
-                    .single();
-
-                if (transError) console.warn('Error registrando transacción pendiente:', transError);
+                let transResult = null;
+                try {
+                    const { data, error } = await supabase
+                        .from('transacciones')
+                        .insert([{
+                            usuario_id: usuarioActual.id,
+                            curso_id: curso.id,
+                            monto: curso.precio,
+                            estado: 'PENDIENTE',
+                            metodo_pago: 'GETNET',
+                            gateway_token: reference
+                        }])
+                        .select('id')
+                        .single();
+                    if (error) console.warn('Error registrando transacción pendiente:', error);
+                    else transResult = data;
+                } catch (e) {
+                    console.warn('No se pudo registrar transacción pendiente:', e);
+                }
 
                 // Crear sesión de pago en Getnet (via Edge Function segura)
                 const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-create-session`, {
