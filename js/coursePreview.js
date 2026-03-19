@@ -501,7 +501,7 @@ function configurarEventosPortalPago(curso) {
                             monto: curso.precio,
                             estado: 'PENDIENTE',
                             metodo_pago: 'GETNET',
-                            gateway_token: reference
+                            codigo_autorizacion: reference
                         }])
                         .select('id')
                         .single();
@@ -509,6 +509,16 @@ function configurarEventosPortalPago(curso) {
                     else transResult = data;
                 } catch (e) {
                     console.warn('No se pudo registrar transacción pendiente:', e);
+                }
+
+                // Obtener IP del cliente para Getnet
+                let clientIp = '127.0.0.1';
+                try {
+                    const ipRes = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipRes.json();
+                    if (ipData.ip) clientIp = ipData.ip;
+                } catch (e) {
+                    console.warn('No se pudo obtener IP del cliente:', e);
                 }
 
                 // Crear sesión de pago en Getnet (via Edge Function segura)
@@ -528,7 +538,8 @@ function configurarEventosPortalPago(curso) {
                             surname: usuarioActual.apellido || '',
                             email: usuarioActual.email || ''
                         },
-                        userAgent: navigator.userAgent
+                        userAgent: navigator.userAgent,
+                        clientIp: clientIp
                     })
                 });
 
