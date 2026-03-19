@@ -994,9 +994,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const instrucciones = metadata.instrucciones_entrega || currentClase.instrucciones || currentClase.descripcion || 'Sube un archivo demostrando la técnica aprendida en este módulo.';
         const demoVideo = currentClase.contenido_url || currentClase.demoVideo || '';
         // Ajustado para que el texto de la UI coincida con la validación de Supabase (Solo video)
-        const archivosPermitidos = metadata.archivos_permitidos || ['.mp4', '.webm', '.mov', '.hevc'];
+        const archivosPermitidos = metadata.archivos_permitidos || ['.mp4', '.webm', '.mov', '.hevc', '.png', '.jpg', '.jpeg', '.webp'];
         const pesoMaximoMb = metadata.peso_maximo_mb || 500;
         const rubrica = metadata.rubrica_evaluacion || [];
+        const referenceImages = metadata.imageUrls || [];
 
         // Determinar tipos de archivo para el input
         const tiposArchivo = archivosPermitidos.map(ext => {
@@ -1030,11 +1031,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
                         <div class="upload-text">Arrastra aquí tu archivo o haz clic para seleccionar</div>
-                        <div class="upload-hint">Formatos: ${archivosPermitidos.join(', ')} | Máximo: ${pesoMaximoMb}MB</div>
+                        <div class="upload-hint">Formatos: Video (MP4, WEBM, MOV) o Imagen (PNG, JPG, WEBP) | Máximo: ${pesoMaximoMb}MB</div>
                         <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
-                            <i class="fas fa-upload me-2"></i>Seleccionar Video
+                            <i class="fas fa-upload me-2"></i>Seleccionar Archivo
                         </button>
-                        <input type="file" id="videoInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv" hidden>
+                        <input type="file" id="videoInput" accept="video/*,image/*,.mp4,.mov,.webm,.hevc,.mkv,.png,.jpg,.jpeg,.webp" hidden>
                     </div>
                 </div>
             `;
@@ -1111,6 +1112,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
+        // Construir sección de imágenes de referencia
+        const imagesSection = referenceImages.length > 0 ? `
+            <div class="entrega-section">
+                <h5 class="entrega-section-title">
+                    <span class="number">${demoVideo ? '2' : '1'}</span>
+                    Imágenes de Referencia
+                </h5>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    ${referenceImages.map(url => `
+                        <a href="${url}" target="_blank" rel="noopener">
+                            <img src="${url}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:2px solid #ddd;cursor:pointer;" alt="Referencia">
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        ` : '';
+
         // Construir sección de video solo si hay URL
         const videoSection = demoVideo ? `
             <div class="entrega-section">
@@ -1136,6 +1154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
 
                 ${videoSection}
+                ${imagesSection}
                 ${uploadSection}
                 ${statusSection}
             </div>
@@ -1249,30 +1268,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function processFile(file) {
-        // Validar formato
-        // iOS Safari puede reportar MIME types vacíos o genéricos (application/octet-stream)
-        // para videos válidos, por eso priorizamos la validación por extensión
-        const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
-        const validExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv', 'qt'];
+        // Validar formato - ahora acepta video E imagen
+        const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/hevc', 'video/x-matroska'];
+        const validVideoExts = ['mp4', 'webm', 'mov', 'hevc', 'mkv', 'qt'];
+        const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+        const validImageExts = ['png', 'jpg', 'jpeg', 'webp'];
         const fileExtLower = file.name.split('.').pop().toLowerCase();
-        const hasValidExt = validExts.includes(fileExtLower);
-        const hasValidType = validTypes.includes(file.type) || (file.type && file.type.startsWith('video/'));
+
+        const isVideo = validVideoExts.includes(fileExtLower) || validVideoTypes.includes(file.type) || (file.type && file.type.startsWith('video/'));
+        const isImage = validImageExts.includes(fileExtLower) || validImageTypes.includes(file.type) || (file.type && file.type.startsWith('image/'));
         const hasEmptyOrGenericType = !file.type || file.type === '' || file.type === 'application/octet-stream';
 
-        if (!hasValidExt && !hasValidType) {
-            alert('Formato no válido. Solo se permiten archivos MP4, WEBM, MOV o HEVC.');
+        if (!isVideo && !isImage && !hasEmptyOrGenericType) {
+            alert('Formato no válido. Se permiten archivos de video (MP4, WEBM, MOV) o imagen (PNG, JPG, WEBP).');
             return;
         }
-        // Si el MIME type es vacío/genérico pero la extensión es válida, permitirlo (caso común en iOS)
-        if (!hasValidType && !hasEmptyOrGenericType && !hasValidExt) {
-            alert('Formato no válido. Solo se permiten archivos MP4, WEBM, MOV o HEVC.');
+        // Si empty type but valid ext, allow
+        if (hasEmptyOrGenericType && !validVideoExts.includes(fileExtLower) && !validImageExts.includes(fileExtLower)) {
+            alert('Formato no válido. Se permiten archivos de video (MP4, WEBM, MOV) o imagen (PNG, JPG, WEBP).');
             return;
         }
 
-        // Validar tamaño (500MB)
-        const maxSize = 500 * 1024 * 1024;
+        // Validate size - images max 2MB, videos max 500MB
+        const maxSize = isImage ? 2 * 1024 * 1024 : 500 * 1024 * 1024;
         if (file.size > maxSize) {
-            alert('El archivo excede el límite de 500MB.');
+            alert(isImage ? 'La imagen excede el límite de 2MB.' : 'El archivo excede el límite de 500MB.');
             return;
         }
 
@@ -1367,11 +1387,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <i class="fas fa-cloud-upload-alt"></i>
                 </div>
                 <div class="upload-text">Arrastra aquí tu archivo o haz clic para seleccionar</div>
-                <div class="upload-hint">Formatos: .mp4, .webm, .mov, .hevc | Máximo: 500MB</div>
+                <div class="upload-hint">Formatos: Video (MP4, WEBM, MOV) o Imagen (PNG, JPG, WEBP)</div>
                 <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
-                    <i class="fas fa-upload me-2"></i>Seleccionar Video
+                    <i class="fas fa-upload me-2"></i>Seleccionar Archivo
                 </button>
-                <input type="file" id="videoInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv" hidden>
+                <input type="file" id="videoInput" accept="video/*,image/*,.mp4,.mov,.webm,.hevc,.mkv,.png,.jpg,.jpeg,.webp" hidden>
             `;
 
             // Re-setup event listeners

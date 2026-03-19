@@ -903,7 +903,7 @@
 }
 
 /* Botones de Pago */
-.btn-pagar-webpay,
+.btn-pagar-getnet,
 .btn-pagar-mp {
     width: 100%;
     background: linear-gradient(135deg, #D4AF37, #C19D2D);
@@ -918,14 +918,14 @@
     box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
 }
 
-.btn-pagar-webpay:hover,
+.btn-pagar-getnet:hover,
 .btn-pagar-mp:hover {
     background: linear-gradient(135deg, #C19D2D, #A88A25);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
 }
 
-.btn-pagar-webpay:active,
+.btn-pagar-getnet:active,
 .btn-pagar-mp:active {
     transform: translateY(0);
 }

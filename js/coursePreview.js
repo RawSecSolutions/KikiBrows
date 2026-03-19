@@ -435,12 +435,12 @@ function cerrarPortalPago() {
     modal.classList.remove('active');
     document.body.style.overflow = 'auto';
 
-    const webpay = document.getElementById('seccionWebpay');
+    const getnet = document.getElementById('seccionGetnet');
     const mp = document.getElementById('seccionMercadoPago');
-    if(webpay) webpay.style.display = 'none';
+    if(getnet) getnet.style.display = 'none';
     if(mp) mp.style.display = 'none';
     
-    document.querySelectorAll('.metodo-pago-btn').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
 }
 
 function configurarEventosPortalPago(curso) {
@@ -452,14 +452,14 @@ function configurarEventosPortalPago(curso) {
     if (btnVolver) btnVolver.onclick = cerrarPortalPago;
     if (overlay) overlay.onclick = cerrarPortalPago;
 
-    const btnWebpay = document.getElementById('btnWebpay');
+    const btnGetnet = document.getElementById('btnGetnet');
     const btnMercadoPago = document.getElementById('btnMercadoPago');
 
-    if (btnWebpay) {
-        btnWebpay.onclick = () => {
+    if (btnGetnet) {
+        btnGetnet.onclick = () => {
             document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
-            btnWebpay.classList.add('selected');
-            document.getElementById('seccionWebpay').style.display = 'block';
+            btnGetnet.classList.add('selected');
+            document.getElementById('seccionGetnet').style.display = 'block';
             document.getElementById('seccionMercadoPago').style.display = 'none';
         };
     }
@@ -468,59 +468,84 @@ function configurarEventosPortalPago(curso) {
         btnMercadoPago.onclick = () => {
             document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
             btnMercadoPago.classList.add('selected');
-            document.getElementById('seccionWebpay').style.display = 'none';
+            document.getElementById('seccionGetnet').style.display = 'none';
             document.getElementById('seccionMercadoPago').style.display = 'block';
         };
     }
-    
-    const formWebpay = document.getElementById('formWebpay');
-    if (formWebpay) {
-        formWebpay.onsubmit = async (e) => {
+
+    const formGetnet = document.getElementById('formGetnet');
+    if (formGetnet) {
+        formGetnet.onsubmit = async (e) => {
             e.preventDefault();
 
-            const btn = formWebpay.querySelector('button[type="submit"]');
+            const btn = formGetnet.querySelector('button[type="submit"]');
             const spinner = btn.querySelector('.spinner-border');
             btn.disabled = true;
             if (spinner) spinner.classList.remove('d-none');
             btn.querySelector('i.fas')?.classList.add('d-none');
 
             try {
-                const EDGE_URL = 'https://wrmelwftwumsfwzjjoxa.supabase.co/functions/v1';
-                const returnUrl = `${window.location.origin}/payment-confirmation.html`;
+                const returnUrl = `${window.location.origin}/payment-confirmation.html?cursoId=${curso.id}`;
+                const reference = `KIKI_${curso.id}_${Date.now()}`;
 
-                const resp = await fetch(`${EDGE_URL}/dynamic-worker`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cursoId: curso.id,
-                        cursoNombre: curso.nombre,
+                // Registrar transacción pendiente en Supabase ANTES de redirigir
+                const { data: transResult, error: transError } = await supabase
+                    .from('transacciones')
+                    .insert([{
+                        usuario_id: usuarioActual.id,
+                        curso_id: curso.id,
                         monto: curso.precio,
-                        usuarioId: usuarioActual.id,
-                        returnUrl
+                        estado: 'PENDIENTE',
+                        metodo_pago: 'GETNET',
+                        gateway_token: reference
+                    }])
+                    .select('id')
+                    .single();
+
+                if (transError) console.warn('Error registrando transacción pendiente:', transError);
+
+                // Crear sesión de pago en Getnet (via Edge Function segura)
+                const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-create-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify({
+                        reference: reference,
+                        description: `Compra curso: ${curso.nombre}`,
+                        amount: curso.precio,
+                        returnUrl: returnUrl,
+                        buyer: {
+                            name: usuarioActual.nombre || 'Cliente',
+                            surname: usuarioActual.apellido || '',
+                            email: usuarioActual.email || ''
+                        },
+                        userAgent: navigator.userAgent
                     })
                 });
 
-                if (!resp.ok) {
-                    const err = await resp.json().catch(() => ({}));
-                    throw new Error(err.error || 'Error al crear transacción');
+                const result = await edgeResponse.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Error al crear sesión de pago');
                 }
 
-                const { token, url } = await resp.json();
+                // Guardar datos de sesión para consulta posterior
+                localStorage.setItem('getnetSession', JSON.stringify({
+                    requestId: result.requestId,
+                    reference: reference,
+                    cursoId: curso.id,
+                    cursoNombre: curso.nombre,
+                    monto: curso.precio,
+                    transaccionId: transResult?.id || null
+                }));
 
-                // Redirigir a Webpay vía form POST (requerido por Transbank)
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = url;
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'token_ws';
-                input.value = token;
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
+                // Redirigir a Getnet Web Checkout
+                window.location.href = result.processUrl;
 
             } catch (err) {
-                console.error('Error iniciando Webpay:', err);
+                console.error('Error iniciando pago Getnet:', err);
                 alert('Ocurrió un error al iniciar el pago. Por favor intenta nuevamente.');
                 btn.disabled = false;
                 if (spinner) spinner.classList.add('d-none');
@@ -528,7 +553,7 @@ function configurarEventosPortalPago(curso) {
             }
         };
     }
-    
+
     const btnPagarMP = document.getElementById('btnPagarMercadoPago');
     if(btnPagarMP) {
         btnPagarMP.onclick = () => {

@@ -106,7 +106,7 @@
             <button class="portal-pago-close" id="btnCerrarPortal"><i class="fas fa-times"></i></button>
             <div class="portal-pago-content">
                 <h2 class="portal-titulo">Proceder al pago</h2>
-                <p class="portal-subtitulo">Serás redirigido a Webpay para completar tu compra de forma segura.</p>
+                <p class="portal-subtitulo">Paga seguro con Getnet utilizando tus tarjetas de crédito, débito y prepago.</p>
                 <div class="portal-curso-info">
                     <h3 id="portalCursoNombre"></h3>
                     <div class="portal-precio-section">
@@ -117,9 +117,9 @@
                 <div class="portal-metodos-pago">
                     <h4 class="portal-metodos-titulo">Selecciona tu método de pago</h4>
                     <div class="metodos-grid">
-                        <button class="metodo-pago-btn" id="btnWebpay">
+                        <button class="metodo-pago-btn" id="btnGetnet">
                             <div class="metodo-icon"><i class="fas fa-credit-card"></i></div>
-                            <div class="metodo-info"><h5>Webpay</h5><p>Pago seguro procesado por Transbank</p></div>
+                            <div class="metodo-info"><h5>Getnet</h5><p>Tarjeta de crédito, débito o prepago</p></div>
                         </button>
                         <button class="metodo-pago-btn" id="btnMercadoPago">
                             <div class="metodo-icon"><i class="fas fa-wallet"></i></div>
@@ -127,13 +127,15 @@
                         </button>
                     </div>
                 </div>
-                <div id="seccionWebpay" class="seccion-pago" style="display: none;">
-                     <div class="pago-header"><i class="fas fa-credit-card"></i><h4>Pago con Webpay</h4></div>
+                <div id="seccionGetnet" class="seccion-pago" style="display: none;">
+                     <div class="pago-header"><i class="fas fa-credit-card"></i><h4>Pago con Getnet</h4></div>
                      <div class="api-placeholder">
-                        <p class="api-instruccion"><i class="fas fa-code me-2"></i>Zona de integración para API de Transbank/Webpay</p>
-                        <form id="formWebpay" class="form-pago">
-                            <input type="hidden" name="token_ws" id="tokenWebpay">
-                            <button type="submit" class="btn-pagar-webpay"><i class="fas fa-lock me-2"></i>Pagar con Webpay</button>
+                        <p class="api-instruccion"><i class="fas fa-shield-alt me-2"></i>Pago seguro procesado por Getnet (Santander)</p>
+                        <form id="formGetnet" class="form-pago">
+                            <button type="submit" class="btn-pagar-getnet">
+                                <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                <i class="fas fa-lock me-2"></i>Pagar con Getnet
+                            </button>
                         </form>
                     </div>
                 </div>
