@@ -350,7 +350,6 @@ function formatearFecha(fecha) {
 
 // ==================== GETNET: CONFIRMAR ESTADO DE SESIÓN ====================
 
-import { GetnetService } from './getnetService.js';
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -383,8 +382,17 @@ async function procesarGetnetReturn(sessionData) {
     mostrarCargandoConfirmacion();
 
     try {
-        // Consultar el estado de la sesión en Getnet
-        const result = await GetnetService.getSessionInfo(sessionData.requestId);
+        // Consultar el estado de la sesión en Getnet (via Edge Function segura)
+        const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-check-session`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            },
+            body: JSON.stringify({ requestId: sessionData.requestId })
+        });
+
+        const result = await edgeResponse.json();
 
         // Ocultar spinner
         const spinner = document.getElementById('estadoCargando');
@@ -397,7 +405,9 @@ async function procesarGetnetReturn(sessionData) {
 
         const getnetData = result.data;
         const sessionStatus = getnetData.status?.status;
-        const internalStatus = GetnetService.mapStatus(sessionStatus);
+        // Mapear estado Getnet a estado interno
+        const statusMap = { 'APPROVED': 'PAGADO', 'REJECTED': 'RECHAZADO', 'PENDING': 'PENDIENTE', 'FAILED': 'RECHAZADO', 'REFUNDED': 'REEMBOLSADO' };
+        const internalStatus = statusMap[sessionStatus] || 'PENDIENTE';
 
         // Extraer datos del pago si existe
         const payment = getnetData.payment?.[0];

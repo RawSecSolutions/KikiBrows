@@ -3,7 +3,6 @@
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { GetnetService } from './getnetService.js';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -505,19 +504,28 @@ function configurarEventosPortalPago(curso) {
 
                 if (transError) console.warn('Error registrando transacción pendiente:', transError);
 
-                // Crear sesión de pago en Getnet
-                const result = await GetnetService.createSession({
-                    reference: reference,
-                    description: `Compra curso: ${curso.nombre}`,
-                    amount: curso.precio,
-                    returnUrl: returnUrl,
-                    buyer: {
-                        name: usuarioActual.nombre || 'Cliente',
-                        surname: usuarioActual.apellido || '',
-                        email: usuarioActual.email || ''
+                // Crear sesión de pago en Getnet (via Edge Function segura)
+                const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-create-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
                     },
-                    userAgent: navigator.userAgent
+                    body: JSON.stringify({
+                        reference: reference,
+                        description: `Compra curso: ${curso.nombre}`,
+                        amount: curso.precio,
+                        returnUrl: returnUrl,
+                        buyer: {
+                            name: usuarioActual.nombre || 'Cliente',
+                            surname: usuarioActual.apellido || '',
+                            email: usuarioActual.email || ''
+                        },
+                        userAgent: navigator.userAgent
+                    })
                 });
+
+                const result = await edgeResponse.json();
 
                 if (!result.success) {
                     throw new Error(result.error || 'Error al crear sesión de pago');
