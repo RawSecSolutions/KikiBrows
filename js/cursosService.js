@@ -427,19 +427,20 @@ export const CursosService = {
             const timestamp = Date.now();
             filePath = `${cursoId}/${claseId}/${usuarioId}/${timestamp}.${fileExt}`;
 
-            // B. Subir archivo al Storage (Bucket 'entregas')
-            // ELIMINADO para alumnas ya que no tienen permisos para crear/verificar buckets:
-            // await ensureBucketExists('entregas');
+            // B. Subir archivo al Storage
+            // Images go to 'imagenes' bucket, videos go to 'entregas' bucket
+            const isImageFile = ['png', 'jpg', 'jpeg', 'webp'].includes(fileExt);
+            const bucketName = isImageFile ? 'imagenes' : 'entregas';
 
             const { error: uploadError } = await supabase.storage
-                .from('entregas')
+                .from(bucketName)
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
 
             // C. Obtener URL pública
             const { data: publicUrlData } = supabase.storage
-                .from('entregas')
+                .from(bucketName)
                 .getPublicUrl(filePath);
 
             // D. Contar intentos anteriores

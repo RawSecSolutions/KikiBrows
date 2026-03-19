@@ -137,6 +137,42 @@ export const AdminCursosService = {
     },
 
     /**
+     * Subir imagen a Supabase Storage (para clases prácticas)
+     */
+    async subirImagen(file, cursoId, claseId = 'temp') {
+        try {
+            if (!file) return { success: false, error: 'No se proporcionó archivo' };
+
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+            if (!validTypes.includes(file.type)) return { success: false, error: 'Formato no válido. Solo PNG, JPG, WEBP' };
+
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSize) return { success: false, error: 'La imagen excede los 2MB permitidos' };
+
+            const fileExt = file.name.split('.').pop();
+            const timestamp = Date.now();
+            const fileName = `${cursoId}/${claseId}_${timestamp}.${fileExt}`;
+
+            const { data, error } = await supabase.storage
+                .from('imagenes')
+                .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+            if (error) throw error;
+
+            const { data: publicUrlData } = supabase.storage
+                .from('imagenes')
+                .getPublicUrl(fileName);
+
+            return { success: true, url: publicUrlData.publicUrl, path: fileName };
+
+        } catch (error) {
+            console.error('Error al subir imagen:', error);
+            const msg = error.message || String(error);
+            return { success: false, error: `Error de Supabase: ${msg}` };
+        }
+    },
+
+    /**
      * Subir archivo PDF a Supabase Storage
      */
     async subirPDF(file, cursoId, claseId = 'temp') {

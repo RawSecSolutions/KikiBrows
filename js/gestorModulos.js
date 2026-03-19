@@ -367,14 +367,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     const entregaData = typeof claseData.metadata === 'string'
                         ? JSON.parse(claseData.metadata)
                         : claseData.metadata;
-                    
+
                     const instructions = document.getElementById('entregaInstructions');
                     const points = document.getElementById('entregaPoints');
                     const passing = document.getElementById('entregaPassing');
-                    
+
                     if (instructions) instructions.value = entregaData.instructions || '';
                     if (points) points.value = entregaData.points || 10;
                     if (passing) passing.value = entregaData.passingScore || 70;
+
+                    // Show existing images
+                    if (entregaData.imageUrls && entregaData.imageUrls.length > 0) {
+                        const previewContainer = document.getElementById('imagePreviewContainer');
+                        if (previewContainer) {
+                            previewContainer.innerHTML = entregaData.imageUrls.map(url => `
+                                <div class="position-relative" style="width:80px;height:80px;">
+                                    <img src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #ddd;">
+                                </div>
+                            `).join('');
+                        }
+                    }
                 } catch (e) {
                     console.error("Error cargando entrega:", e);
                 }
@@ -464,19 +476,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `
                     <div class="alert alert-info small border-0 bg-light">
                         <i class="fas fa-info-circle me-2"></i>
-                        Esta clase incluirá un video demostrativo y una casilla para que la alumna suba su práctica.
+                        Esta clase incluirá un video/imagen demostrativa y una casilla para que la alumna suba su práctica.
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label class="form-label fw-bold">1. Video Demostrativo (Instructora)</label>
-                        <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv">
-                        <small class="text-muted">Sube el ejemplo que las alumnas deben imitar. (MP4, WEBM, MOV, HEVC)</small>
-                        <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
+                        <label class="form-label fw-bold">1. Contenido Demostrativo (Instructora)</label>
+                        <div class="mb-2">
+                            <label class="form-label small text-muted">Video demostrativo</label>
+                            <input type="file" class="form-control input-kikibrows" id="videoFileInput" accept="video/*,.mp4,.mov,.webm,.hevc,.mkv">
+                            <small class="text-muted">Sube el ejemplo que las alumnas deben imitar. (MP4, WEBM, MOV, HEVC)</small>
+                            <div id="videoValidationError" class="text-danger small mt-1 d-none"></div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small text-muted">Imágenes de referencia</label>
+                            <input type="file" class="form-control input-kikibrows" id="imageFileInput" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple>
+                            <small class="text-muted">PNG, JPG, WEBP • Máx 2MB por imagen</small>
+                            <div id="imageValidationError" class="text-danger small mt-1 d-none"></div>
+                        </div>
+                        <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-2"></div>
                     </div>
-                    
+
                     <div class="upload-progress-container mb-4" id="uploadProgress" style="display: none;">
                         <div class="progress-label d-flex justify-content-between mb-1">
-                            <span class="small">Subiendo demostración...</span>
+                            <span class="small">Subiendo archivos...</span>
                             <span class="small" id="progressPercent">0%</span>
                         </div>
                         <div class="progress" style="height: 6px;">
@@ -577,18 +599,50 @@ document.addEventListener('DOMContentLoaded', () => {
             // Quiz
             if (tipo === 'quiz') {
                 const questions = [];
-                document.querySelectorAll('.quiz-question-card').forEach(card => {
-                    const qTitle = card.querySelector('.question-title-input').value;
+                const questionCards = document.querySelectorAll('.quiz-question-card');
+
+                if (questionCards.length === 0) {
+                    alert('Debes agregar al menos una pregunta al quiz.');
+                    return;
+                }
+
+                let validationErrors = [];
+
+                questionCards.forEach((card, idx) => {
+                    const qTitle = card.querySelector('.question-title-input').value.trim();
                     const qPoints = card.querySelector('.question-points-input').value;
                     const options = [];
+                    let hasCorrect = false;
+                    let hasEmptyOption = false;
+
                     card.querySelectorAll('.option-item').forEach(opt => {
-                        options.push({
-                            text: opt.querySelector('.option-text-input').value,
-                            isCorrect: opt.querySelector('.option-correct-input').checked
-                        });
+                        const text = opt.querySelector('.option-text-input').value.trim();
+                        const isCorrect = opt.querySelector('.option-correct-input').checked;
+                        if (isCorrect) hasCorrect = true;
+                        if (!text) hasEmptyOption = true;
+                        options.push({ text, isCorrect });
                     });
+
+                    if (!qTitle) {
+                        validationErrors.push(`Pregunta ${idx + 1}: falta el enunciado.`);
+                    }
+                    if (options.length < 2) {
+                        validationErrors.push(`Pregunta ${idx + 1}: debe tener al menos 2 opciones.`);
+                    }
+                    if (!hasCorrect) {
+                        validationErrors.push(`Pregunta ${idx + 1}: debes seleccionar la alternativa correcta.`);
+                    }
+                    if (hasEmptyOption) {
+                        validationErrors.push(`Pregunta ${idx + 1}: hay opciones sin texto.`);
+                    }
+
                     questions.push({ title: qTitle, points: parseInt(qPoints) || 10, options });
                 });
+
+                if (validationErrors.length > 0) {
+                    alert('No se puede guardar el quiz:\n\n' + validationErrors.join('\n'));
+                    return;
+                }
 
                 metadata = {
                     passingScore: parseInt(document.getElementById('quizPassingScore').value) || 70,
@@ -599,10 +653,48 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Entrega
             if (tipo === 'entrega') {
+                // Handle image uploads for entrega
+                let imageUrls = [];
+                const imageInput = document.getElementById('imageFileInput');
+                if (imageInput && imageInput.files.length > 0) {
+                    const progressContainer = document.getElementById('uploadProgress');
+                    const progressBar = progressContainer?.querySelector('.progress-bar');
+                    const progressPercent = document.getElementById('progressPercent');
+                    if (progressContainer) progressContainer.style.display = 'block';
+
+                    for (let i = 0; i < imageInput.files.length; i++) {
+                        const imgFile = imageInput.files[i];
+                        const result = await AdminCursosService.subirImagen(imgFile, cursoId || 'general', 'clase_' + Date.now());
+                        if (result.success) {
+                            imageUrls.push(result.url);
+                        } else {
+                            const errorMsg = document.getElementById('imageValidationError');
+                            if (errorMsg) {
+                                errorMsg.textContent = result.error || 'Error al subir imagen';
+                                errorMsg.classList.remove('d-none');
+                            }
+                        }
+                        // Update progress
+                        const pct = Math.round(((i + 1) / imageInput.files.length) * 100);
+                        if (progressBar) progressBar.style.width = pct + '%';
+                        if (progressPercent) progressPercent.textContent = pct + '%';
+                    }
+                }
+
+                // Preserve existing images if editing and no new images selected
+                let existingImages = [];
+                if (editingClaseId) {
+                    const existingClase = clasesData.find(c => c.id === editingClaseId);
+                    if (existingClase?.metadata?.imageUrls) {
+                        existingImages = existingClase.metadata.imageUrls;
+                    }
+                }
+
                 metadata = {
                     instructions: document.getElementById('entregaInstructions').value,
                     points: parseInt(document.getElementById('entregaPoints').value) || 100,
-                    passingScore: parseInt(document.getElementById('entregaPassing').value) || 70
+                    passingScore: parseInt(document.getElementById('entregaPassing').value) || 70,
+                    imageUrls: imageUrls.length > 0 ? imageUrls : existingImages
                 };
             }
             

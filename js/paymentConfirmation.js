@@ -4,8 +4,8 @@
 // ==================== MAPEO DE MÉTODO DE PAGO (DB → Display) ====================
 
 function formatearMetodoPago(metodo) {
-    const nombres = { 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
-    return nombres[metodo] || metodo || 'Webpay Plus';
+    const nombres = { 'GETNET': 'Getnet Web Checkout', 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
+    return nombres[metodo] || metodo || 'Getnet';
 }
 
 // ==================== OBTENER PARÁMETROS DE URL ====================
@@ -17,8 +17,8 @@ function obtenerParametrosUrl() {
         estado: urlParams.get('status') || urlParams.get('estado'),
         transaccionId: urlParams.get('transactionId') || urlParams.get('transaccionId'),
         cursoId: urlParams.get('courseId') || urlParams.get('cursoId'),
-        token: urlParams.get('token') || urlParams.get('TBK_TOKEN'),
-        ordenCompra: urlParams.get('ordenCompra') || urlParams.get('buy_order')
+        token: urlParams.get('token'),
+        ordenCompra: urlParams.get('ordenCompra') || urlParams.get('reference')
     };
 }
 
@@ -27,7 +27,7 @@ function obtenerParametrosUrl() {
 function cargarTransaccion() {
     const params = obtenerParametrosUrl();
 
-    // Si viene de Transbank o Mercado Pago, procesar respuesta
+    // Si viene de una pasarela con token, procesar respuesta
     if (params.token) {
         return procesarRespuestaPasarela(params);
     }
@@ -46,44 +46,8 @@ function cargarTransaccion() {
 // ==================== PROCESAR RESPUESTA DE PASARELA ====================
 
 function procesarRespuestaPasarela(params) {
-    // AQUÍ SE IMPLEMENTARÍA LA VERIFICACIÓN CON EL BACKEND
-    // Ejemplo de flujo:
-    // 1. Enviar token al backend
-    // 2. Backend confirma con Transbank/Mercado Pago
-    // 3. Backend devuelve el estado real de la transacción
-
-    /*
-    // Ejemplo de integración (descomentar cuando se configure el backend):
-    fetch('/api/transaccion/confirmar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            token: params.token,
-            ordenCompra: params.ordenCompra
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        return {
-            estado: data.status, // 'PAGADO', 'PENDIENTE', 'RECHAZADO'
-            cursoId: data.cursoId,
-            curso: data.curso,
-            monto: data.monto,
-            metodoPago: data.metodoPago,
-            fecha: data.fecha,
-            codigoAutorizacion: data.authCode,
-            transaccionId: data.transactionId
-        };
-    })
-    .catch(error => {
-        console.error('Error al verificar transacción:', error);
-        return null;
-    });
-    */
-
-    // SIMULACIÓN TEMPORAL (reemplazar con la lógica real)
+    // La verificación con Getnet se hace en procesarGetnetReturn()
+    // Este método queda como fallback para flujos legacy
     return JSON.parse(localStorage.getItem('ultimaTransaccion'));
 }
 
@@ -384,12 +348,15 @@ function formatearFecha(fecha) {
     return fecha.toLocaleDateString('es-CL', opciones);
 }
 
-// ==================== WEBPAY REAL: CONFIRMAR VÍA EDGE FUNCTION ====================
+// ==================== GETNET: CONFIRMAR ESTADO DE SESIÓN ====================
 
-const EDGE_URL = 'https://wrmelwftwumsfwzjjoxa.supabase.co/functions/v1';
+import { GetnetService } from './getnetService.js';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabaseConfirm = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function mostrarCargandoConfirmacion() {
-    // Oculta todos los estados y muestra un spinner de espera
     ['estadoExitoso', 'estadoPendiente', 'estadoRechazado', 'estadoError'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -406,45 +373,109 @@ function mostrarCargandoConfirmacion() {
                 <span class="visually-hidden">Cargando...</span>
             </div>
             <h1 class="confirmation-title">Verificando tu pago...</h1>
-            <p class="confirmation-message">Estamos confirmando tu transacción con Webpay. Un momento por favor.</p>
+            <p class="confirmation-message">Estamos confirmando tu transacción con Getnet. Un momento por favor.</p>
         `;
         container.appendChild(div);
     }
 }
 
-async function procesarWebpayReturn(tokenWs, tbkToken) {
+async function procesarGetnetReturn(sessionData) {
     mostrarCargandoConfirmacion();
 
     try {
-        const resp = await fetch(`${EDGE_URL}/webpay-confirm`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token_ws: tokenWs || null, tbk_token: tbkToken || null })
-        });
-
-        const data = await resp.json();
+        // Consultar el estado de la sesión en Getnet
+        const result = await GetnetService.getSessionInfo(sessionData.requestId);
 
         // Ocultar spinner
         const spinner = document.getElementById('estadoCargando');
         if (spinner) spinner.style.display = 'none';
 
-        if (data.estado === 'PAGADO') {
-            mostrarEstadoExitoso({
-                estado: 'PAGADO',
-                cursoNombre: data.cursoNombre,
-                monto: data.monto,
-                metodoPago: data.metodoPago || 'TRANSBANK',
-                fecha: data.fecha,
-                codigoAutorizacion: data.codigoAutorizacion,
-                transaccionId: data.transaccionId
-            });
-        } else {
-            // RECHAZADO o ANULADO → mostrar estado de rechazo
-            mostrarEstadoRechazado({ cursoId: data.cursoId });
+        if (!result.success) {
+            mostrarEstadoError();
+            return;
         }
 
+        const getnetData = result.data;
+        const sessionStatus = getnetData.status?.status;
+        const internalStatus = GetnetService.mapStatus(sessionStatus);
+
+        // Extraer datos del pago si existe
+        const payment = getnetData.payment?.[0];
+        const authorization = payment?.authorization || '';
+        const paymentMethodName = payment?.paymentMethodName || 'Getnet';
+
+        if (internalStatus === 'PAGADO') {
+            // Actualizar transacción en Supabase
+            if (sessionData.transaccionId) {
+                await supabaseConfirm
+                    .from('transacciones')
+                    .update({
+                        estado: 'PAGADO',
+                        codigo_autorizacion: authorization,
+                        metodo_pago: 'GETNET'
+                    })
+                    .eq('id', sessionData.transaccionId);
+
+                // Crear inscripción
+                const { data: cursoData } = await supabaseConfirm
+                    .from('cursos')
+                    .select('dias_duracion_acceso')
+                    .eq('id', sessionData.cursoId)
+                    .single();
+
+                const diasAcceso = cursoData?.dias_duracion_acceso || 180;
+                const fechaExp = new Date();
+                fechaExp.setDate(fechaExp.getDate() + diasAcceso);
+
+                const { data: { session } } = await supabaseConfirm.auth.getSession();
+                if (session?.user) {
+                    await supabaseConfirm
+                        .from('inscripciones')
+                        .insert([{
+                            usuario_id: session.user.id,
+                            curso_id: sessionData.cursoId,
+                            origen_acceso: 'COMPRA',
+                            estado: 'ACTIVO',
+                            fecha_expiracion: fechaExp.toISOString(),
+                            transaccion_id: sessionData.transaccionId
+                        }]);
+                }
+            }
+
+            mostrarEstadoExitoso({
+                estado: 'PAGADO',
+                cursoNombre: sessionData.cursoNombre,
+                monto: sessionData.monto,
+                metodoPago: 'GETNET',
+                fecha: new Date().toISOString(),
+                codigoAutorizacion: authorization,
+                transaccionId: sessionData.transaccionId || `GETNET-${sessionData.requestId}`
+            });
+
+        } else if (internalStatus === 'PENDIENTE') {
+            mostrarEstadoPendiente({
+                cursoNombre: sessionData.cursoNombre,
+                monto: sessionData.monto,
+                metodoPago: 'GETNET',
+                fecha: new Date().toISOString()
+            });
+
+        } else {
+            // RECHAZADO
+            if (sessionData.transaccionId) {
+                await supabaseConfirm
+                    .from('transacciones')
+                    .update({ estado: 'RECHAZADO' })
+                    .eq('id', sessionData.transaccionId);
+            }
+            mostrarEstadoRechazado({ cursoId: sessionData.cursoId });
+        }
+
+        // Limpiar sesión guardada
+        localStorage.removeItem('getnetSession');
+
     } catch (err) {
-        console.error('[paymentConfirmation] Error confirmando con Webpay:', err);
+        console.error('[paymentConfirmation] Error confirmando con Getnet:', err);
         const spinner = document.getElementById('estadoCargando');
         if (spinner) spinner.style.display = 'none';
         mostrarEstadoError();
@@ -456,15 +487,19 @@ async function procesarWebpayReturn(tokenWs, tbkToken) {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Inicializando paymentConfirmation.js');
 
-    // ── Detectar retorno real de Webpay (token_ws o TBK_TOKEN en la URL) ──
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenWs = urlParams.get('token_ws');
-    const tbkToken = urlParams.get('TBK_TOKEN');
+    // ── Detectar retorno de Getnet (verificar si hay sesión guardada) ──
+    const getnetSession = localStorage.getItem('getnetSession');
 
-    if (tokenWs || tbkToken) {
-        // Viene de Webpay real: confirmar vía Edge Function
-        procesarWebpayReturn(tokenWs, tbkToken);
-        return;
+    if (getnetSession) {
+        try {
+            const sessionData = JSON.parse(getnetSession);
+            // Viene de Getnet: consultar estado de la sesión
+            procesarGetnetReturn(sessionData);
+            return;
+        } catch (e) {
+            console.error('Error parseando sesión Getnet:', e);
+            localStorage.removeItem('getnetSession');
+        }
     }
 
     // ── Flujo legacy: localStorage (simulador / Mercado Pago) ──
