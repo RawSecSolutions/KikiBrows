@@ -498,10 +498,10 @@ function configurarEventosPortalPago(curso) {
                         .insert([{
                             usuario_id: usuarioActual.id,
                             curso_id: curso.id,
+                            curso_titulo_snapshot: curso.nombre,
                             monto: curso.precio,
                             estado: 'PENDIENTE',
-                            metodo_pago: 'GETNET',
-                            codigo_autorizacion: reference
+                            metodo_pago: 'GETNET'
                         }])
                         .select('id')
                         .single();
