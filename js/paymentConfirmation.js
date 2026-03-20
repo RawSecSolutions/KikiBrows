@@ -351,26 +351,6 @@ function formatearFecha(fecha) {
 // ==================== GETNET: CONFIRMAR ESTADO DE SESIÓN ====================
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { supabase as supabaseConfirm, initAuthListener } from './sessionManager.js';
-
-// Reutilizar la sesión existente (no crear nuevo GoTrueClient)
-initAuthListener();
-
-// Esperar a que la sesión esté lista (máx 5 segundos)
-async function waitForSession() {
-    const { data: { session } } = await supabaseConfirm.auth.getSession();
-    if (session) return session;
-
-    return new Promise((resolve) => {
-        const timeout = setTimeout(() => resolve(null), 5000);
-        supabaseConfirm.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                clearTimeout(timeout);
-                resolve(session);
-            }
-        });
-    });
-}
 
 function mostrarCargandoConfirmacion() {
     ['estadoExitoso', 'estadoPendiente', 'estadoRechazado', 'estadoError'].forEach(id => {
@@ -399,20 +379,19 @@ async function procesarGetnetReturn(sessionData) {
     mostrarCargandoConfirmacion();
 
     try {
-        // Esperar a que la sesión de auth esté lista antes de operar con DB
-        const authSession = await waitForSession();
-        if (!authSession) {
-            console.error('[paymentConfirmation] No se pudo obtener sesión de usuario');
-        }
-
-        // Consultar el estado de la sesión en Getnet (via Edge Function segura)
+        // Consultar estado en Getnet Y actualizar DB (todo server-side via Edge Function)
+        // La Edge Function usa service_role key, así que bypasa RLS
         const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-check-session`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${SUPABASE_KEY}`
             },
-            body: JSON.stringify({ requestId: sessionData.requestId })
+            body: JSON.stringify({
+                requestId: sessionData.requestId,
+                transaccionId: sessionData.transaccionId || null,
+                cursoId: sessionData.cursoId || null
+            })
         });
 
         const result = await edgeResponse.json();
@@ -422,69 +401,19 @@ async function procesarGetnetReturn(sessionData) {
         if (spinner) spinner.style.display = 'none';
 
         if (!result.success) {
+            console.error('[paymentConfirmation] Edge function error:', result.error);
             mostrarEstadoError();
             return;
         }
 
-        const getnetData = result.data;
-        const sessionStatus = getnetData.status?.status;
-        // Mapear estado Getnet a estado interno
-        const statusMap = { 'APPROVED': 'PAGADO', 'REJECTED': 'RECHAZADO', 'PENDING': 'PENDIENTE', 'FAILED': 'RECHAZADO', 'REFUNDED': 'REEMBOLSADO' };
-        const internalStatus = statusMap[sessionStatus] || 'PENDIENTE';
+        const internalStatus = result.internalStatus;
+        const authorization = result.authorization || '';
 
-        // Extraer datos del pago si existe
-        const payment = getnetData.payment?.[0];
-        const authorization = payment?.authorization || '';
-        const paymentMethodName = payment?.paymentMethodName || 'Getnet';
+        if (result.dbResult) {
+            console.log('[paymentConfirmation] DB result:', result.dbResult);
+        }
 
         if (internalStatus === 'PAGADO') {
-            // Actualizar transacción en Supabase
-            if (sessionData.transaccionId) {
-                const { error: updateError } = await supabaseConfirm
-                    .from('transacciones')
-                    .update({
-                        estado: 'PAGADO',
-                        codigo_autorizacion: authorization,
-                        token_pasarela: sessionData.requestId,
-                        metodo_pago: 'GETNET'
-                    })
-                    .eq('id', sessionData.transaccionId);
-
-                if (updateError) {
-                    console.error('[paymentConfirmation] Error actualizando transacción:', updateError);
-                }
-
-                // Crear inscripción
-                const { data: cursoData } = await supabaseConfirm
-                    .from('cursos')
-                    .select('dias_duracion_acceso')
-                    .eq('id', sessionData.cursoId)
-                    .single();
-
-                const diasAcceso = cursoData?.dias_duracion_acceso || 180;
-                const fechaExp = new Date();
-                fechaExp.setDate(fechaExp.getDate() + diasAcceso);
-
-                if (authSession?.user) {
-                    const { error: inscError } = await supabaseConfirm
-                        .from('inscripciones')
-                        .insert([{
-                            usuario_id: authSession.user.id,
-                            curso_id: sessionData.cursoId,
-                            origen_acceso: 'COMPRA',
-                            estado: 'ACTIVO',
-                            fecha_expiracion: fechaExp.toISOString(),
-                            transaccion_id: sessionData.transaccionId
-                        }]);
-
-                    if (inscError) {
-                        console.error('[paymentConfirmation] Error creando inscripción:', inscError);
-                    }
-                } else {
-                    console.error('[paymentConfirmation] No hay sesión de usuario activa para crear inscripción');
-                }
-            }
-
             mostrarEstadoExitoso({
                 estado: 'PAGADO',
                 cursoNombre: sessionData.cursoNombre,
@@ -504,20 +433,6 @@ async function procesarGetnetReturn(sessionData) {
             });
 
         } else {
-            // RECHAZADO
-            if (sessionData.transaccionId) {
-                const { error: rejError } = await supabaseConfirm
-                    .from('transacciones')
-                    .update({
-                        estado: 'RECHAZADO',
-                        token_pasarela: sessionData.requestId
-                    })
-                    .eq('id', sessionData.transaccionId);
-
-                if (rejError) {
-                    console.error('[paymentConfirmation] Error actualizando transacción rechazada:', rejError);
-                }
-            }
             mostrarEstadoRechazado({ cursoId: sessionData.cursoId });
         }
 
