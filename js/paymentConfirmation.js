@@ -417,14 +417,19 @@ async function procesarGetnetReturn(sessionData) {
         if (internalStatus === 'PAGADO') {
             // Actualizar transacción en Supabase
             if (sessionData.transaccionId) {
-                await supabaseConfirm
+                const { error: updateError } = await supabaseConfirm
                     .from('transacciones')
                     .update({
                         estado: 'PAGADO',
                         codigo_autorizacion: authorization,
+                        token_pasarela: sessionData.requestId,
                         metodo_pago: 'GETNET'
                     })
                     .eq('id', sessionData.transaccionId);
+
+                if (updateError) {
+                    console.error('[paymentConfirmation] Error actualizando transacción:', updateError);
+                }
 
                 // Crear inscripción
                 const { data: cursoData } = await supabaseConfirm
@@ -439,7 +444,7 @@ async function procesarGetnetReturn(sessionData) {
 
                 const { data: { session } } = await supabaseConfirm.auth.getSession();
                 if (session?.user) {
-                    await supabaseConfirm
+                    const { error: inscError } = await supabaseConfirm
                         .from('inscripciones')
                         .insert([{
                             usuario_id: session.user.id,
@@ -449,6 +454,12 @@ async function procesarGetnetReturn(sessionData) {
                             fecha_expiracion: fechaExp.toISOString(),
                             transaccion_id: sessionData.transaccionId
                         }]);
+
+                    if (inscError) {
+                        console.error('[paymentConfirmation] Error creando inscripción:', inscError);
+                    }
+                } else {
+                    console.error('[paymentConfirmation] No hay sesión de usuario activa para crear inscripción');
                 }
             }
 
@@ -473,10 +484,17 @@ async function procesarGetnetReturn(sessionData) {
         } else {
             // RECHAZADO
             if (sessionData.transaccionId) {
-                await supabaseConfirm
+                const { error: rejError } = await supabaseConfirm
                     .from('transacciones')
-                    .update({ estado: 'RECHAZADO' })
+                    .update({
+                        estado: 'RECHAZADO',
+                        token_pasarela: sessionData.requestId
+                    })
                     .eq('id', sessionData.transaccionId);
+
+                if (rejError) {
+                    console.error('[paymentConfirmation] Error actualizando transacción rechazada:', rejError);
+                }
             }
             mostrarEstadoRechazado({ cursoId: sessionData.cursoId });
         }
