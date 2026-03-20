@@ -351,9 +351,26 @@ function formatearFecha(fecha) {
 // ==================== GETNET: CONFIRMAR ESTADO DE SESIÓN ====================
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { supabase as supabaseConfirm, initAuthListener } from './sessionManager.js';
 
-const supabaseConfirm = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Reutilizar la sesión existente (no crear nuevo GoTrueClient)
+initAuthListener();
+
+// Esperar a que la sesión esté lista (máx 5 segundos)
+async function waitForSession() {
+    const { data: { session } } = await supabaseConfirm.auth.getSession();
+    if (session) return session;
+
+    return new Promise((resolve) => {
+        const timeout = setTimeout(() => resolve(null), 5000);
+        supabaseConfirm.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                clearTimeout(timeout);
+                resolve(session);
+            }
+        });
+    });
+}
 
 function mostrarCargandoConfirmacion() {
     ['estadoExitoso', 'estadoPendiente', 'estadoRechazado', 'estadoError'].forEach(id => {
@@ -382,6 +399,12 @@ async function procesarGetnetReturn(sessionData) {
     mostrarCargandoConfirmacion();
 
     try {
+        // Esperar a que la sesión de auth esté lista antes de operar con DB
+        const authSession = await waitForSession();
+        if (!authSession) {
+            console.error('[paymentConfirmation] No se pudo obtener sesión de usuario');
+        }
+
         // Consultar el estado de la sesión en Getnet (via Edge Function segura)
         const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-check-session`, {
             method: 'POST',
@@ -442,12 +465,11 @@ async function procesarGetnetReturn(sessionData) {
                 const fechaExp = new Date();
                 fechaExp.setDate(fechaExp.getDate() + diasAcceso);
 
-                const { data: { session } } = await supabaseConfirm.auth.getSession();
-                if (session?.user) {
+                if (authSession?.user) {
                     const { error: inscError } = await supabaseConfirm
                         .from('inscripciones')
                         .insert([{
-                            usuario_id: session.user.id,
+                            usuario_id: authSession.user.id,
                             curso_id: sessionData.cursoId,
                             origen_acceso: 'COMPRA',
                             estado: 'ACTIVO',
