@@ -15,6 +15,7 @@ let selectedSlotId = null;
 let slotsDisponibles = []; // Caché local de los slots
 let confirmModal = null;
 let successModal = null;
+let zoomLinkModal = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -26,9 +27,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Inicializar Modales de Bootstrap
     const confirmModalEl = document.getElementById('confirmReservationModal');
     const successModalEl = document.getElementById('successModal');
-    
+    const zoomLinkModalEl = document.getElementById('zoomLinkModal');
+
     if (confirmModalEl) confirmModal = new bootstrap.Modal(confirmModalEl);
     if (successModalEl) successModal = new bootstrap.Modal(successModalEl);
+    if (zoomLinkModalEl) zoomLinkModal = new bootstrap.Modal(zoomLinkModalEl);
 
     // Configurar listener del botón de confirmación
     const btnConfirm = document.getElementById('btn-confirm-reservation');
@@ -52,14 +55,18 @@ async function initData() {
     // 2. Cargar los cursos reales del alumno en el desplegable
     await loadUserCourses();
 
-    // 3. Cargar horarios disponibles en pantalla
+    // 3. Cargar las reservas del alumno
+    await loadMisReservas();
+
+    // 4. Cargar horarios disponibles en pantalla
     await loadSlots();
 
-    // 4. Suscribirse a cambios en tiempo real para actualizar cupos automáticamente
+    // 5. Suscribirse a cambios en tiempo real para actualizar cupos automáticamente
     supabase
         .channel('student-slots-changes')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'consulta_slots' }, () => {
             loadSlots();
+            loadMisReservas();
         })
         .subscribe();
 }
@@ -214,6 +221,88 @@ async function loadSlots() {
     });
 }
 
+/**
+ * Carga las reservas del alumno y las muestra en la sección "Mis Reservas"
+ */
+async function loadMisReservas() {
+    const section = document.getElementById('mis-reservas-section');
+    const container = document.getElementById('mis-reservas-container');
+    if (!section || !container || !currentUserId) return;
+
+    const { success, data: reservas } = await CursosService.getReservasUsuario(currentUserId);
+
+    if (!success || !reservas || reservas.length === 0) {
+        section.classList.add('d-none');
+        return;
+    }
+
+    // Filtrar solo reservas activas (CONFIRMADA o PENDIENTE) con slots futuros
+    const reservasActivas = reservas.filter(r => {
+        const estado = r.estado?.toUpperCase();
+        if (estado === 'CANCELADA') return false;
+        const slot = r.consulta_slots;
+        if (!slot) return false;
+        return new Date(slot.fecha_inicio) >= new Date();
+    });
+
+    if (reservasActivas.length === 0) {
+        section.classList.add('d-none');
+        return;
+    }
+
+    section.classList.remove('d-none');
+    container.innerHTML = '';
+
+    reservasActivas.forEach(reserva => {
+        const slot = reserva.consulta_slots;
+        const fechaInicio = new Date(slot.fecha_inicio);
+        const fechaFin = new Date(slot.fecha_fin);
+        const fechaCorta = formatShortDate(fechaInicio);
+        const horaInicioStr = formatTime(fechaInicio);
+        const horaFinStr = formatTime(fechaFin);
+        const estado = reserva.estado?.toUpperCase() || 'PENDIENTE';
+        const estadoClass = estado === 'CONFIRMADA' ? 'estado-confirmada' : 'estado-pendiente';
+        const estadoLabel = estado === 'CONFIRMADA' ? 'Confirmada' : 'Pendiente';
+        const zoomLink = slot.zoom_link;
+
+        container.innerHTML += `
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="reserva-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="date-badge">${fechaCorta}</div>
+                        <span class="estado-badge ${estadoClass}">${estadoLabel}</span>
+                    </div>
+                    <div class="time-slot mb-2">
+                        <i class="far fa-clock me-1"></i>${horaInicioStr} - ${horaFinStr}
+                    </div>
+                    <div class="text-muted small mb-3">
+                        <i class="fas fa-book me-1"></i>${reserva.curso_nombre_snapshot || 'Consulta General'}
+                    </div>
+                    ${zoomLink
+                        ? `<button class="btn btn-zoom-link btn-sm w-100" onclick="window.showZoomLink('${zoomLink}')">
+                               <i class="fas fa-video me-2"></i>Ver link clase
+                           </button>`
+                        : `<button class="btn btn-secondary btn-sm w-100" disabled>
+                               <i class="fas fa-clock me-2"></i>Link aún no disponible
+                           </button>`
+                    }
+                </div>
+            </div>
+        `;
+    });
+}
+
+/**
+ * Muestra el modal con el link de Zoom
+ */
+window.showZoomLink = function(link) {
+    const href = document.getElementById('zoom-link-href');
+    const text = document.getElementById('zoom-link-text');
+    if (href) href.href = link;
+    if (text) text.textContent = link;
+    if (zoomLinkModal) zoomLinkModal.show();
+};
+
 // --- ACCIONES ---
 
 /**
@@ -286,8 +375,9 @@ async function handleConfirmReservation() {
             successModal.show();
         }, 300); // Pequeño delay visual para que no choquen las animaciones
 
-        // Recargar los slots para actualizar los cupos en pantalla (ej: si se llenó, desaparecerá)
+        // Recargar los slots y reservas para actualizar la pantalla
         await loadSlots();
+        await loadMisReservas();
     } else {
         alert(result.error?.message || 'Error al procesar la reserva. Es posible que el horario ya se haya llenado.');
         confirmModal.hide();
