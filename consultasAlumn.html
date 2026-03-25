@@ -80,6 +80,37 @@
             padding: 1.5rem;
             margin-bottom: 2rem;
         }
+
+        /* Mis Reservas */
+        .reserva-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            padding: 1.25rem;
+        }
+        .btn-zoom-link {
+            background: #2D8CFF;
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .btn-zoom-link:hover {
+            background: #1a6fdb;
+            color: white;
+        }
+        .estado-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .estado-confirmada { background: #d4edda; color: #155724; }
+        .estado-pendiente { background: #fff3cd; color: #856404; }
+        .estado-cancelada { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
@@ -114,6 +145,23 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Mis Reservas -->
+            <div id="mis-reservas-section" class="d-none mb-4">
+                <h4 class="fw-bold mb-3" style="color: var(--text-dark);">
+                    <i class="fas fa-bookmark me-2" style="color: var(--primary-color);"></i>
+                    Mis Reservas
+                </h4>
+                <div id="mis-reservas-container" class="row g-3">
+                    <!-- Se cargan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Separador -->
+            <h4 class="fw-bold mb-3" style="color: var(--text-dark);">
+                <i class="fas fa-calendar-plus me-2" style="color: var(--primary-color);"></i>
+                Horarios Disponibles
+            </h4>
 
             <!-- Listado de Slots Disponibles -->
             <div id="slots-container" class="row g-4">
@@ -184,6 +232,31 @@
                     <h4 class="fw-bold mb-3">¡Reserva Confirmada!</h4>
                     <p class="text-muted mb-4">Tu consulta ha sido agendada exitosamente. Revisa tu correo para obtener el enlace de Zoom.</p>
                     <button type="button" class="btn btn-reserve" data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Link Clase -->
+    <div class="modal fade" id="zoomLinkModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--card-bg); border: 1px solid var(--border-light);">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-video me-2" style="color: #2D8CFF;"></i>
+                        Link de la Clase
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <p class="text-muted mb-3">Haz click en el botón para unirte a tu clase por Zoom:</p>
+                    <a id="zoom-link-href" href="#" target="_blank" class="btn btn-zoom-link btn-lg mb-3">
+                        <i class="fas fa-video me-2"></i>Unirse a Zoom
+                    </a>
+                    <div class="mt-3">
+                        <small class="text-muted">Link: </small>
+                        <small id="zoom-link-text" class="text-break" style="color: #2D8CFF;"></small>
+                    </div>
                 </div>
             </div>
         </div>
