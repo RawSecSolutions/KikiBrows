@@ -496,28 +496,45 @@ function configurarEventosPortalPago(curso) {
                 }
 
                 // Crear sesión de pago en Banchile Pagos (via Edge Function segura)
+                const requestBody = {
+                    reference: reference,
+                    description: `Compra curso: ${curso.nombre}`,
+                    amount: curso.precio,
+                    returnUrl: returnUrl,
+                    buyer: {
+                        name: usuarioActual.nombre || 'Cliente',
+                        surname: usuarioActual.apellido || '',
+                        email: usuarioActual.email || ''
+                    },
+                    userAgent: navigator.userAgent,
+                    clientIp: clientIp
+                };
+
+                console.log('[DEBUG-BANCHILE] === INICIANDO PAGO ===');
+                console.log('[DEBUG-BANCHILE] Edge Function URL:', `${SUPABASE_URL}/functions/v1/banchile-create-session`);
+                console.log('[DEBUG-BANCHILE] Request body:', JSON.stringify(requestBody, null, 2));
+
                 const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-create-session`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${SUPABASE_KEY}`
                     },
-                    body: JSON.stringify({
-                        reference: reference,
-                        description: `Compra curso: ${curso.nombre}`,
-                        amount: curso.precio,
-                        returnUrl: returnUrl,
-                        buyer: {
-                            name: usuarioActual.nombre || 'Cliente',
-                            surname: usuarioActual.apellido || '',
-                            email: usuarioActual.email || ''
-                        },
-                        userAgent: navigator.userAgent,
-                        clientIp: clientIp
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
+                console.log('[DEBUG-BANCHILE] Edge Function HTTP status:', edgeResponse.status);
+                console.log('[DEBUG-BANCHILE] Response headers:', Object.fromEntries(edgeResponse.headers.entries()));
+
                 const result = await edgeResponse.json();
+
+                console.log('[DEBUG-BANCHILE] Response body:', JSON.stringify(result, null, 2));
+                if (result.banchileStatus) {
+                    console.log('[DEBUG-BANCHILE] Banchile API status:', JSON.stringify(result.banchileStatus, null, 2));
+                }
+                if (result.debug) {
+                    console.log('[DEBUG-BANCHILE] Server debug info:', JSON.stringify(result.debug, null, 2));
+                }
 
                 if (!result.success) {
                     throw new Error(result.error || 'Error al crear sesión de pago');
@@ -537,7 +554,9 @@ function configurarEventosPortalPago(curso) {
                 window.location.href = result.processUrl;
 
             } catch (err) {
-                console.error('Error iniciando pago Banchile Pagos:', err);
+                console.error('[DEBUG-BANCHILE] Error completo:', err);
+                console.error('[DEBUG-BANCHILE] Error message:', err.message);
+                console.error('[DEBUG-BANCHILE] Error stack:', err.stack);
                 alert('Ocurrió un error al iniciar el pago. Por favor intenta nuevamente.');
                 btn.disabled = false;
                 if (spinner) spinner.classList.add('d-none');
