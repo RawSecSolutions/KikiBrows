@@ -435,50 +435,25 @@ function cerrarPortalPago() {
     modal.classList.remove('active');
     document.body.style.overflow = 'auto';
 
-    const getnet = document.getElementById('seccionGetnet');
-    const mp = document.getElementById('seccionMercadoPago');
-    if(getnet) getnet.style.display = 'none';
-    if(mp) mp.style.display = 'none';
-    
-    document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
+    const banchile = document.getElementById('seccionBanchile');
+    if(banchile) banchile.style.display = 'none';
 }
 
 function configurarEventosPortalPago(curso) {
     const btnCerrar = document.getElementById('btnCerrarPortal');
     const btnVolver = document.getElementById('btnVolverCheckout');
     const overlay = document.querySelector('.portal-pago-overlay');
-    
+
     if (btnCerrar) btnCerrar.onclick = cerrarPortalPago;
     if (btnVolver) btnVolver.onclick = cerrarPortalPago;
     if (overlay) overlay.onclick = cerrarPortalPago;
 
-    const btnGetnet = document.getElementById('btnGetnet');
-    const btnMercadoPago = document.getElementById('btnMercadoPago');
-
-    if (btnGetnet) {
-        btnGetnet.onclick = () => {
-            document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
-            btnGetnet.classList.add('selected');
-            document.getElementById('seccionGetnet').style.display = 'block';
-            document.getElementById('seccionMercadoPago').style.display = 'none';
-        };
-    }
-
-    if (btnMercadoPago) {
-        btnMercadoPago.onclick = () => {
-            document.querySelectorAll('.metodo-pago-btn').forEach(b => b.classList.remove('selected'));
-            btnMercadoPago.classList.add('selected');
-            document.getElementById('seccionGetnet').style.display = 'none';
-            document.getElementById('seccionMercadoPago').style.display = 'block';
-        };
-    }
-
-    const formGetnet = document.getElementById('formGetnet');
-    if (formGetnet) {
-        formGetnet.onsubmit = async (e) => {
+    const formBanchile = document.getElementById('formBanchile');
+    if (formBanchile) {
+        formBanchile.onsubmit = async (e) => {
             e.preventDefault();
 
-            const btn = formGetnet.querySelector('button[type="submit"]');
+            const btn = formBanchile.querySelector('button[type="submit"]');
             const spinner = btn.querySelector('.spinner-border');
             btn.disabled = true;
             if (spinner) spinner.classList.remove('d-none');
@@ -486,7 +461,6 @@ function configurarEventosPortalPago(curso) {
 
             try {
                 const returnUrl = `${window.location.origin}/payment-confirmation.html?cursoId=${curso.id}`;
-                // Getnet exige referencia corta y alfanumérica
                 const shortId = curso.id.replace(/-/g, '').slice(0, 8);
                 const reference = `KIKI${shortId}${Date.now()}`;
 
@@ -501,7 +475,7 @@ function configurarEventosPortalPago(curso) {
                             curso_titulo_snapshot: curso.nombre,
                             monto: curso.precio,
                             estado: 'PENDIENTE',
-                            metodo_pago: 'GETNET'
+                            metodo_pago: 'BANCHILE'
                         }])
                         .select('id')
                         .single();
@@ -511,7 +485,7 @@ function configurarEventosPortalPago(curso) {
                     console.warn('No se pudo registrar transacción pendiente:', e);
                 }
 
-                // Obtener IP del cliente para Getnet
+                // Obtener IP del cliente
                 let clientIp = '127.0.0.1';
                 try {
                     const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -521,8 +495,8 @@ function configurarEventosPortalPago(curso) {
                     console.warn('No se pudo obtener IP del cliente:', e);
                 }
 
-                // Crear sesión de pago en Getnet (via Edge Function segura)
-                const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-create-session`, {
+                // Crear sesión de pago en Banchile Pagos (via Edge Function segura)
+                const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-create-session`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -550,7 +524,7 @@ function configurarEventosPortalPago(curso) {
                 }
 
                 // Guardar datos de sesión para consulta posterior
-                localStorage.setItem('getnetSession', JSON.stringify({
+                localStorage.setItem('banchileSession', JSON.stringify({
                     requestId: result.requestId,
                     reference: reference,
                     cursoId: curso.id,
@@ -559,24 +533,16 @@ function configurarEventosPortalPago(curso) {
                     transaccionId: transResult?.id || null
                 }));
 
-                // Redirigir a Getnet Web Checkout
+                // Redirigir a Banchile Pagos Web Checkout
                 window.location.href = result.processUrl;
 
             } catch (err) {
-                console.error('Error iniciando pago Getnet:', err);
+                console.error('Error iniciando pago Banchile Pagos:', err);
                 alert('Ocurrió un error al iniciar el pago. Por favor intenta nuevamente.');
                 btn.disabled = false;
                 if (spinner) spinner.classList.add('d-none');
                 btn.querySelector('i.fas')?.classList.remove('d-none');
             }
-        };
-    }
-
-    const btnPagarMP = document.getElementById('btnPagarMercadoPago');
-    if(btnPagarMP) {
-        btnPagarMP.onclick = () => {
-            alert('Simulación: Redirigiendo a Mercado Pago...');
-            procesarCompraExitosa(curso, 'MERCADOPAGO');
         };
     }
 }
