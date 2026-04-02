@@ -378,7 +378,17 @@ function mostrarCargandoConfirmacion() {
 async function procesarBanchileReturn(sessionData) {
     mostrarCargandoConfirmacion();
 
+    console.log('[DEBUG-BANCHILE] === VERIFICANDO PAGO ===');
+    console.log('[DEBUG-BANCHILE] SessionData from localStorage:', JSON.stringify(sessionData, null, 2));
+
     try {
+        const checkBody = {
+            requestId: sessionData.requestId,
+            transaccionId: sessionData.transaccionId || null,
+            cursoId: sessionData.cursoId || null
+        };
+        console.log('[DEBUG-BANCHILE] check-session request body:', JSON.stringify(checkBody, null, 2));
+
         // Consultar estado en Banchile Pagos Y actualizar DB (todo server-side via Edge Function)
         // La Edge Function usa service_role key, así que bypasa RLS
         const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-check-session`, {
@@ -387,14 +397,18 @@ async function procesarBanchileReturn(sessionData) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${SUPABASE_KEY}`
             },
-            body: JSON.stringify({
-                requestId: sessionData.requestId,
-                transaccionId: sessionData.transaccionId || null,
-                cursoId: sessionData.cursoId || null
-            })
+            body: JSON.stringify(checkBody)
         });
 
+        console.log('[DEBUG-BANCHILE] check-session HTTP status:', edgeResponse.status);
+        console.log('[DEBUG-BANCHILE] check-session headers:', Object.fromEntries(edgeResponse.headers.entries()));
+
         const result = await edgeResponse.json();
+
+        console.log('[DEBUG-BANCHILE] check-session response body:', JSON.stringify(result, null, 2));
+        if (result.banchileStatus) {
+            console.log('[DEBUG-BANCHILE] Banchile API status:', JSON.stringify(result.banchileStatus, null, 2));
+        }
 
         // Ocultar spinner
         const spinner = document.getElementById('estadoCargando');
@@ -440,7 +454,9 @@ async function procesarBanchileReturn(sessionData) {
         localStorage.removeItem('banchileSession');
 
     } catch (err) {
-        console.error('[paymentConfirmation] Error confirmando con Banchile Pagos:', err);
+        console.error('[DEBUG-BANCHILE] check-session error completo:', err);
+        console.error('[DEBUG-BANCHILE] check-session error message:', err.message);
+        console.error('[DEBUG-BANCHILE] check-session error stack:', err.stack);
         const spinner = document.getElementById('estadoCargando');
         if (spinner) spinner.style.display = 'none';
         mostrarEstadoError();
