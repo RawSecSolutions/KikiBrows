@@ -4,8 +4,8 @@
 // ==================== MAPEO DE MÉTODO DE PAGO (DB → Display) ====================
 
 function formatearMetodoPago(metodo) {
-    const nombres = { 'GETNET': 'Getnet Web Checkout', 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
-    return nombres[metodo] || metodo || 'Getnet';
+    const nombres = { 'BANCHILE': 'Banchile Pagos', 'GETNET': 'Getnet Web Checkout', 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
+    return nombres[metodo] || metodo || 'Banchile Pagos';
 }
 
 // ==================== OBTENER PARÁMETROS DE URL ====================
@@ -46,7 +46,7 @@ function cargarTransaccion() {
 // ==================== PROCESAR RESPUESTA DE PASARELA ====================
 
 function procesarRespuestaPasarela(params) {
-    // La verificación con Getnet se hace en procesarGetnetReturn()
+    // La verificación con Banchile se hace en procesarBanchileReturn()
     // Este método queda como fallback para flujos legacy
     return JSON.parse(localStorage.getItem('ultimaTransaccion'));
 }
@@ -348,7 +348,7 @@ function formatearFecha(fecha) {
     return fecha.toLocaleDateString('es-CL', opciones);
 }
 
-// ==================== GETNET: CONFIRMAR ESTADO DE SESIÓN ====================
+// ==================== BANCHILE PAGOS: CONFIRMAR ESTADO DE SESIÓN ====================
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
@@ -369,19 +369,19 @@ function mostrarCargandoConfirmacion() {
                 <span class="visually-hidden">Cargando...</span>
             </div>
             <h1 class="confirmation-title">Verificando tu pago...</h1>
-            <p class="confirmation-message">Estamos confirmando tu transacción con Getnet. Un momento por favor.</p>
+            <p class="confirmation-message">Estamos confirmando tu transacción con Banchile Pagos. Un momento por favor.</p>
         `;
         container.appendChild(div);
     }
 }
 
-async function procesarGetnetReturn(sessionData) {
+async function procesarBanchileReturn(sessionData) {
     mostrarCargandoConfirmacion();
 
     try {
-        // Consultar estado en Getnet Y actualizar DB (todo server-side via Edge Function)
+        // Consultar estado en Banchile Pagos Y actualizar DB (todo server-side via Edge Function)
         // La Edge Function usa service_role key, así que bypasa RLS
-        const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/getnet-check-session`, {
+        const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-check-session`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -418,17 +418,17 @@ async function procesarGetnetReturn(sessionData) {
                 estado: 'PAGADO',
                 cursoNombre: sessionData.cursoNombre,
                 monto: sessionData.monto,
-                metodoPago: 'GETNET',
+                metodoPago: 'BANCHILE',
                 fecha: new Date().toISOString(),
                 codigoAutorizacion: authorization,
-                transaccionId: sessionData.transaccionId || `GETNET-${sessionData.requestId}`
+                transaccionId: sessionData.transaccionId || `BANCHILE-${sessionData.requestId}`
             });
 
         } else if (internalStatus === 'PENDIENTE') {
             mostrarEstadoPendiente({
                 cursoNombre: sessionData.cursoNombre,
                 monto: sessionData.monto,
-                metodoPago: 'GETNET',
+                metodoPago: 'BANCHILE',
                 fecha: new Date().toISOString()
             });
 
@@ -437,10 +437,10 @@ async function procesarGetnetReturn(sessionData) {
         }
 
         // Limpiar sesión guardada
-        localStorage.removeItem('getnetSession');
+        localStorage.removeItem('banchileSession');
 
     } catch (err) {
-        console.error('[paymentConfirmation] Error confirmando con Getnet:', err);
+        console.error('[paymentConfirmation] Error confirmando con Banchile Pagos:', err);
         const spinner = document.getElementById('estadoCargando');
         if (spinner) spinner.style.display = 'none';
         mostrarEstadoError();
@@ -452,22 +452,22 @@ async function procesarGetnetReturn(sessionData) {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Inicializando paymentConfirmation.js');
 
-    // ── Detectar retorno de Getnet (verificar si hay sesión guardada) ──
-    const getnetSession = localStorage.getItem('getnetSession');
+    // ── Detectar retorno de Banchile Pagos (verificar si hay sesión guardada) ──
+    const banchileSession = localStorage.getItem('banchileSession');
 
-    if (getnetSession) {
+    if (banchileSession) {
         try {
-            const sessionData = JSON.parse(getnetSession);
-            // Viene de Getnet: consultar estado de la sesión
-            procesarGetnetReturn(sessionData);
+            const sessionData = JSON.parse(banchileSession);
+            // Viene de Banchile Pagos: consultar estado de la sesión
+            procesarBanchileReturn(sessionData);
             return;
         } catch (e) {
-            console.error('Error parseando sesión Getnet:', e);
-            localStorage.removeItem('getnetSession');
+            console.error('Error parseando sesión Banchile:', e);
+            localStorage.removeItem('banchileSession');
         }
     }
 
-    // ── Flujo legacy: localStorage (simulador / Mercado Pago) ──
+    // ── Flujo legacy: localStorage (simulador) ──
     const transaccion = cargarTransaccion();
 
     if (!transaccion) {

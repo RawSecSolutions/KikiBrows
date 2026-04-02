@@ -222,8 +222,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         doc.setFont('helvetica', 'bold');
         doc.text('Método de Pago:', 20, y);
         doc.setFont('helvetica', 'normal');
-        const nombres = { 'GETNET': 'Getnet Web Checkout', 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
-        doc.text(nombres[transaccion.metodoPago] || transaccion.metodoPago || 'Getnet', 60, y);
+        const nombres = { 'BANCHILE': 'Banchile Pagos', 'GETNET': 'Getnet Web Checkout', 'TRANSBANK': 'Webpay Plus', 'MERCADOPAGO': 'Mercado Pago' };
+        doc.text(nombres[transaccion.metodoPago] || transaccion.metodoPago || 'Banchile Pagos', 60, y);
 
         y += 10;
         doc.setFont('helvetica', 'bold');

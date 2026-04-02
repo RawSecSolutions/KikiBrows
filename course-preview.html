@@ -106,7 +106,7 @@
             <button class="portal-pago-close" id="btnCerrarPortal"><i class="fas fa-times"></i></button>
             <div class="portal-pago-content">
                 <h2 class="portal-titulo">Proceder al pago</h2>
-                <p class="portal-subtitulo">Paga seguro con Getnet utilizando tus tarjetas de crédito, débito y prepago.</p>
+                <p class="portal-subtitulo">Paga seguro con Banchile Pagos utilizando tus tarjetas de crédito, débito y prepago.</p>
                 <div class="portal-curso-info">
                     <h3 id="portalCursoNombre"></h3>
                     <div class="portal-precio-section">
@@ -114,37 +114,16 @@
                         <span class="portal-precio-valor" id="portalCursoPrecio"></span>
                     </div>
                 </div>
-                <div class="portal-metodos-pago">
-                    <h4 class="portal-metodos-titulo">Selecciona tu método de pago</h4>
-                    <div class="metodos-grid">
-                        <button class="metodo-pago-btn" id="btnGetnet">
-                            <div class="metodo-icon"><i class="fas fa-credit-card"></i></div>
-                            <div class="metodo-info"><h5>Getnet</h5><p>Tarjeta de crédito, débito o prepago</p></div>
-                        </button>
-                        <button class="metodo-pago-btn" id="btnMercadoPago">
-                            <div class="metodo-icon"><i class="fas fa-wallet"></i></div>
-                            <div class="metodo-info"><h5>Mercado Pago</h5><p>Tarjetas de crédito y débito</p></div>
-                        </button>
-                    </div>
-                </div>
-                <div id="seccionGetnet" class="seccion-pago" style="display: none;">
-                     <div class="pago-header"><i class="fas fa-credit-card"></i><h4>Pago con Getnet</h4></div>
+                <div id="seccionBanchile" class="seccion-pago">
+                     <div class="pago-header"><i class="fas fa-credit-card"></i><h4>Pago con Banchile Pagos</h4></div>
                      <div class="api-placeholder">
-                        <p class="api-instruccion"><i class="fas fa-shield-alt me-2"></i>Pago seguro procesado por Getnet (Santander)</p>
-                        <form id="formGetnet" class="form-pago">
-                            <button type="submit" class="btn-pagar-getnet">
+                        <p class="api-instruccion"><i class="fas fa-shield-alt me-2"></i>Pago seguro procesado por Banchile Pagos</p>
+                        <form id="formBanchile" class="form-pago">
+                            <button type="submit" class="btn-pagar-banchile">
                                 <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
-                                <i class="fas fa-lock me-2"></i>Pagar con Getnet
+                                <i class="fas fa-lock me-2"></i>Pagar con Banchile Pagos
                             </button>
                         </form>
-                    </div>
-                </div>
-                <div id="seccionMercadoPago" class="seccion-pago" style="display: none;">
-                    <div class="pago-header"><i class="fas fa-wallet"></i><h4>Pago con Mercado Pago</h4></div>
-                    <div class="api-placeholder">
-                        <p class="api-instruccion"><i class="fas fa-code me-2"></i>Zona de integración para API de Mercado Pago</p>
-                        <div id="mercadoPagoCheckout" class="mp-checkout-container"></div>
-                        <button type="button" class="btn-pagar-mp" id="btnPagarMercadoPago"><i class="fas fa-lock me-2"></i>Pagar con Mercado Pago</button>
                     </div>
                 </div>
                 <button class="btn-volver-checkout" id="btnVolverCheckout"><i class="fas fa-arrow-left me-2"></i>Volver al curso</button>
