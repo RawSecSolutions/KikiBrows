@@ -204,3 +204,21 @@ p {
     color: var(--text-grey);
     margin-bottom: 1.25rem;
 }
+
+/* FOOTER */
+.site-footer {
+    background-color: var(--text-dark);
+    color: var(--text-grey);
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.site-footer a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.site-footer a:hover {
+    color: var(--primary-color);
+}
