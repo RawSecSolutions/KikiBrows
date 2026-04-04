@@ -126,4 +126,34 @@ const renderNavbar = async () => {
     }
 };
 
+const renderFooter = () => {
+    const footerHTML = `
+    <footer class="kikibrows-footer">
+        <div class="container">
+            <div class="row align-items-center gy-3">
+                <div class="col-md-4 text-center text-md-start">
+                    <span class="footer-brand">KIKIBROWS</span>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="footer-social">
+                        <a href="https://www.instagram.com/kikibrows.cl" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="mailto:admin@kikibrows.cl" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                        <a href="https://www.tiktok.com/@kikibrows.cl" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <span class="footer-contact">admin@kikibrows.cl · La Serena, Chile</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    `;
+
+    const footerContainer = document.getElementById('footer-global');
+    if (footerContainer) {
+        footerContainer.innerHTML = footerHTML;
+    }
+};
+
 renderNavbar();
+renderFooter();

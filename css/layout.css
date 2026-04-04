@@ -204,3 +204,35 @@ p {
     color: var(--text-grey);
     margin-bottom: 1.25rem;
 }
+
+/* FOOTER GLOBAL */
+.kikibrows-footer {
+    background-color: var(--text-dark);
+    color: var(--light-bg);
+    padding: 1.5rem 0;
+}
+
+.kikibrows-footer .footer-brand {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--secondary-color);
+}
+
+.kikibrows-footer .footer-social a {
+    color: var(--light-bg);
+    font-size: 1.25rem;
+    margin: 0 0.75rem;
+    transition: color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+}
+
+.kikibrows-footer .footer-social a:hover {
+    color: var(--secondary-color);
+    transform: scale(1.15);
+}
+
+.kikibrows-footer .footer-contact {
+    font-size: 0.85rem;
+    color: var(--text-grey);
+}
