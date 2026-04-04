@@ -1040,6 +1040,23 @@ export const CursosService = {
     },
 
     /**
+     * Enviar boleta de compra por correo via Edge Function (Resend)
+     * @param {string} transaccionId - UUID de la transaccion
+     */
+    async enviarBoletaPorCorreo(transaccionId) {
+        try {
+            const { data, error } = await supabase.functions.invoke('send-receipt-email', {
+                body: { transaccionId }
+            });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.warn('Error al enviar boleta por correo:', error);
+            return { success: false, error };
+        }
+    },
+
+    /**
      * Obtener el historial de reservas de un usuario
      * @param {string} usuarioId - UUID del usuario
      */
