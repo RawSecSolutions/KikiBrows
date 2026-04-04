@@ -438,6 +438,9 @@ async function procesarBanchileReturn(sessionData) {
                 transaccionId: sessionData.transaccionId || `BANCHILE-${sessionData.requestId}`
             });
 
+            // Enviar boleta por correo electronico via Edge Function
+            enviarBoletaPorCorreo(sessionData.transaccionId);
+
         } else if (internalStatus === 'PENDIENTE') {
             mostrarEstadoPendiente({
                 cursoNombre: sessionData.cursoNombre,
@@ -460,6 +463,33 @@ async function procesarBanchileReturn(sessionData) {
         const spinner = document.getElementById('estadoCargando');
         if (spinner) spinner.style.display = 'none';
         mostrarEstadoError();
+    }
+}
+
+// ==================== ENVIAR BOLETA POR CORREO ====================
+
+async function enviarBoletaPorCorreo(transaccionId) {
+    if (!transaccionId) return;
+
+    try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/send-receipt-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            },
+            body: JSON.stringify({ transaccionId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log('[paymentConfirmation] Boleta enviada por correo a:', result.to);
+        } else {
+            console.warn('[paymentConfirmation] No se pudo enviar la boleta por correo:', result.error);
+        }
+    } catch (err) {
+        console.warn('[paymentConfirmation] Error enviando boleta por correo:', err.message);
     }
 }
 
