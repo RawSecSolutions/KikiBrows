@@ -212,6 +212,76 @@ export const AdminCursosService = {
     // ==================== GESTIÓN DE CURSOS ====================
 
     /**
+     * Reordena las posiciones del carrusel cuando se inserta o mueve un curso.
+     * Desplaza los cursos existentes para hacer espacio en la posición deseada.
+     * @param {number} nuevaPosicion - La posición donde se quiere colocar el curso
+     * @param {string|null} cursoIdExcluir - ID del curso que se está moviendo (excluir de reordenamiento)
+     */
+    async _reordenarCarrusel(nuevaPosicion, cursoIdExcluir = null) {
+        try {
+            // Obtener todos los cursos en el carrusel ordenados por posición
+            let query = supabase
+                .from('cursos')
+                .select('id, posicion_carrusel')
+                .eq('en_carrusel', true)
+                .order('posicion_carrusel', { ascending: true });
+
+            if (cursoIdExcluir) {
+                query = query.neq('id', cursoIdExcluir);
+            }
+
+            const { data: cursosEnCarrusel, error } = await query;
+            if (error) throw error;
+            if (!cursosEnCarrusel || cursosEnCarrusel.length === 0) return;
+
+            // Filtrar solo los que tienen posición >= a la nueva y necesitan desplazarse
+            const cursosADesplazar = cursosEnCarrusel.filter(
+                c => c.posicion_carrusel >= nuevaPosicion
+            );
+
+            // Actualizar cada curso desplazado incrementando su posición en 1
+            for (const curso of cursosADesplazar) {
+                await supabase
+                    .from('cursos')
+                    .update({ posicion_carrusel: curso.posicion_carrusel + 1 })
+                    .eq('id', curso.id);
+            }
+        } catch (error) {
+            console.error('Error al reordenar carrusel:', error);
+        }
+    },
+
+    /**
+     * Compacta las posiciones del carrusel eliminando huecos.
+     * Se usa cuando un curso se quita del carrusel.
+     */
+    async _compactarPosicionesCarrusel() {
+        try {
+            const { data: cursosEnCarrusel, error } = await supabase
+                .from('cursos')
+                .select('id, posicion_carrusel')
+                .eq('en_carrusel', true)
+                .order('posicion_carrusel', { ascending: true });
+
+            if (error) throw error;
+            if (!cursosEnCarrusel || cursosEnCarrusel.length === 0) return;
+
+            // Reasignar posiciones consecutivas (1, 2, 3, ...)
+            for (let i = 0; i < cursosEnCarrusel.length; i++) {
+                const posicionCorrecta = i + 1;
+                if (cursosEnCarrusel[i].posicion_carrusel !== posicionCorrecta) {
+                    await supabase
+                        .from('cursos')
+                        .update({ posicion_carrusel: posicionCorrecta })
+                        .eq('id', cursosEnCarrusel[i].id);
+                }
+            }
+        } catch (error) {
+            console.error('Error al compactar posiciones del carrusel:', error);
+        }
+    },
+
+    /**
      * Crear un nuevo curso
      */
     async crearCurso(cursoData) {
@@ -226,6 +296,11 @@ export const AdminCursosService = {
                 en_carrusel: cursoData.en_carrusel || false,
                 posicion_carrusel: cursoData.posicion_carrusel || null
             };
+
+            // Si se va a mostrar en carrusel, reordenar posiciones existentes
+            if (payload.en_carrusel && payload.posicion_carrusel) {
+                await this._reordenarCarrusel(payload.posicion_carrusel);
+            }
 
             const { data, error } = await supabase
                 .from('cursos')
@@ -246,6 +321,15 @@ export const AdminCursosService = {
      */
     async actualizarCurso(cursoId, cursoData) {
         try {
+            // Obtener estado actual del curso para comparar cambios en carrusel
+            const { data: cursoActual, error: errorActual } = await supabase
+                .from('cursos')
+                .select('en_carrusel, posicion_carrusel')
+                .eq('id', cursoId)
+                .single();
+
+            if (errorActual) throw errorActual;
+
             const payload = {
                 nombre: cursoData.nombre,
                 descripcion: cursoData.descripcion,
@@ -260,6 +344,18 @@ export const AdminCursosService = {
                 payload.portada_url = cursoData.portada_url;
             }
 
+            const estabaEnCarrusel = cursoActual.en_carrusel;
+            const posicionAnterior = cursoActual.posicion_carrusel;
+            const entraAlCarrusel = payload.en_carrusel;
+            const nuevaPosicion = payload.posicion_carrusel;
+
+            if (entraAlCarrusel && nuevaPosicion) {
+                // Solo reordenar si la posición realmente cambió o es nuevo en carrusel
+                if (!estabaEnCarrusel || posicionAnterior !== nuevaPosicion) {
+                    await this._reordenarCarrusel(nuevaPosicion, cursoId);
+                }
+            }
+
             const { data, error } = await supabase
                 .from('cursos')
                 .update(payload)
@@ -268,6 +364,12 @@ export const AdminCursosService = {
                 .single();
 
             if (error) throw error;
+
+            // Si se quitó del carrusel, compactar posiciones
+            if (estabaEnCarrusel && !entraAlCarrusel) {
+                await this._compactarPosicionesCarrusel();
+            }
+
             return { success: true, data };
         } catch (error) {
             console.error('Error al actualizar curso:', error);
