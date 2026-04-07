@@ -464,27 +464,6 @@ function configurarEventosPortalPago(curso) {
                 const shortId = curso.id.replace(/-/g, '').slice(0, 8);
                 const reference = `KIKI${shortId}${Date.now()}`;
 
-                // Registrar transacción pendiente en Supabase ANTES de redirigir
-                let transResult = null;
-                try {
-                    const { data, error } = await supabase
-                        .from('transacciones')
-                        .insert([{
-                            usuario_id: usuarioActual.id,
-                            curso_id: curso.id,
-                            curso_titulo_snapshot: curso.nombre,
-                            monto: curso.precio,
-                            estado: 'PENDIENTE',
-                            metodo_pago: 'BANCHILE'
-                        }])
-                        .select('id')
-                        .single();
-                    if (error) console.warn('Error registrando transacción pendiente:', error);
-                    else transResult = data;
-                } catch (e) {
-                    console.warn('No se pudo registrar transacción pendiente:', e);
-                }
-
                 // Obtener IP del cliente
                 let clientIp = '127.0.0.1';
                 try {
@@ -496,10 +475,11 @@ function configurarEventosPortalPago(curso) {
                 }
 
                 // Crear sesión de pago en Banchile Pagos (via Edge Function segura)
+                // SEGURIDAD: NO enviamos precio desde el cliente.
+                // El Edge Function consulta el precio real desde la BD.
                 const requestBody = {
+                    cursoId: curso.id,
                     reference: reference,
-                    description: `Compra curso: ${curso.nombre}`,
-                    amount: curso.precio,
                     returnUrl: returnUrl,
                     buyer: {
                         name: usuarioActual.nombre || 'Cliente',
@@ -512,7 +492,6 @@ function configurarEventosPortalPago(curso) {
 
                 console.log('[DEBUG-BANCHILE] === INICIANDO PAGO ===');
                 console.log('[DEBUG-BANCHILE] Edge Function URL:', `${SUPABASE_URL}/functions/v1/banchile-create-session`);
-                console.log('[DEBUG-BANCHILE] Request body:', JSON.stringify(requestBody, null, 2));
 
                 const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-create-session`, {
                     method: 'POST',
@@ -524,30 +503,24 @@ function configurarEventosPortalPago(curso) {
                 });
 
                 console.log('[DEBUG-BANCHILE] Edge Function HTTP status:', edgeResponse.status);
-                console.log('[DEBUG-BANCHILE] Response headers:', Object.fromEntries(edgeResponse.headers.entries()));
 
                 const result = await edgeResponse.json();
 
                 console.log('[DEBUG-BANCHILE] Response body:', JSON.stringify(result, null, 2));
-                if (result.banchileStatus) {
-                    console.log('[DEBUG-BANCHILE] Banchile API status:', JSON.stringify(result.banchileStatus, null, 2));
-                }
-                if (result.debug) {
-                    console.log('[DEBUG-BANCHILE] Server debug info:', JSON.stringify(result.debug, null, 2));
-                }
 
                 if (!result.success) {
                     throw new Error(result.error || 'Error al crear sesión de pago');
                 }
 
                 // Guardar datos de sesión para consulta posterior
+                // SEGURIDAD: NO guardamos monto en localStorage.
+                // El monto real se obtiene del servidor al verificar el pago.
                 localStorage.setItem('banchileSession', JSON.stringify({
                     requestId: result.requestId,
                     reference: reference,
                     cursoId: curso.id,
                     cursoNombre: curso.nombre,
-                    monto: curso.precio,
-                    transaccionId: transResult?.id || null
+                    transaccionId: result.transaccionId || null
                 }));
 
                 // Redirigir a Banchile Pagos Web Checkout
@@ -566,61 +539,9 @@ function configurarEventosPortalPago(curso) {
     }
 }
 
-async function procesarCompraExitosa(curso, metodoPago) {
-    try {
-        // Registrar transacción en Supabase
-        const { data: transResult, error } = await supabase
-            .from('transacciones')
-            .insert([{
-                usuario_id: usuarioActual.id,
-                curso_id: curso.id,
-                monto: curso.precio,
-                estado: 'PAGADO',
-                metodo_pago: metodoPago,
-                codigo_autorizacion: Math.floor(Math.random() * 999999).toString()
-            }])
-            .select('id')
-            .single();
-
-        if (error) console.error('Error registrando transacción:', error);
-
-        // Crear inscripción con fecha de expiración
-        const diasAcceso = curso.dias_duracion_acceso || 180;
-        const fechaExp = new Date();
-        fechaExp.setDate(fechaExp.getDate() + diasAcceso);
-
-        const inscripcionData = {
-            usuario_id: usuarioActual.id,
-            curso_id: curso.id,
-            origen_acceso: 'COMPRA',
-            estado: 'ACTIVO',
-            fecha_expiracion: fechaExp.toISOString()
-        };
-        if (transResult?.id) inscripcionData.transaccion_id = transResult.id;
-
-        const { error: inscError } = await supabase
-            .from('inscripciones')
-            .insert([inscripcionData]);
-
-        if (inscError) console.warn('Error creando inscripción:', inscError);
-
-        const transaccionLocal = {
-            estado: 'PAGADO',
-            cursoId: curso.id,
-            cursoNombre: curso.nombre,
-            monto: curso.precio,
-            fecha: new Date().toISOString(),
-            transaccionId: `TXN-${Date.now()}`
-        };
-        localStorage.setItem('ultimaTransaccion', JSON.stringify(transaccionLocal));
-
-        window.location.href = 'payment-confirmation.html';
-
-    } catch (e) {
-        console.error(e);
-        alert('Error procesando la compra.');
-    }
-}
+// procesarCompraExitosa eliminada: la creación de transacciones e inscripciones
+// ahora se maneja exclusivamente en los Edge Functions del servidor
+// para evitar manipulación de precios desde el cliente.
 
 // ==================== MANEJO DE ERRORES ====================
 
