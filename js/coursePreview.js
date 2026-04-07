@@ -504,6 +504,7 @@ function configurarEventosPortalPago(curso) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
                         'Authorization': `Bearer ${accessToken}`
                     },
                     body: JSON.stringify(requestBody)
