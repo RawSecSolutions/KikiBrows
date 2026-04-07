@@ -479,6 +479,7 @@ function configurarEventosPortalPago(curso) {
                 // El Edge Function consulta el precio real desde la BD.
                 const requestBody = {
                     cursoId: curso.id,
+                    userId: usuarioActual.id,
                     reference: reference,
                     returnUrl: returnUrl,
                     buyer: {
@@ -492,16 +493,20 @@ function configurarEventosPortalPago(curso) {
 
                 console.log('[DEBUG-BANCHILE] === INICIANDO PAGO ===');
 
-                // Usar supabase.functions.invoke() que maneja auth automáticamente
-                const { data: result, error: fnError } = await supabase.functions.invoke('banchile-create-session', {
-                    body: requestBody
+                // Usar Bearer SUPABASE_KEY para autenticar contra el gateway de Supabase
+                // El userId se envía en el body y se verifica server-side
+                const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-create-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify(requestBody)
                 });
 
-                console.log('[DEBUG-BANCHILE] Response:', JSON.stringify(result, null, 2));
+                const result = await edgeResponse.json();
 
-                if (fnError) {
-                    throw new Error(fnError.message || 'Error al crear sesión de pago');
-                }
+                console.log('[DEBUG-BANCHILE] Response:', JSON.stringify(result, null, 2));
 
                 if (!result.success) {
                     throw new Error(result.error || 'Error al crear sesión de pago');
