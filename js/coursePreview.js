@@ -493,11 +493,18 @@ function configurarEventosPortalPago(curso) {
                 console.log('[DEBUG-BANCHILE] === INICIANDO PAGO ===');
                 console.log('[DEBUG-BANCHILE] Edge Function URL:', `${SUPABASE_URL}/functions/v1/banchile-create-session`);
 
+                // Obtener token JWT del usuario autenticado
+                const { data: { session } } = await supabase.auth.getSession();
+                const accessToken = session?.access_token;
+                if (!accessToken) {
+                    throw new Error('No se pudo obtener la sesión. Inicia sesión nuevamente.');
+                }
+
                 const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-create-session`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                        'Authorization': `Bearer ${accessToken}`
                     },
                     body: JSON.stringify(requestBody)
                 });
