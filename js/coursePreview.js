@@ -491,30 +491,17 @@ function configurarEventosPortalPago(curso) {
                 };
 
                 console.log('[DEBUG-BANCHILE] === INICIANDO PAGO ===');
-                console.log('[DEBUG-BANCHILE] Edge Function URL:', `${SUPABASE_URL}/functions/v1/banchile-create-session`);
 
-                // Obtener token JWT del usuario autenticado
-                const { data: { session } } = await supabase.auth.getSession();
-                const accessToken = session?.access_token;
-                if (!accessToken) {
-                    throw new Error('No se pudo obtener la sesión. Inicia sesión nuevamente.');
-                }
-
-                const edgeResponse = await fetch(`${SUPABASE_URL}/functions/v1/banchile-create-session`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${accessToken}`
-                    },
-                    body: JSON.stringify(requestBody)
+                // Usar supabase.functions.invoke() que maneja auth automáticamente
+                const { data: result, error: fnError } = await supabase.functions.invoke('banchile-create-session', {
+                    body: requestBody
                 });
 
-                console.log('[DEBUG-BANCHILE] Edge Function HTTP status:', edgeResponse.status);
+                console.log('[DEBUG-BANCHILE] Response:', JSON.stringify(result, null, 2));
 
-                const result = await edgeResponse.json();
-
-                console.log('[DEBUG-BANCHILE] Response body:', JSON.stringify(result, null, 2));
+                if (fnError) {
+                    throw new Error(fnError.message || 'Error al crear sesión de pago');
+                }
 
                 if (!result.success) {
                     throw new Error(result.error || 'Error al crear sesión de pago');
