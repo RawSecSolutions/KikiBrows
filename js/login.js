@@ -305,7 +305,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                window.location.href = destino;
+                if (isAdmin) {
+                    window.location.href = 'adminPanel.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
 
             } catch (error) {
                 console.error('Error de login:', error);
