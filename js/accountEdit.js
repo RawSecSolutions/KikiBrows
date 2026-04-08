@@ -421,7 +421,10 @@ async function saveProfileChanges(event, formType) {
         const redirectUrl = localStorage.getItem('redirectAfterLogin');
         if (redirectUrl) {
             localStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirectUrl;
+            const isSafeUrl = redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin);
+            if (isSafeUrl) {
+                window.location.href = redirectUrl;
+            }
         } else {
             // Recargar datos y volver al dashboard suavemente
             await CursosData.initStudent(); 

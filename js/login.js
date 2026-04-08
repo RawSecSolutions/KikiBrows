@@ -296,21 +296,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const redirectUrl = localStorage.getItem('redirectAfterLogin');
                 if (redirectUrl) {
                     localStorage.removeItem('redirectAfterLogin');
+                    // Validar que sea una URL relativa del mismo sitio (previene open redirect)
+                    const isSafeUrl = redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin);
                     const isAdminPage = redirectUrl.includes('admin') || redirectUrl.includes('usersGest') || redirectUrl.includes('gestionCursos') || redirectUrl.includes('creaCurso') || redirectUrl.includes('gestorModulos') || redirectUrl.includes('revYFeedback');
-                    if (!isAdminPage || isAdmin) {
+                    if (isSafeUrl && (!isAdminPage || isAdmin)) {
                         window.location.href = redirectUrl;
                         return;
                     }
                 }
 
-                let destino = '';
                 if (isAdmin) {
-                    destino = 'adminPanel.html';
+                    window.location.href = 'adminPanel.html';
                 } else {
-                    destino = 'index.html';
+                    window.location.href = 'index.html';
                 }
-
-                window.location.href = destino;
 
             } catch (error) {
                 console.error('Error de login:', error);
@@ -429,8 +428,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const redirectUrl = localStorage.getItem('redirectAfterLogin');
                     if (redirectUrl) {
                         localStorage.removeItem('redirectAfterLogin');
+                        const isSafeUrl = redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin);
                         const isAdminPage = redirectUrl.includes('admin') || redirectUrl.includes('usersGest') || redirectUrl.includes('gestionCursos') || redirectUrl.includes('creaCurso') || redirectUrl.includes('gestorModulos') || redirectUrl.includes('revYFeedback');
-                        if (!isAdminPage || isAdmin) {
+                        if (isSafeUrl && (!isAdminPage || isAdmin)) {
                             window.location.href = redirectUrl;
                             return;
                         }

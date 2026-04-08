@@ -38,7 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const portadaEl = document.getElementById('heroPortada');
         if (curso.portada_url) {
-            portadaEl.innerHTML = `<img src="${curso.portada_url}" alt="${curso.nombre}">`;
+            const img = document.createElement('img');
+            img.src = curso.portada_url;
+            img.alt = curso.nombre;
+            portadaEl.innerHTML = '';
+            portadaEl.appendChild(img);
         }
     }
     
