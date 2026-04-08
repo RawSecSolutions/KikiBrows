@@ -427,24 +427,29 @@ async function procesarBanchileReturn(sessionData) {
             console.log('[paymentConfirmation] DB result:', result.dbResult);
         }
 
+        // SEGURIDAD: Usamos result.monto (del servidor) en vez de sessionData.monto (del cliente)
+        // El Edge Function devuelve el monto real verificado desde la BD
+        const montoVerificado = result.monto;
+        const transaccionIdVerificado = result.transaccionId || sessionData.transaccionId || `BANCHILE-${sessionData.requestId}`;
+
         if (internalStatus === 'PAGADO') {
             mostrarEstadoExitoso({
                 estado: 'PAGADO',
-                cursoNombre: sessionData.cursoNombre,
-                monto: sessionData.monto,
+                cursoNombre: result.cursoNombre || sessionData.cursoNombre,
+                monto: montoVerificado,
                 metodoPago: 'BANCHILE',
                 fecha: new Date().toISOString(),
                 codigoAutorizacion: authorization,
-                transaccionId: sessionData.transaccionId || `BANCHILE-${sessionData.requestId}`
+                transaccionId: transaccionIdVerificado
             });
 
             // Enviar boleta por correo electronico via Edge Function
-            enviarBoletaPorCorreo(sessionData.transaccionId);
+            enviarBoletaPorCorreo(transaccionIdVerificado);
 
         } else if (internalStatus === 'PENDIENTE') {
             mostrarEstadoPendiente({
-                cursoNombre: sessionData.cursoNombre,
-                monto: sessionData.monto,
+                cursoNombre: result.cursoNombre || sessionData.cursoNombre,
+                monto: montoVerificado,
                 metodoPago: 'BANCHILE',
                 fecha: new Date().toISOString()
             });
