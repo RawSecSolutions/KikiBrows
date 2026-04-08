@@ -218,14 +218,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isSuper = u.role === 'superadmin';
 
             buttonsHTML += `
-                <button class="btn btn-sm text-white me-1" style="background-color: #8A835A;" onclick="editUser('${u.id}')" title="Editar">
+                <button class="btn-kikibrows btn-sm me-1" onclick="editUser('${u.id}')" title="Editar">
                     <i class="fas fa-pencil-alt"></i>
                 </button>
             `;
 
             if (!isSuper) {
                 buttonsHTML += `
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${u.id}')" title="Eliminar">
+                    <button class="btn-kikibrows-outline btn-sm" onclick="deleteUser('${u.id}')" title="Eliminar">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 `;

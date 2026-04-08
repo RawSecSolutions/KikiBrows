@@ -722,7 +722,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${lastScoreHTML}
                     </div>
                     <div class="text-center mt-4">
-                        <button class="btn btn-outline-primary" onclick="window.retryQuiz()">
+                        <button class="btn-kikibrows-outline" onclick="window.retryQuiz()">
                             <i class="fas fa-redo me-2"></i>Volver a Intentar
                         </button>
                     </div>
@@ -783,7 +783,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 <form id="quizForm">
                     ${questionsHTML}
-                    <button type="button" class="btn btn-primary quiz-submit-btn" onclick="window.submitQuiz()" id="submitQuizBtn" disabled>
+                    <button type="button" class="btn-kikibrows quiz-submit-btn" onclick="window.submitQuiz()" id="submitQuizBtn" disabled>
                         <i class="fas fa-paper-plane me-2"></i>Enviar Respuestas
                     </button>
                 </form>
@@ -881,7 +881,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (aprobado) {
             footer.innerHTML = `
-                <button type="button" class="btn btn-success" onclick="window.closeQuizAndContinue()">
+                <button type="button" class="btn-kikibrows" onclick="window.closeQuizAndContinue()">
                     <i class="fas fa-arrow-right me-2"></i>Continuar
                 </button>
             `;
@@ -889,8 +889,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             await markAsCompleted();
         } else {
             footer.innerHTML = `
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="window.retryQuiz()">
+                <button type="button" class="btn-kikibrows-outline" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn-kikibrows" onclick="window.retryQuiz()">
                     <i class="fas fa-redo me-2"></i>Reintentar
                 </button>
             `;
@@ -1032,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="upload-text">Arrastra aquí tu archivo o haz clic para seleccionar</div>
                         <div class="upload-hint">Formatos: Video (MP4, WEBM, MOV) o Imagen (PNG, JPG, WEBP) | Máximo: ${pesoMaximoMb}MB</div>
-                        <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
+                        <button class="btn-kikibrows upload-btn" type="button" id="selectVideoBtn">
                             <i class="fas fa-upload me-2"></i>Seleccionar Archivo
                         </button>
                         <input type="file" id="videoInput" accept="video/*,image/*,.mp4,.mov,.webm,.hevc,.mkv,.png,.jpg,.jpeg,.webp" hidden>
@@ -1078,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Botón para eliminar entrega si está pendiente
             const eliminarBtnHTML = ultimaEntrega.estado === 'pendiente'
                 ? `<div class="mt-3">
-                       <button class="btn btn-outline-danger w-100" id="btnEliminarEntrega" data-entrega-id="${ultimaEntrega.id}" data-archivo-url="${ultimaEntrega.archivo_url}">
+                       <button class="btn-kikibrows-outline w-100" id="btnEliminarEntrega" data-entrega-id="${ultimaEntrega.id}" data-archivo-url="${ultimaEntrega.archivo_url}">
                            <i class="fas fa-trash me-2"></i>Eliminar y subir otro video
                        </button>
                        <small class="text-muted d-block text-center mt-2">Solo puedes eliminar entregas que aún no han sido revisadas</small>
@@ -1388,7 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="upload-text">Arrastra aquí tu archivo o haz clic para seleccionar</div>
                 <div class="upload-hint">Formatos: Video (MP4, WEBM, MOV) o Imagen (PNG, JPG, WEBP)</div>
-                <button class="btn btn-primary upload-btn" type="button" id="selectVideoBtn">
+                <button class="btn-kikibrows upload-btn" type="button" id="selectVideoBtn">
                     <i class="fas fa-upload me-2"></i>Seleccionar Archivo
                 </button>
                 <input type="file" id="videoInput" accept="video/*,image/*,.mp4,.mov,.webm,.hevc,.mkv,.png,.jpg,.jpeg,.webp" hidden>

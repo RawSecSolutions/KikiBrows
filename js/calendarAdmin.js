@@ -140,10 +140,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td>${slot.cupos_ocupados}/${slot.cupos_maximos}</td>
                     <td>${getBadge(slot.estado)}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm text-white btn-icon me-1" style="background-color: #8A835A;" title="Ver Detalles y Links" data-action="view">
+                        <button class="btn-kikibrows btn-sm btn-icon me-1" title="Ver Detalles y Links" data-action="view">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger btn-icon" title="Eliminar" data-action="delete">
+                        <button class="btn-kikibrows-outline btn-sm btn-icon" title="Eliminar" data-action="delete">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>

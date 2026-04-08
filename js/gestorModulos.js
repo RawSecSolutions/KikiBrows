@@ -464,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <hr class="my-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <label class="form-label mb-0 fw-bold">Preguntas</label>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddQuestion">
+                        <button type="button" class="btn-kikibrows btn-sm" id="btnAddQuestion">
                             <i class="fas fa-plus me-1"></i>Agregar Pregunta
                         </button>
                     </div>

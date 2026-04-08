@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 </div>
                             </div>
 
-                            <button class="btn ${btnClass} w-100 mt-2" ${btnDisabled ? 'disabled' : `onclick="goToCourse('${curso.id}')"`}>
+                            <button class="btn-kikibrows w-100 mt-2" ${btnDisabled ? 'disabled' : `onclick="goToCourse('${curso.id}')"`}>
                                 <i class="fas ${btnIcon} me-2"></i>${btnText}
                             </button>
                         </div>

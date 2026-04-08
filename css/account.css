@@ -179,24 +179,27 @@ main, #content-area {
 }
 
 /* =======================================================
-   6. BOTONES UNIFICADOS
+   6. BOTONES UNIFICADOS - Estilo estándar KikiBrows
    ======================================================= */
 .btn-kiki,
 .btn-kiki-primary {
     background-color: var(--primary-color);
     color: var(--white);
     border: none;
-    padding: 10px 24px;
+    padding: 14px 40px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 0.9rem;
-    display: inline-block;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     transition: all 0.3s ease;
     text-align: center;
     font-weight: 400;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     font-family: 'Lato', sans-serif;
+    cursor: pointer;
 }
 
 .btn-kiki:hover,
@@ -209,25 +212,29 @@ main, #content-area {
 
 .btn-kiki-outline {
     background-color: transparent;
-    border: 1px solid var(--primary-color);
+    border: 2px solid var(--primary-color);
     color: var(--primary-color);
-    padding: 10px 24px;
+    padding: 12px 38px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 0.9rem;
-    display: inline-block;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     transition: all 0.3s ease;
     text-align: center;
     font-weight: 400;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     font-family: 'Lato', sans-serif;
+    cursor: pointer;
 }
 
 .btn-kiki-outline:hover {
     background-color: var(--primary-color);
     color: var(--white);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
 /* =======================================================

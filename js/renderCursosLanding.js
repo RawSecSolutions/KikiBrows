@@ -66,7 +66,7 @@ async function renderizarCursos() {
             <div class="text-center py-5 w-100">
                 <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                 <p class="text-muted">No se pudieron cargar los cursos. Intenta de nuevo más tarde.</p>
-                <button class="btn btn-outline-primary mt-2" onclick="window.renderizarCursos()">
+                <button class="btn-kikibrows mt-2" onclick="window.renderizarCursos()">
                     <i class="fas fa-refresh me-2"></i>Reintentar
                 </button>
             </div>
@@ -153,7 +153,7 @@ function crearTarjetaCursoHTML(curso) {
             <div class="producto-content">
                 <h3 class="producto-title">${curso.nombre}</h3>
                 <p class="producto-description">${descripcionCorta}</p>
-                <a href="course-preview.html?id=${curso.id}" class="register-button w-100 text-center d-block btn-ver-curso">Ver</a>
+                <a href="course-preview.html?id=${curso.id}" class="btn-kikibrows w-100 btn-ver-curso">Ver</a>
             </div>
         </div>
     `;
@@ -177,7 +177,7 @@ function crearTarjetaCurso(curso) {
         <div class="producto-content">
             <h3 class="producto-title">${curso.nombre}</h3>
             <p class="producto-description">${descripcionCorta}</p>
-            <a href="course-preview.html?id=${curso.id}" class="register-button w-100 text-center d-block btn-ver-curso">Ver</a>
+            <a href="course-preview.html?id=${curso.id}" class="btn-kikibrows w-100 btn-ver-curso">Ver</a>
         </div>
     `;
 

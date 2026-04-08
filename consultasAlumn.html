@@ -54,23 +54,31 @@
         }
 
         .btn-reserve {
-            background: var(--primary-color);
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
+            padding: 14px 40px;
+            border-radius: 4px;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 400;
         }
 
         .btn-reserve:hover {
-            background: var(--accent-color);
+            background-color: var(--accent-color);
             color: white;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
         }
 
         .btn-reserve:disabled {
             background: #ccc;
             cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
         .zoom-info-card {
@@ -89,17 +97,27 @@
             padding: 1.25rem;
         }
         .btn-zoom-link {
-            background: #2D8CFF;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.4rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 14px 40px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 400;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Lato', sans-serif;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         .btn-zoom-link:hover {
-            background: #1a6fdb;
+            background-color: var(--accent-color);
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
         }
         .estado-badge {
             display: inline-block;
@@ -216,8 +234,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-top">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-reserve" id="btn-confirm-reservation">Confirmar Reserva</button>
+                    <button type="button" class="btn-kikibrows-outline" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-kikibrows" id="btn-confirm-reservation">Confirmar Reserva</button>
                 </div>
             </div>
         </div>
@@ -231,7 +249,7 @@
                     <i class="fas fa-check-circle fa-4x mb-3" style="color: #28a745;"></i>
                     <h4 class="fw-bold mb-3">¡Reserva Confirmada!</h4>
                     <p class="text-muted mb-4">Tu consulta ha sido agendada exitosamente. Revisa tu correo para obtener el enlace de Zoom.</p>
-                    <button type="button" class="btn btn-reserve" data-bs-dismiss="modal">Entendido</button>
+                    <button type="button" class="btn-kikibrows" data-bs-dismiss="modal">Entendido</button>
                 </div>
             </div>
         </div>
@@ -250,7 +268,7 @@
                 </div>
                 <div class="modal-body text-center p-4">
                     <p class="text-muted mb-3">Haz click en el botón para unirte a tu clase por Zoom:</p>
-                    <a id="zoom-link-href" href="#" target="_blank" class="btn btn-zoom-link btn-lg mb-3">
+                    <a id="zoom-link-href" href="#" target="_blank" class="btn-kikibrows btn-lg mb-3">
                         <i class="fas fa-video me-2"></i>Unirse a Zoom
                     </a>
                     <div class="mt-3">

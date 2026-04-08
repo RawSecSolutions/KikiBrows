@@ -243,7 +243,7 @@ const RevisionesAdmin = {
                 <div class="text-center py-5">
                     <i class="fas fa-file fa-3x text-muted mb-3"></i>
                     <p class="text-muted">Vista previa no disponible para este tipo de archivo.</p>
-                    <a href="${archivoUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <a href="${archivoUrl}" target="_blank" class="btn-kikibrows btn-sm">
                         <i class="fas fa-external-link-alt me-2"></i>Abrir archivo
                     </a>
                 </div>

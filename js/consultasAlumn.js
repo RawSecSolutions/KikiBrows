@@ -210,7 +210,7 @@ async function loadSlots() {
                             ${slot.cupos_ocupados}/${slot.cupos_maximos} reservados
                         </div>
                         <button
-                            class="btn btn-reserve btn-sm"
+                            class="btn-kikibrows btn-sm"
                             onclick="window.selectSlot('${slot.id}')">
                             Reservar
                         </button>
@@ -279,10 +279,10 @@ async function loadMisReservas() {
                         <i class="fas fa-book me-1"></i>${reserva.curso_nombre_snapshot || 'Consulta General'}
                     </div>
                     ${zoomLink
-                        ? `<button class="btn btn-zoom-link btn-sm w-100" onclick="window.showZoomLink('${zoomLink}')">
+                        ? `<button class="btn-kikibrows btn-sm w-100" onclick="window.showZoomLink('${zoomLink}')">
                                <i class="fas fa-video me-2"></i>Ver link clase
                            </button>`
-                        : `<button class="btn btn-secondary btn-sm w-100" disabled>
+                        : `<button class="btn-kikibrows btn-sm w-100" disabled>
                                <i class="fas fa-clock me-2"></i>Link aún no disponible
                            </button>`
                     }

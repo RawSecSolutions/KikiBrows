@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${t.fecha}</td>
                 <td>${displayId} ${estadoBadge}</td>
                 <td>
-                    <button class="btn btn-sm text-white" style="background-color: #8A835A;"
+                    <button class="btn-kikibrows btn-sm"
                             data-id="${t.id}" data-bs-toggle="modal" data-bs-target="#transactionDetailModal">
                         <i class="fas fa-eye"></i>
                     </button>

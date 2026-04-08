@@ -384,7 +384,8 @@ function configurarBotonCompra(curso, acceso) {
     if (acceso.tieneAcceso) {
         btnComprar.innerHTML = '<i class="fas fa-play me-2"></i>Ir al Aula Virtual';
         btnComprar.classList.remove('btn-comprar-curso', 'btn-primary');
-        btnComprar.classList.add('btn', 'btn-success', 'w-100');
+        btnComprar.classList.add('btn-kikibrows');
+        btnComprar.style.width = '100%';
 
         btnComprar.onclick = () => {
             localStorage.setItem('activeCourseId', curso.id);
@@ -562,7 +563,7 @@ function mostrarError(mensaje) {
             <h4 class="alert-heading">¡Ups! Algo salió mal</h4>
             <p>${mensaje}</p>
             <hr>
-            <a href="index.html#cursos" class="btn btn-outline-danger mt-2">
+            <a href="index.html#cursos" class="btn-kikibrows-outline mt-2">
                 <i class="fas fa-arrow-left me-2"></i>Volver a Cursos
             </a>
         </div>

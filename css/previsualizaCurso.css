@@ -927,25 +927,33 @@
     transform: translateY(0);
 }
 
-/* Botón Volver */
+/* Botón Volver - Estilo estándar KikiBrows outline */
 .btn-volver-checkout {
     width: 100%;
-    background: transparent;
-    color: var(--text-grey);
-    border: 2px solid var(--border-light);
-    padding: 12px 25px;
-    border-radius: 25px;
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 14px 40px;
+    border-radius: 4px;
     font-size: 0.95rem;
-    font-weight: 500;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Lato', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .btn-volver-checkout:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background: rgba(138, 131, 90, 0.05);
+    background-color: var(--primary-color);
+    color: var(--white, #fff);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
 /* Responsive */

@@ -222,3 +222,122 @@ p {
 .site-footer a:hover {
     color: var(--primary-color);
 }
+
+/* ============================================
+   BOTÓN ESTÁNDAR DE LA PLATAFORMA
+   Estilo unificado basado en el botón de login/registro.
+   Usar .btn-kikibrows para todos los botones de acción.
+   Usar .btn-kikibrows-outline para botones secundarios.
+   NO aplicar a: .btn-pagar-banchile, .btn-comprar-curso
+   ============================================ */
+.btn-kikibrows {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 14px 40px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 400;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Lato', sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    line-height: 1.4;
+}
+
+.btn-kikibrows:hover {
+    background-color: var(--accent-color);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
+    text-decoration: none;
+}
+
+.btn-kikibrows:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(138, 131, 90, 0.2);
+}
+
+.btn-kikibrows:disabled,
+.btn-kikibrows.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Variante outline para botones secundarios (Cancelar, Volver, etc.) */
+.btn-kikibrows-outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 12px 38px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 400;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Lato', sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    line-height: 1.4;
+}
+
+.btn-kikibrows-outline:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
+    text-decoration: none;
+}
+
+.btn-kikibrows-outline:active {
+    transform: translateY(0);
+}
+
+/* Tamaño pequeño */
+.btn-kikibrows.btn-sm,
+.btn-kikibrows-outline.btn-sm {
+    padding: 10px 24px;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+}
+
+/* Tamaño grande */
+.btn-kikibrows.btn-lg,
+.btn-kikibrows-outline.btn-lg {
+    padding: 16px 48px;
+    font-size: 1rem;
+}
+
+/* Ancho completo */
+.btn-kikibrows.btn-block,
+.btn-kikibrows-outline.btn-block {
+    width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .btn-kikibrows,
+    .btn-kikibrows-outline {
+        padding: 12px 28px;
+        font-size: 0.9rem;
+        letter-spacing: 1.5px;
+    }
+    .btn-kikibrows.btn-sm,
+    .btn-kikibrows-outline.btn-sm {
+        padding: 8px 20px;
+        font-size: 0.8rem;
+    }
+}

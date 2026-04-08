@@ -205,7 +205,7 @@ function mostrarError(msg) {
             <i class="fas fa-exclamation-triangle" style="color: #E57373;"></i>
             <h3>Error</h3>
             <p>${msg}</p>
-            <a href="index.html#cursos" class="btn btn-primary mt-3">Volver a Cursos</a>
+            <a href="index.html#cursos" class="btn-kikibrows mt-3">Volver a Cursos</a>
         </div>
     `;
     document.getElementById('cursoNombre').textContent = 'Error';

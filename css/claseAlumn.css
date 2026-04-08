@@ -754,36 +754,51 @@ body {
     z-index: 1030;
 }
 
+/* btn-prev y btn-next ahora usan .btn-kikibrows / .btn-kikibrows-outline de layout.css */
 .btn-nav {
-    padding: 10px 24px;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.2s;
+    padding: 14px 40px;
+    font-weight: 400;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .btn-prev {
-    background: var(--light-bg);
-    color: var(--text-dark);
-    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
 .btn-prev:hover:not(:disabled) {
-    background: #e9ecef;
+    background-color: var(--primary-color);
+    color: var(--white, #fff);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
 .btn-next {
-    background: var(--primary-color);
+    background-color: var(--primary-color);
     color: white;
     border: none;
 }
 
 .btn-next:hover:not(:disabled) {
-    background: var(--accent-color);
+    background-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
 .btn-nav:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .nav-center {

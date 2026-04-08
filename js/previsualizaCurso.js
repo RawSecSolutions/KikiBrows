@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas fa-exclamation-triangle" style="color: #E57373;"></i>
                 <h3>Error</h3>
                 <p>${msg}</p>
-                <a href="gestionCursos.html" class="btn btn-primary mt-3">Volver</a>
+                <a href="gestionCursos.html" class="btn-kikibrows mt-3">Volver</a>
             </div>
         `;
         document.getElementById('cursoNombre').textContent = 'Error';

@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="d-flex flex-column align-items-center justify-content-center text-center py-5" style="grid-column: 1 / -1;">
                         <i class="fas fa-folder-open fs-1 text-muted mb-3 d-block"></i>
                         <p class="text-muted">No hay cursos creados aún.</p>
-                        <a href="creaCurso.html" class="btn btn-outline-secondary mt-3">
+                        <a href="creaCurso.html" class="btn-kikibrows mt-3">
                             <i class="fas fa-plus me-2"></i>Crear primer curso
                         </a>
                     </div>
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="d-flex flex-column align-items-center justify-content-center text-center py-5" style="grid-column: 1 / -1;">
                     <i class="fas fa-exclamation-triangle fs-1 text-danger mb-3 d-block"></i>
                     <p class="text-danger">Error al cargar los cursos</p>
-                    <button class="btn btn-outline-primary mt-2" onclick="location.reload()">
+                    <button class="btn-kikibrows mt-2" onclick="location.reload()">
                         <i class="fas fa-sync me-2"></i>Reintentar
                     </button>
                 </div>
@@ -233,10 +233,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isActive = i === currentPage;
             paginationHTML += `
                 <li class="page-item ${isActive ? 'active' : ''}">
-                    <a class="page-link ${isActive ? 'text-white' : ''}"
+                    <a class="${isActive ? 'btn-kikibrows' : 'btn-kikibrows-outline'} btn-sm"
                        href="#"
-                       data-page="${i}"
-                       style="${isActive ? 'background-color: #8A835A; border-color: #8A835A;' : 'color: #8A835A;'}">
+                       data-page="${i}">
                         ${i}
                     </a>
                 </li>

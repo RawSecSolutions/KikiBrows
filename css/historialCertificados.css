@@ -49,37 +49,55 @@ h1 {
     align-items: center;
 }
 
-/* Estilos de Botones */
+/* Botones - Estilo estándar KikiBrows */
 .btn-kiki-primary {
     background-color: var(--primary-color, #8A835A);
     color: var(--white, #FFFFFF);
     border: none;
-    padding: 8px 20px;
+    padding: 14px 40px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
+    font-size: 0.95rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Lato', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .btn-kiki-primary:hover {
     background-color: var(--accent-color, #6B664A);
     color: var(--white, #FFFFFF);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
 .btn-kiki-outline {
     background-color: transparent;
-    color: #4A4A4A;
-    border: 1px solid #4A4A4A;
-    padding: 8px 20px;
+    color: var(--primary-color, #8A835A);
+    border: 2px solid var(--primary-color, #8A835A);
+    padding: 12px 38px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: all 0.3s;
+    font-size: 0.95rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Lato', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .btn-kiki-outline:hover {
-    background-color: #4A4A4A;
-    color: #fff;
+    background-color: var(--primary-color, #8A835A);
+    color: var(--white, #fff);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 131, 90, 0.3);
 }
 
 /* Ajustes Responsivos */

@@ -130,7 +130,7 @@ const UI = {
                         <h5 class="fw-bold">${course.title}</h5>
                         <p class="text-muted small">${course.currentModule}</p>
                         <div class="progress-custom mb-3"><div class="progress-fill" style="width: ${course.progress}%;"></div></div>
-                        <button onclick="UI.selectCourse('${course.id}')" class="btn btn-dark w-100 rounded-pill" style="background:var(--primary-color); border:none;">Entrar al Curso</button>
+                        <button onclick="UI.selectCourse('${course.id}')" class="btn-kikibrows" style="width:100%;">Entrar al Curso</button>
                     </div>
                 </div>
             </div>`).join('');
