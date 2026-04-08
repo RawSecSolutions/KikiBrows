@@ -220,6 +220,7 @@ body {
     min-height: 100vh;
     overflow: visible !important;
     padding: 3rem 1.5rem !important;
+    background-color: var(--light-bg);
 }
 
 /* Carrusel de cursos */
