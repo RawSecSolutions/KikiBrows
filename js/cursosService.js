@@ -373,32 +373,8 @@ export const CursosService = {
         }
     },
     
-    /**
-     * Registrar una transacción de compra
-     */
-    async registrarTransaccion(transaccionData) {
-        try {
-            const { data, error } = await supabase
-                .from('transacciones')
-                .insert([{
-                    usuario_id: transaccionData.usuarioId,
-                    curso_id: transaccionData.cursoId,
-                    monto: transaccionData.monto,
-                    estado: transaccionData.estado || 'PENDIENTE',
-                    metodo_pago: transaccionData.metodoPago,
-                    codigo_autorizacion: transaccionData.codigoAutorizacion,
-                    gateway_token: transaccionData.gatewayToken
-                }])
-                .select()
-                .single();
-
-            if (error) throw error;
-            return { success: true, data };
-        } catch (error) {
-            console.error('Error al registrar transacción:', error);
-            return { success: false, error };
-        }
-    },
+    // registrarTransaccion eliminada: las transacciones se crean
+    // exclusivamente en Edge Functions server-side
 
     // ==================== ENTREGAS ====================
 
