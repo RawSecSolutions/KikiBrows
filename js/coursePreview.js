@@ -263,9 +263,13 @@ function cargarHero(curso) {
     if (descripcionEl) descripcionEl.textContent = curso.descripcion || '';
 
     if (portadaEl) {
-        // IMPORTANTE: Usamos curso.portada_url
         if (curso.portada_url) {
-            portadaEl.innerHTML = `<img src="${curso.portada_url}" alt="${curso.nombre}" style="width:100%; height:100%; object-fit:cover;">`;
+            const img = document.createElement('img');
+            img.src = curso.portada_url;
+            img.alt = curso.nombre;
+            img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+            portadaEl.innerHTML = '';
+            portadaEl.appendChild(img);
         } else {
             portadaEl.innerHTML = '<div class="bg-light d-flex align-items-center justify-content-center h-100"><i class="fas fa-image fa-3x text-muted"></i></div>';
         }
