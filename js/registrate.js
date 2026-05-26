@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorText = formGroup.querySelector('.invalid-feedback');
             if (errorText) errorText.remove();
         });
+        const errorPolitica = document.getElementById('error-politica');
+        if (errorPolitica) errorPolitica.style.display = 'none';
     };
 
     const mostrarErrorCodigo = (mensaje) => {
@@ -85,6 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const emailInput = document.getElementById('email');
             const passInput = document.getElementById('password');
             const confirmPassInput = document.getElementById('confirm-password');
+            const aceptaPolitica = document.getElementById('acepto-politica');
+            const errorPolitica = document.getElementById('error-politica');
 
             const nombre = nombreInput.value.trim();
             const apellido = apellidoInput.value.trim();
@@ -92,6 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const pass = passInput.value;
             const confirmPass = confirmPassInput.value;
             let hayErrores = false;
+
+            // CASO 0: CONSENTIMIENTO POLÍTICA DE PRIVACIDAD
+            if (aceptaPolitica && !aceptaPolitica.checked) {
+                if (errorPolitica) errorPolitica.style.display = 'block';
+                hayErrores = true;
+            } else if (errorPolitica) {
+                errorPolitica.style.display = 'none';
+            }
 
             // CASO 1: CAMPOS VACÍOS
             if (!nombre) {
