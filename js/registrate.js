@@ -157,13 +157,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // REGISTRO CON SUPABASE
+                // Los campos de consentimiento se pasan en metadata para que
+                // el trigger handle_new_user los escriba directamente al crear el perfil
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password: pass,
                     options: {
                         data: {
                             first_name: nombre,
-                            last_name: apellido
+                            last_name: apellido,
+                            acepta_terminos: true,
+                            version_terminos: '1.0',
+                            descripcion_consentimiento: 'Acepto el tratamiento de mis datos personales (nombre, apellido y correo electrónico) por parte de KikiBrows, con la finalidad de gestionar mi cuenta de usuario, registrar el progreso en cursos y emitir certificados de finalización. Los datos de pago son procesados por el proveedor de pagos correspondiente y no son almacenados por KikiBrows. No se cederán datos a terceros fuera de lo descrito. Versión 1.0 - Mayo 2026.'
                         }
                     }
                 });
@@ -232,22 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (error) throw error;
-
-                // Guardar consentimiento en profiles
-                // verifyOtp devuelve sesión activa, auth.uid() ya coincide con data.user.id
-                const { error: consentError } = await supabase
-                    .from('profiles')
-                    .update({
-                        acepta_terminos: true,
-                        fecha_consentimiento: new Date().toISOString(),
-                        version_terminos: '1.0',
-                        descripcion_consentimiento: 'Acepto el tratamiento de mis datos personales (nombre, apellido y correo electrónico) por parte de KikiBrows, con la finalidad de gestionar mi cuenta de usuario, registrar el progreso en cursos y emitir certificados de finalización. Los datos de pago son procesados por el proveedor de pagos correspondiente y no son almacenados por KikiBrows. No se cederán datos a terceros fuera de lo descrito. Versión 1.0 - Mayo 2026.'
-                    })
-                    .eq('id', data.user.id);
-
-                if (consentError) {
-                    console.error('Error guardando consentimiento:', consentError);
-                }
 
                 // Verificación exitosa
                 localStorage.removeItem('tempUserEmail');
