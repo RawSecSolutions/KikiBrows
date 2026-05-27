@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorText = formGroup.querySelector('.invalid-feedback');
             if (errorText) errorText.remove();
         });
+        const errorPolitica = document.getElementById('error-politica');
+        if (errorPolitica) errorPolitica.style.display = 'none';
     };
 
     const mostrarErrorCodigo = (mensaje) => {
@@ -85,6 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const emailInput = document.getElementById('email');
             const passInput = document.getElementById('password');
             const confirmPassInput = document.getElementById('confirm-password');
+            const aceptaPolitica = document.getElementById('acepto-politica');
+            const errorPolitica = document.getElementById('error-politica');
 
             const nombre = nombreInput.value.trim();
             const apellido = apellidoInput.value.trim();
@@ -92,6 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const pass = passInput.value;
             const confirmPass = confirmPassInput.value;
             let hayErrores = false;
+
+            // CASO 0: CONSENTIMIENTO POLÍTICA DE PRIVACIDAD
+            if (aceptaPolitica && !aceptaPolitica.checked) {
+                if (errorPolitica) errorPolitica.style.display = 'block';
+                hayErrores = true;
+            } else if (errorPolitica) {
+                errorPolitica.style.display = 'none';
+            }
 
             // CASO 1: CAMPOS VACÍOS
             if (!nombre) {
@@ -145,13 +157,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // REGISTRO CON SUPABASE
+                // Los campos de consentimiento se pasan en metadata para que
+                // el trigger handle_new_user los escriba directamente al crear el perfil
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password: pass,
                     options: {
                         data: {
                             first_name: nombre,
-                            last_name: apellido
+                            last_name: apellido,
+                            acepta_terminos: true,
+                            version_terminos: '1.0',
+                            descripcion_consentimiento: 'Acepto el tratamiento de mis datos personales (nombre, apellido y correo electrónico) por parte de KikiBrows, con la finalidad de gestionar mi cuenta de usuario, registrar el progreso en cursos y emitir certificados de finalización. Los datos de pago son procesados por el proveedor de pagos correspondiente y no son almacenados por KikiBrows. No se cederán datos a terceros fuera de lo descrito. Versión 1.0 - Mayo 2026.'
                         }
                     }
                 });

@@ -417,9 +417,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const updateData = { first_name: firstName, last_name: lastName };
-                if (!roleEl.disabled) {
-                    updateData.role = roleEl.value;
-                }
 
                 const { error } = await supabase
                     .from('profiles')
@@ -427,6 +424,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     .eq('id', id);
 
                 if (error) throw new Error('Error al actualizar perfil: ' + error.message);
+
+                if (!roleEl.disabled && roleEl.value !== user.role) {
+                    const { error: roleError } = await supabase.rpc('admin_set_role', {
+                        target_user_id: id,
+                        new_role: roleEl.value
+                    });
+                    if (roleError) throw new Error('Error al actualizar rol: ' + roleError.message);
+                }
 
                 const selectedCourse = courseSelect.value;
                 if (selectedCourse) {

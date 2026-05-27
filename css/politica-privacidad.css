@@ -1,0 +1,51 @@
+/* css/politica-privacidad.css */
+
+/* Override global h1 (centered, clamp grande) para título de página */
+.politica-titulo {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    text-align: left;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0;
+}
+
+/* Override global h2 (centered, clamp grande) para títulos de sección */
+.politica-seccion-titulo {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-align: left;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    border-color: var(--border-light) !important;
+}
+
+/* Border del header con color del sistema */
+.politica-header {
+    border-color: var(--border-light) !important;
+}
+
+/* Link "Volver al inicio" */
+.politica-volver {
+    color: var(--primary-color);
+    text-decoration: none;
+    letter-spacing: 0.3px;
+    transition: color 0.2s ease;
+}
+
+.politica-volver:hover {
+    color: var(--accent-color);
+}
+
+/* Links inline dentro del contenido */
+.politica-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.politica-link:hover {
+    color: var(--accent-color);
+}

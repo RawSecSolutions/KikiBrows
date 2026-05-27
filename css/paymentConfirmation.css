@@ -369,6 +369,16 @@
     letter-spacing: 0.5px;
 }
 
+.footer-minimal a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-minimal a:hover {
+    color: var(--primary-color);
+}
+
 /* ============================================
    RESPONSIVE
    ============================================ */
