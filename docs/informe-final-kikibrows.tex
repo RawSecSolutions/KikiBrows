@@ -1,0 +1,751 @@
+% ============================================================
+%  Informe Final de Entrega -- Plataforma KikiBrows
+%  RAWSEC SOLUTIONS SpA  ->  KikiBrows SpA
+%  Compilar con: pdflatex (Overleaf compatible)
+% ============================================================
+
+\documentclass[a4paper,11pt]{article}
+
+% ── Codificación y lenguaje ─────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+
+% ── Layout y tipografía ─────────────────────────────────────
+\usepackage{geometry}
+\geometry{a4paper, top=25mm, bottom=28mm, left=25mm, right=25mm}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ── Tablas ──────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ── Color ───────────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{mainblack}{RGB}{17,17,17}
+\definecolor{gold}{RGB}{184,150,62}
+\definecolor{darkgray}{RGB}{44,44,44}
+\definecolor{midgray}{RGB}{85,85,85}
+\definecolor{bordergray}{RGB}{210,210,210}
+\definecolor{softbg}{RGB}{247,247,245}
+\definecolor{goldbg}{RGB}{245,237,217}
+\definecolor{warnbg}{RGB}{255,244,236}
+\definecolor{warnorange}{RGB}{192,90,0}
+\definecolor{checkgreen}{RGB}{30,110,30}
+
+% ── Encabezados de sección ──────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\large\bfseries\color{mainblack}}
+  {\color{gold}\thesection.}{0.5em}{}
+  [\vspace{-4pt}{\color{gold}\rule{\linewidth}{1.5pt}}\vspace{2pt}]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{darkgray}}
+  {\thesubsection}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\small\bfseries\color{midgray}}
+  {}{0em}{}
+
+\titlespacing*{\section}{0pt}{18pt}{6pt}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+\titlespacing*{\subsubsection}{0pt}{8pt}{2pt}
+
+% ── Cabecera y pie de página ────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{midgray}Informe Final de Entrega --- Plataforma KikiBrows}
+\fancyhead[R]{\small\color{midgray}Confidencial}
+\fancyfoot[C]{\small\color{midgray}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\headrule}{\color{bordergray}\hrule width\headwidth height\headrulewidth}
+
+% ── Cajas informativas ──────────────────────────────────────
+\usepackage{mdframed}
+\newmdenv[
+  backgroundcolor=goldbg,
+  linecolor=gold, linewidth=3pt,
+  topline=false, bottomline=false, rightline=false,
+  innertopmargin=10pt, innerbottommargin=10pt,
+  innerleftmargin=14pt, innerrightmargin=12pt,
+  skipabove=10pt, skipbelow=8pt,
+]{infobox}
+
+\newmdenv[
+  backgroundcolor=warnbg,
+  linecolor=warnorange, linewidth=3pt,
+  topline=false, bottomline=false, rightline=false,
+  innertopmargin=10pt, innerbottommargin=10pt,
+  innerleftmargin=14pt, innerrightmargin=12pt,
+  skipabove=10pt, skipbelow=8pt,
+]{warnbox}
+
+% ── Listas ──────────────────────────────────────────────────
+\usepackage{enumitem}
+
+% ── Comandos de estado (para tablas) ────────────────────────
+\newcommand{\entregado}{\textcolor{checkgreen}{\textbf{Entregado}}}
+\newcommand{\operativo}{\textcolor{checkgreen}{\textbf{Operativo/a}}}
+\newcommand{\funcional}{\textcolor{checkgreen}{\textbf{Funcional}}}
+\newcommand{\pagado}{\textcolor{checkgreen}{\textbf{Pagado}}}
+\newcommand{\vigente}{\textcolor{checkgreen}{\textbf{Vigente}}}
+\newcommand{\adicional}{\textcolor{gold}{\textbf{Adicional}}}
+\newcommand{\pendiente}{\textcolor{warnorange}{\textbf{Pendiente}}}
+
+% ── Hyperref ────────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=gold,
+  urlcolor=gold,
+  pdftitle={Informe Final de Entrega -- Plataforma KikiBrows},
+  pdfauthor={RAWSEC SOLUTIONS SpA},
+}
+
+% ============================================================
+\begin{document}
+
+% ══════════════════════════════════════════════════════════
+%  PORTADA
+% ══════════════════════════════════════════════════════════
+\thispagestyle{empty}
+\vspace*{18mm}
+
+\begin{center}
+  {\small\bfseries\color{gold}\MakeUppercase{Informe t\'ecnico de entrega}}\\[14pt]
+  {\LARGE\bfseries\color{mainblack}
+    Plataforma de Cursos Profesionales\\[6pt]KikiBrows}\\[12pt]
+  {\large\color{midgray}Informe Final de Entrega y Cierre de Proyecto}\\[28pt]
+  {\color{bordergray}\rule{0.45\linewidth}{0.4pt}}\\[22pt]
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}ll@{}}
+  \textcolor{midgray}{\small Prestador}         & \textbf{RAWSEC SOLUTIONS SpA} \\
+  \textcolor{midgray}{\small RUT Prestador}      & 78.282.952-1 \\[4pt]
+  \textcolor{midgray}{\small Cliente}            & \textbf{KikiBrows SpA} \\
+  \textcolor{midgray}{\small RUT Cliente}        & 78.074.586-K \\[4pt]
+  \textcolor{midgray}{\small Contrato de origen} & 17 de abril de 2026 \\
+  \textcolor{midgray}{\small Fecha del informe}  & Junio de 2026 \\
+  \textcolor{midgray}{\small Versi\'on}          & 1.0 \\
+  \textcolor{midgray}{\small Estado}             & \textcolor{checkgreen}{\textbf{Entregado}} \\
+\end{tabular}
+\end{center}
+
+\vfill
+
+\begin{center}
+  {\color{bordergray}\rule{\linewidth}{0.3pt}}\\[5pt]
+  {\small\color{midgray}
+    Documento confidencial de uso exclusivo entre las partes contratantes.\\
+    RAWSEC SOLUTIONS SpA --- KikiBrows SpA --- Junio 2026}
+\end{center}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════
+%  TABLA DE CONTENIDOS
+% ══════════════════════════════════════════════════════════
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════
+%  1. RESUMEN EJECUTIVO
+% ══════════════════════════════════════════════════════════
+\section{Resumen Ejecutivo}
+
+El presente informe documenta la entrega formal de la plataforma web de cursos profesionales
+desarrollada para \textbf{KikiBrows SpA} por \textbf{RAWSEC SOLUTIONS SpA}, en cumplimiento
+de las obligaciones establecidas en el Contrato de Prestaci\'on de Servicios Inform\'aticos
+suscrito el 17 de abril de 2026 (Cl\'ausula SEGUNDO N\textdegree{}3).
+
+Se contrató el dise\~no, programaci\'on, despliegue y aseguramiento de una plataforma web
+integral orientada a la venta y gesti\'on de cursos de est\'etica profesional, incluyendo la
+integraci\'on de un sistema de pagos electr\'onicos. Al momento de la emisi\'on de este
+informe, la plataforma se encuentra \textbf{completamente desarrollada y operativa}, con todas
+las funcionalidades acordadas implementadas, probadas y disponibles para uso en producci\'on.
+
+El sistema de pagos fue integrado con la pasarela \textbf{Banchile Pagos Web Checkout},
+conforme a lo acordado entre las partes como servicio adicional (\$300.000). El desarrollo
+est\'a finalizado y probado en ambiente sandbox. La activaci\'on en producci\'on est\'a
+condicionada a que el cliente provea las credenciales de producci\'on de su cuenta Banchile
+Empresas.
+
+\begin{infobox}
+\textbf{Base contractual de este informe:} La Cl\'ausula CUARTO (addendum) establece que el
+pago de \$300.000 por el servicio de integraci\'on de sistema de pagos electr\'onicos se
+realiza <<\'integramente al finalizar el servicio>>. El presente informe acredita dicho
+t\'ermino. La Cl\'ausula TERCERO N\textdegree{}2 obliga al cliente a facilitar al prestador
+las credenciales de terceros requeridas para la integraci\'on.
+\end{infobox}
+
+
+% ══════════════════════════════════════════════════════════
+%  2. ALCANCE ENTREGADO
+% ══════════════════════════════════════════════════════════
+\section{Alcance Entregado vs.\ Propuesta Aprobada}
+
+La siguiente tabla compara las funcionalidades incluidas en la propuesta formal aprobada
+(noviembre 2025) con el estado de entrega al cierre del proyecto.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{L{4.5cm} C{2cm} C{2.3cm} L{5.5cm}}
+\toprule
+\textbf{Funcionalidad} & \textbf{Propuesto} & \textbf{Estado} & \textbf{Observaci\'on} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+Panel de administraci\'on & S\'i & \entregado &
+  Cursos, m\'odulos, usuarios, transacciones, feedback y consultas en vivo. \\
+
+Portal del estudiante & S\'i & \entregado &
+  Registro, acceso a cursos, quizzes, tareas, certificados. \\
+
+Base de datos Supabase & S\'i & \entregado &
+  12 tablas relacionales con Row Level Security activo. \\
+
+Almacenamiento de videos & Bunny.net & \entregado &
+  Por acuerdo con el cliente se utiliz\'o \textbf{Supabase Storage}
+  en lugar de Bunny.net, sin diferencia de costo. \\
+
+M\'odulos te\'oricos, pr\'acticos y bonus & S\'i & \entregado &
+  Estructura modular flexible: texto, video, documento y quiz. \\
+
+Sistema de quizzes por clase & S\'i & \entregado &
+  Registro de intentos, calificaci\'on y aprobaci\'on por umbral. \\
+
+Entregas de tareas y correcci\'on & S\'i & \entregado &
+  Archivos adjuntos, feedback del instructor y calificaci\'on. \\
+
+Certificaci\'on digital autom\'atica & S\'i & \entregado &
+  Generaci\'on autom\'atica al completar el 100\% del curso.
+  C\'odigo de verificaci\'on \'unico por certificado. \\
+
+Clase en vivo mensual con agendamiento & S\'i & \entregado &
+  Gesti\'on de slots, reservas y reuni\'on Zoom autom\'atica. \\
+
+Sistema de pagos automatizados & WebPay/Flow/Stripe & \adicional &
+  Se integr\'o \textbf{Banchile Pagos Web Checkout}.
+  Ver secci\'on~\ref{sec:pagos}. \\
+
+Historial de compras y comprobantes PDF & S\'i & \entregado &
+  Descarga de comprobante con detalle completo de transacci\'on. \\
+
+Seguridad e informe de vulnerabilidades & S\'i & \entregado &
+  Ver secci\'on~\ref{sec:seguridad}. \\
+
+Pol\'itica de privacidad y consentimiento & Impl\'icito & \entregado &
+  P\'agina dedicada con registro de aceptaci\'on por usuario en base de datos. \\
+
+3 meses de soporte t\'ecnico & S\'i & \vigente &
+  Vigente conforme a los t\'erminos de la propuesta aprobada. \\
+
+\end{longtable}
+
+
+\subsection*{\'Epicas de desarrollo (Taiga)}
+
+El proyecto fue gestionado con las siguientes \'epicas de desarrollo. Las primeras seis
+corresponden al alcance del plan base (\$800.000); la \'epica \#9 corresponde al
+servicio adicional de integraci\'on de pagos (\$300.000).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{C{1cm} L{8cm} C{4cm}}
+\toprule
+\textbf{N\textdegree} & \textbf{\'Epica} & \textbf{Estado} \\
+\midrule
+\#1  & Autenticaci\'on y Gesti\'on de Perfil         & Completado \\
+\#2  & Panel Admin                                     & Completado \\
+\#3  & Estructura de Cursos                            & Completado \\
+\#4  & Gesti\'on de contenido de M\'odulos / clases   & Completado \\
+\#5  & Landing Page y E-commerce                      & Completado \\
+\#6  & Plataforma de aprendizaje                      & Completado \\
+\#9  & Integraci\'on sistemas de Pago                 & Servicio adicional \\
+\#12 & Testing, Documentaci\'on y Deployment          & Entregado con este informe \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+% ══════════════════════════════════════════════════════════
+%  3. ARQUITECTURA DEL SISTEMA
+% ══════════════════════════════════════════════════════════
+\section{Arquitectura del Sistema}
+
+\subsection{Stack tecnol\'ogico}
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{L{3.2cm} L{4.5cm} L{7cm}}
+\toprule
+\textbf{Capa} & \textbf{Tecnolog\'ia} & \textbf{Descripci\'on} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+Frontend &
+  HTML5 / CSS3 / JavaScript ES6 &
+  Interfaz web sin framework adicional. Bootstrap~5.3 para componentes UI. \\
+
+Base de datos &
+  Supabase (PostgreSQL) &
+  BD relacional con Row Level Security y funciones RPC personalizadas. \\
+
+Autenticaci\'on &
+  Supabase Auth &
+  JWT con verificaci\'on OTP por email. Sin contrase\~nas almacenadas en el cliente. \\
+
+Almacenamiento &
+  Supabase Storage &
+  Videos, im\'agenes y archivos de tareas. Acceso controlado por RLS. \\
+
+L\'ogica de servidor &
+  Supabase Edge Functions &
+  Procesamiento seguro de pagos y notificaciones; las claves privadas
+  nunca se exponen al navegador. \\
+
+Email transaccional &
+  Resend &
+  Env\'io de comprobantes de compra por correo electr\'onico. \\
+
+Videollamadas &
+  Zoom API &
+  Creaci\'on autom\'atica de reuniones al confirmar consulta en vivo. \\
+
+Generaci\'on de PDF &
+  pdfmake &
+  Comprobantes de compra descargables desde el historial del estudiante. \\
+
+Pasarela de pago &
+  Banchile Pagos &
+  Integrada v\'ia Edge Functions. Ver secci\'on~\ref{sec:pagos}. \\
+
+\end{longtable}
+
+\subsection{Componentes del sistema}
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{L{3.8cm} L{3.8cm} L{7cm}}
+\toprule
+\textbf{Componente} & \textbf{Base tecnol\'ogica} & \textbf{Funci\'on} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+Portal del Estudiante &
+  Frontend p\'ublico &
+  Registro, acceso a cursos, clases, quizzes, entregas, certificados
+  y agendamiento de consultas. \\
+
+Panel de Administraci\'on &
+  Frontend privado (rol admin) &
+  Gesti\'on completa de cursos, usuarios, transacciones y consultas en vivo. \\
+
+API / Base de datos &
+  Supabase PostgreSQL + Auth + Storage &
+  Fuente \'unica de verdad: usuarios, progreso, pagos y contenido. \\
+
+Motor de pagos &
+  Edge Functions (servidor) &
+  Inicia y verifica sesiones con Banchile; actualiza transacciones
+  y env\'ia comprobante por email. \\
+
+Servicio de email &
+  Resend v\'ia Edge Function &
+  Correos transaccionales de comprobante de compra. \\
+
+Servicio de videollamadas &
+  Zoom API v\'ia Edge Function &
+  Creaci\'on autom\'atica de reuniones Zoom al confirmar consultas. \\
+
+\end{longtable}
+
+
+% ══════════════════════════════════════════════════════════
+%  4. FUNCIONALIDADES ENTREGADAS
+% ══════════════════════════════════════════════════════════
+\section{Funcionalidades Entregadas}
+
+\subsection{Portal del Estudiante}
+
+\begin{itemize}[leftmargin=1.6em, itemsep=3pt]
+  \item \textbf{Registro e inicio de sesi\'on con OTP:}
+        verificaci\'on por correo electr\'onico; sin contrase\~na almacenada en el cliente.
+  \item \textbf{Cat\'alogo de cursos con preview:}
+        presentaci\'on del contenido antes de la compra, sin necesidad de cuenta registrada.
+  \item \textbf{Reproductor de clases con tracking de progreso:}
+        seguimiento segundo a segundo; el sistema recuerda el punto exacto
+        donde qued\'o la alumna.
+  \item \textbf{Quizzes interactivos por clase:}
+        registro de intentos, calificaci\'on autom\'atica y umbral de aprobaci\'on configurable.
+  \item \textbf{Env\'io de tareas con archivos adjuntos:}
+        m\'ultiples intentos; el instructor entrega feedback y calificaci\'on desde el panel.
+  \item \textbf{Certificaci\'on digital autom\'atica:}
+        se genera al completar el 100\,\% de las clases y aprobar todas las evaluaciones.
+        Incluye c\'odigo de verificaci\'on \'unico por certificado.
+  \item \textbf{Historial de compras y comprobantes en PDF:}
+        descargable en cualquier momento desde la cuenta de la alumna.
+  \item \textbf{Agendamiento de consultas en vivo:}
+        visualizaci\'on de slots disponibles, reserva y enlace Zoom autom\'atico.
+  \item \textbf{Recuperaci\'on y reseteo de contrase\~na} mediante enlace por email.
+  \item \textbf{Pol\'itica de privacidad y consentimiento:}
+        aceptaci\'on expl\'icita con registro de fecha, versi\'on y descripci\'on
+        del consentimiento en la base de datos.
+\end{itemize}
+
+\subsection{Panel de Administraci\'on}
+
+\begin{itemize}[leftmargin=1.6em, itemsep=3pt]
+  \item \textbf{Gesti\'on de usuarios:}
+        crear cuentas, bloquear acceso, asignar cursos manualmente y cambiar
+        roles (alumna / administradora).
+  \item \textbf{Creaci\'on y edici\'on de cursos, m\'odulos y clases:}
+        estructura jer\'arquica flexible; soporta texto, video, documento descargable
+        y quiz en una misma clase.
+  \item \textbf{Subida de contenido multimedia:}
+        videos, im\'agenes de portada y documentos directamente desde el navegador.
+  \item \textbf{Vista previa de cursos} antes de publicar para el p\'ublico.
+  \item \textbf{Gesti\'on de transacciones:}
+        listado de pagos con filtros por estado, m\'etodo de pago y fecha.
+  \item \textbf{Calificaci\'on de entregas y feedback:}
+        revisi\'on de tareas enviadas, asignaci\'on de calificaci\'on y env\'io
+        de observaciones a la alumna.
+  \item \textbf{Gesti\'on de consultas en vivo:}
+        creaci\'on de slots de disponibilidad con integraci\'on autom\'atica a Zoom Meeting.
+  \item \textbf{Dashboard general} con acceso r\'apido a todas las \'areas del sistema.
+\end{itemize}
+
+\subsection{Sistema de Pagos --- Banchile Pagos Web Checkout}
+\label{sec:pagos}
+
+La plataforma integra \textbf{Banchile Pagos Web Checkout} como pasarela de cobro oficial.
+La integraci\'on fue acordada entre las partes como servicio adicional al desarrollo principal,
+con un valor de \$300.000.
+
+\subsubsection{Flujo t\'ecnico del proceso de pago}
+
+\begin{enumerate}[leftmargin=1.6em, itemsep=3pt]
+  \item La alumna selecciona un curso y hace clic en <<Comprar>>.
+  \item El frontend llama a la Edge Function \texttt{banchile-create-session},
+        que inicia la sesi\'on de pago en la API de Banchile usando las credenciales del servidor.
+  \item La alumna es redirigida al portal de pago de Banchile.
+  \item Al completar el pago, Banchile redirige a la plataforma con el token de resultado.
+  \item La Edge Function \texttt{banchile-check-session} verifica el estado,
+        actualiza la transacci\'on en la base de datos y activa la inscripci\'on al curso.
+  \item La Edge Function \texttt{send-receipt-email} env\'ia el comprobante por correo
+        electr\'onico a la alumna v\'ia Resend.
+\end{enumerate}
+
+\begin{warnbox}
+\textbf{Estado de activaci\'on en producci\'on:} El desarrollo e integraci\'on de Banchile
+est\'an completamente finalizados y probados en ambiente sandbox. La activaci\'on en
+producci\'on requiere que el cliente provea las \textbf{credenciales de producci\'on de su
+cuenta Banchile Empresas} (Client ID y Client Secret de producci\'on), conforme a la
+obligaci\'on establecida en la Cl\'ausula TERCERO N\textdegree{}2 del contrato
+(<<Facilitar el acceso a los servicios\ldots y cualquier otra herramienta de terceros
+requerida>>). Dichas credenciales no han sido entregadas al momento de emitir este informe.
+
+\medskip
+El servicio de integraci\'on ha sido prestado en su totalidad. El pago de
+\textbf{\$300.000} se encuentra pendiente de liquidaci\'on conforme al addendum
+de la Cl\'ausula CUARTO.
+\end{warnbox}
+
+\subsection{Otras Integraciones T\'ecnicas}
+
+\begin{itemize}[leftmargin=1.6em, itemsep=3pt]
+  \item \textbf{Zoom API:}
+        al confirmar una reserva de consulta en vivo, el sistema crea autom\'aticamente
+        una reuni\'on Zoom y entrega el enlace a la alumna.
+  \item \textbf{Resend:}
+        env\'io de comprobantes de compra por correo electr\'onico.
+  \item \textbf{Supabase Edge Functions:}
+        l\'ogica de servidor aislada; ninguna clave privada (Banchile, Zoom, Resend)
+        queda expuesta en el c\'odigo del lado del cliente.
+  \item \textbf{pdfmake:}
+        generaci\'on de comprobantes PDF descargables desde el historial de compras.
+\end{itemize}
+
+
+% ══════════════════════════════════════════════════════════
+%  5. MODELO DE DATOS
+% ══════════════════════════════════════════════════════════
+\section{Modelo de Datos}
+\label{sec:datos}
+
+La base de datos est\'a alojada en \textbf{Supabase (PostgreSQL)} y cuenta con 12~tablas
+principales, todas con \textbf{Row Level Security (RLS)} activo. El diagrama entidad-relaci\'on
+del dise\~no se incluye en el Ap\'endice~\ref{apx:diagrama}.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{L{3.8cm} L{10.8cm}}
+\toprule
+\textbf{Tabla} & \textbf{Descripci\'on funcional} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+\texttt{profiles} &
+  Datos extendidos del usuario: nombre, apellido, rol, estado de bloqueo
+  y registro de consentimiento de pol\'itica de privacidad
+  (fecha, versi\'on y descripci\'on). \\
+
+\texttt{cursos} &
+  Cursos disponibles: nombre, descripci\'on, portada, precio, duraci\'on
+  de acceso, estado de publicaci\'on y posici\'on en carrusel de la
+  landing page. \\
+
+\texttt{modulos} &
+  M\'odulos que componen cada curso, ordenados secuencialmente.
+  Soportan reordenamiento mediante drag \& drop. \\
+
+\texttt{clases} &
+  Lecciones dentro de un m\'odulo. Tipos: \texttt{VIDEO}, \texttt{PDF},
+  \texttt{TEXTO}, \texttt{QUIZ}, \texttt{PRACTICA}. Incluye tracking de
+  duraci\'on, orden y flag de aprobaci\'on obligatoria. \\
+
+\texttt{inscripciones} &
+  Acceso de una alumna a un curso: estado, fecha de expiraci\'on,
+  porcentaje de progreso, completitud y origen del acceso
+  (\texttt{COMPRA}, \texttt{ASIGNACION\_ADMIN}, \texttt{REGALO}). \\
+
+\texttt{transacciones} &
+  Registro completo de pagos: monto, estado (\texttt{PENDIENTE} /
+  \texttt{PAGADO} / \texttt{FALLIDO}), m\'etodo de pago, token de
+  pasarela, c\'odigo de autorizaci\'on y folio visual auto-incremental. \\
+
+\texttt{progreso\_clases} &
+  Avance por clase: segundo actual en video, estado de completado,
+  fecha de completado y \'ultimo acceso. \\
+
+\texttt{intentos\_quiz} &
+  Intentos de una alumna en un quiz: respuestas (JSONB), calificaci\'on
+  y resultado de aprobaci\'on. \\
+
+\texttt{entregas} &
+  Tareas enviadas: archivo adjunto, tipo, comentario de la alumna,
+  estado de revisi\'on (\texttt{PENDIENTE} / \texttt{APROBADA} /
+  \texttt{RECHAZADA}), feedback del instructor, calificaci\'on
+  y n\'umero de intento. \\
+
+\texttt{certificados} &
+  Certificados digitales emitidos: nombre de alumna y curso (snapshot
+  inmutable), URL de descarga y c\'odigo de verificaci\'on \'unico.
+  Se genera autom\'aticamente cuando \texttt{porcentaje\_progreso = 100}. \\
+
+\texttt{consulta\_slots} &
+  Disponibilidad de clases en vivo: fecha/hora inicio y fin, cupos
+  m\'aximos y ocupados, estado, Zoom Meeting ID y URL de host. \\
+
+\texttt{consultas\_reservas} &
+  Reservas de consultas por alumna: referencia al slot, al curso,
+  estado de la reserva y token de confirmaci\'on. \\
+
+\end{longtable}
+
+
+% ══════════════════════════════════════════════════════════
+%  6. SEGURIDAD IMPLEMENTADA
+% ══════════════════════════════════════════════════════════
+\section{Seguridad Implementada}
+\label{sec:seguridad}
+
+A continuaci\'on se detallan las medidas de seguridad implementadas,
+conforme a la Cl\'ausula SEGUNDO N\textdegree{}2 del contrato.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{L{4cm} L{10.5cm}}
+\toprule
+\textbf{Medida} & \textbf{Descripci\'on e implementaci\'on} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+Autenticaci\'on JWT con OTP &
+  Sesiones gestionadas por Supabase Auth mediante tokens JWT de corta
+  duraci\'on. El inicio de sesi\'on requiere verificaci\'on OTP enviada
+  al correo, eliminando contrase\~nas est\'aticas como vector de ataque. \\
+
+Row Level Security (RLS) &
+  Todas las tablas tienen pol\'iticas RLS activas. Un usuario autenticado
+  solo puede leer y modificar sus propios registros; las operaciones de
+  administrador requieren rol expl\'icito verificado en base de datos. \\
+
+Claves privadas en servidor &
+  Las credenciales de Banchile Pagos, Zoom y Resend est\'an almacenadas
+  exclusivamente como variables de entorno en las Edge Functions.
+  Nunca se exponen al navegador del cliente. \\
+
+Verificaci\'on de sesi\'on &
+  Todas las p\'aginas protegidas verifican la validez del token antes
+  de cargar contenido. Una sesi\'on expirada o inexistente redirige
+  al login autom\'aticamente. \\
+
+Protecci\'on Open Redirect &
+  Se identificaron y corrigieron redirecciones abiertas en el flujo de
+  autenticaci\'on. Los par\'ametros de redirecci\'on se validan contra
+  una lista de rutas internas permitidas. \\
+
+Protecci\'on XSS &
+  El contenido din\'amico inyectado en el DOM utiliza \texttt{textContent}
+  o sanitizaci\'on. Se eliminaron casos de \texttt{innerHTML} con datos
+  no controlados detectados durante la revisi\'on de seguridad. \\
+
+Control de acceso por rol &
+  El panel de administraci\'on verifica el rol en base de datos antes
+  de renderizar. Un usuario con rol alumna no puede acceder a rutas de
+  administraci\'on incluso conociendo la URL. \\
+
+Pol\'itica de privacidad &
+  Implementada con registro de aceptaci\'on expl\'icita: fecha,
+  versi\'on y descripci\'on del consentimiento almacenados en la
+  tabla \texttt{profiles}. \\
+
+\end{longtable}
+
+\begin{infobox}
+\textbf{Nota de confidencialidad:} Conforme a la Cl\'ausula SEXTO del contrato, RAWSEC
+SOLUTIONS SpA se compromete a no divulgar vulnerabilidades detectadas ni la estructura
+de la base de datos de KikiBrows SpA a terceros. Este informe es de car\'acter confidencial
+y de uso exclusivo entre las partes contratantes.
+\end{infobox}
+
+
+% ══════════════════════════════════════════════════════════
+%  7. ESTADO DE ENTREGA Y PENDIENTES
+% ══════════════════════════════════════════════════════════
+\section{Estado de Entrega y Pendientes}
+
+\subsubsection{Entregables}
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{L{9cm} L{5.5cm}}
+\toprule
+\textbf{Entregable} & \textbf{Estado} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Plataforma web (portal estudiante + admin)            & \operativo \\
+Base de datos Supabase con RLS y funciones RPC        & \operativo \\
+Integraci\'on Banchile Pagos Web Checkout             & \funcional{} (sandbox) \\
+Activaci\'on Banchile en producci\'on                 & \pendiente{} --- credenciales por entregar el cliente \\
+Certificaci\'on digital autom\'atica                  & \operativo \\
+Agendamiento de consultas en vivo (Zoom)              & \operativo \\
+Email transaccional de comprobantes (Resend)          & \operativo \\
+Informe de seguridad y vulnerabilidades               & \entregado{} (secci\'on~\ref{sec:seguridad}) \\
+Manual de capacitaci\'on digital                      & \pendiente{} --- a coordinar tras cierre econ\'omico \\
+3 meses de soporte t\'ecnico inicial                  & \vigente \\
+\end{longtable}
+
+\subsubsection{Resumen de pagos}
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{L{8.5cm} C{2.5cm} L{3.5cm}}
+\toprule
+\textbf{Concepto} & \textbf{Monto} & \textbf{Estado} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Anticipo de inicio (firma de contrato)               & \$400.000 & \pagado \\
+Pago intermedio (50\,\% de desarrollo)               & \$200.000 & \pagado \\
+Pago de cierre (plataforma operativa + informe)      & \$200.000 & \pagado \\
+Servicio adicional: integraci\'on Banchile           & \$300.000 & \pendiente \\
+\midrule
+\textbf{Total pendiente de liquidaci\'on}            & \textbf{\$300.000} & \pendiente \\
+\end{longtable}
+
+\begin{warnbox}
+\textbf{Fundamento contractual del pago pendiente:} El addendum de la Cl\'ausula CUARTO
+establece que el pago de \$300.000 por la integraci\'on del sistema de pago electr\'onico
+se realiza <<\'integramente al finalizar el servicio>>. El desarrollo est\'a finalizado.
+El bloqueo en producci\'on se debe exclusivamente a que el cliente no ha entregado las
+credenciales de producci\'on de Banchile, obligaci\'on que le compete seg\'un la
+Cl\'ausula TERCERO N\textdegree{}2. La no entrega de dichas credenciales no constituye
+incumplimiento del prestador ni justificaci\'on para retener el pago.
+\end{warnbox}
+
+\medskip
+Con la emisi\'on del presente informe, \textbf{RAWSEC SOLUTIONS SpA} da por cumplidas
+\'integramente las obligaciones establecidas en el contrato. El desarrollo de la
+plataforma fue pagado en su totalidad (\$800.000). Se solicita a KikiBrows SpA la
+liquidaci\'on del monto pendiente de \textbf{\$300.000} y la entrega de las credenciales
+de producci\'on de Banchile Empresas para proceder a la activaci\'on final del sistema
+de pagos.
+
+
+% ══════════════════════════════════════════════════════════
+%  FIRMAS
+% ══════════════════════════════════════════════════════════
+\vspace{18mm}
+
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}p{7.5cm}@{\hspace{0.5cm}}p{7.5cm}@{}}
+\cline{1-1}\cline{2-2}\\
+\textbf{Emilio Jes\'us Castillo Schmidt}
+  & \textbf{Pen\'elope Heyer Jopr\'e / Manuela Heyer Jopr\'e} \\
+Representante legal
+  & Representantes legales \\
+RAWSEC SOLUTIONS SpA
+  & KikiBrows SpA \\
+RUT 21.595.951-1 \,/\, 78.282.952-1
+  & RUT 78.074.586-K \\
+\end{tabular}
+
+\vfill
+\begin{center}
+  {\color{bordergray}\rule{\linewidth}{0.3pt}}\\[4pt]
+  {\small\color{midgray}
+    Informe Final de Entrega --- Plataforma KikiBrows \,\textperiodcentered\,
+    RAWSEC SOLUTIONS SpA \,\textperiodcentered\, Junio 2026\\
+    Documento confidencial de uso exclusivo entre las partes contratantes.}
+\end{center}
+
+
+% ══════════════════════════════════════════════════════════
+%  APÉNDICE A — DIAGRAMA DE DISEÑO
+% ══════════════════════════════════════════════════════════
+\newpage
+\appendix
+
+\section{Diagrama de Dise\~no del Sistema}
+\label{apx:diagrama}
+
+El siguiente diagrama corresponde al modelo de clases elaborado durante la fase de dise\~no
+del proyecto. Refleja la arquitectura de datos planificada y sirvió de base para la
+implementaci\'on final en Supabase.
+
+\medskip
+\begin{center}
+\textit{[Insertar imagen del diagrama de clases --- archivo:
+\texttt{diagrama-clases-kikibrows.png}]}
+\end{center}
+
+\medskip
+\noindent Para insertar el diagrama en Overleaf, a\~nadir el archivo de imagen al proyecto
+y reemplazar la l\'inea anterior por:\\[4pt]
+\texttt{\textbackslash{}includegraphics[width=\textbackslash{}linewidth]\{diagrama-clases-kikibrows\}}
+
+\medskip
+\noindent Los prototipos de dise\~no de interfaz (UX/UI) est\'an disponibles bajo solicitud.
+
+
+\end{document}
