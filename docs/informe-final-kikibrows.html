@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe Final de Entrega – Plataforma KikiBrows</title>
+  <style>
+    /* ── Variables ─────────────────────────────────────────── */
+    :root {
+      --black:   #111111;
+      --dark:    #2c2c2c;
+      --mid:     #555555;
+      --light:   #888888;
+      --border:  #d8d8d8;
+      --bg-soft: #f7f7f5;
+      --gold:    #b8963e;
+      --gold-lt: #f5edd9;
+      --white:   #ffffff;
+      --font:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    }
+
+    /* ── Reset & base ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      font-size: 10.5pt;
+      line-height: 1.65;
+      color: var(--dark);
+      background: var(--white);
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 40px 60px;
+    }
+
+    /* ── Typography ────────────────────────────────────────── */
+    h1, h2, h3, h4 { font-weight: 600; color: var(--black); }
+
+    h1 { font-size: 20pt; line-height: 1.25; }
+    h2 { font-size: 13pt; margin-top: 2.2em; margin-bottom: 0.6em;
+         border-bottom: 2px solid var(--gold); padding-bottom: 5px; }
+    h3 { font-size: 10.5pt; margin-top: 1.4em; margin-bottom: 0.4em; color: var(--mid); text-transform: uppercase; letter-spacing: 0.04em; }
+    h4 { font-size: 10.5pt; margin-top: 1em; margin-bottom: 0.3em; }
+
+    p  { margin-bottom: 0.75em; }
+    ul, ol { margin: 0.4em 0 0.8em 1.5em; }
+    li { margin-bottom: 0.25em; }
+
+    a  { color: var(--gold); text-decoration: none; }
+
+    strong { font-weight: 600; color: var(--black); }
+
+    /* ── Tables ────────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8em 0 1.4em;
+      font-size: 9.5pt;
+    }
+    thead tr { background: var(--black); color: var(--white); }
+    thead th { padding: 7px 10px; text-align: left; font-weight: 600; }
+    tbody tr:nth-child(even) { background: var(--bg-soft); }
+    tbody td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+
+    .check   { color: #2a7a2a; font-weight: 700; }
+    .extra   { color: var(--gold); font-weight: 700; }
+    .pending { color: #c05a00; font-weight: 700; }
+    .cross   { color: #888; }
+
+    /* ── Callout boxes ─────────────────────────────────────── */
+    .callout {
+      border-left: 4px solid var(--gold);
+      background: var(--gold-lt);
+      padding: 12px 16px;
+      margin: 1em 0 1.4em;
+      border-radius: 0 4px 4px 0;
+      font-size: 9.5pt;
+    }
+    .callout.warn {
+      border-color: #c05a00;
+      background: #fff4ec;
+    }
+    .callout p { margin-bottom: 0; }
+
+    /* ── Cover page ────────────────────────────────────────── */
+    .cover {
+      text-align: center;
+      padding: 48px 0 36px;
+      border-bottom: 3px solid var(--black);
+      margin-bottom: 36px;
+      page-break-after: always;
+    }
+    .cover .tag {
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .cover h1 { margin-bottom: 10px; }
+    .cover .subtitle {
+      font-size: 12pt;
+      color: var(--mid);
+      margin-bottom: 28px;
+    }
+    .cover-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 32px;
+      max-width: 500px;
+      margin: 28px auto 0;
+      text-align: left;
+      font-size: 9pt;
+    }
+    .cover-meta .label { color: var(--light); text-transform: uppercase; font-size: 7.5pt; letter-spacing: 0.08em; margin-bottom: 2px; }
+    .cover-meta .value { font-weight: 600; color: var(--black); }
+
+    /* ── Table of contents ─────────────────────────────────── */
+    .toc {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 24px;
+      margin-bottom: 2.5em;
+    }
+    .toc h3 { margin-top: 0; margin-bottom: 0.8em; }
+    .toc ol { margin-left: 1.2em; }
+    .toc li { margin-bottom: 0.3em; font-size: 9.5pt; }
+    .toc a { color: var(--dark); }
+    .toc a:hover { color: var(--gold); }
+
+    /* ── Section numbers ───────────────────────────────────── */
+    .section-num {
+      display: inline-block;
+      background: var(--black);
+      color: var(--white);
+      font-size: 8pt;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    /* ── Footer note ───────────────────────────────────────── */
+    .doc-footer {
+      margin-top: 3em;
+      padding-top: 1em;
+      border-top: 1px solid var(--border);
+      font-size: 8pt;
+      color: var(--light);
+      text-align: center;
+    }
+
+    /* ── Signature area ────────────────────────────────────── */
+    .signatures {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 3em;
+    }
+    .sig-box {
+      border-top: 1px solid var(--dark);
+      padding-top: 10px;
+      font-size: 8.5pt;
+    }
+    .sig-box .name  { font-weight: 600; font-size: 9pt; }
+    .sig-box .role  { color: var(--mid); }
+    .sig-box .space { height: 48px; }
+
+    /* ── Print ─────────────────────────────────────────────── */
+    @media print {
+      body { padding: 0; font-size: 10pt; }
+      .cover { page-break-after: always; }
+      h2 { page-break-before: auto; }
+      table, .callout { page-break-inside: avoid; }
+      a { color: var(--dark) !important; }
+    }
+
+    @page {
+      margin: 20mm 18mm 20mm 18mm;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PORTADA
+══════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="tag">Informe técnico de entrega</div>
+  <h1>Plataforma de Cursos Profesionales<br>KikiBrows</h1>
+  <div class="subtitle">Informe Final de Entrega y Cierre de Proyecto</div>
+
+  <div class="cover-meta">
+    <div>
+      <div class="label">Prestador</div>
+      <div class="value">RAWSEC SOLUTIONS SpA</div>
+    </div>
+    <div>
+      <div class="label">Cliente</div>
+      <div class="value">KikiBrows SpA</div>
+    </div>
+    <div>
+      <div class="label">RUT Prestador</div>
+      <div class="value">78.282.952-1</div>
+    </div>
+    <div>
+      <div class="label">RUT Cliente</div>
+      <div class="value">78.074.586-K</div>
+    </div>
+    <div>
+      <div class="label">Contrato de origen</div>
+      <div class="value">17 de abril de 2026</div>
+    </div>
+    <div>
+      <div class="label">Fecha del informe</div>
+      <div class="value">Junio de 2026</div>
+    </div>
+    <div>
+      <div class="label">Versión</div>
+      <div class="value">1.0</div>
+    </div>
+    <div>
+      <div class="label">Estado</div>
+      <div class="value" style="color:#2a7a2a;">Entregado</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     TABLA DE CONTENIDOS
+══════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h3>Contenido</h3>
+  <ol>
+    <li><a href="#resumen">Resumen Ejecutivo</a></li>
+    <li><a href="#alcance">Alcance Entregado vs. Propuesta Aprobada</a></li>
+    <li><a href="#arquitectura">Arquitectura del Sistema</a></li>
+    <li><a href="#funcionalidades">Funcionalidades Entregadas</a>
+      <ol style="margin-top:0.3em">
+        <li><a href="#portal">Portal del Estudiante</a></li>
+        <li><a href="#admin">Panel de Administración</a></li>
+        <li><a href="#pagos">Sistema de Pagos</a></li>
+        <li><a href="#integraciones">Otras Integraciones Técnicas</a></li>
+      </ol>
+    </li>
+    <li><a href="#datos">Modelo de Datos</a></li>
+    <li><a href="#seguridad">Seguridad Implementada</a></li>
+    <li><a href="#estado">Estado de Entrega y Pendientes</a></li>
+  </ol>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     1. RESUMEN EJECUTIVO
+══════════════════════════════════════════════════════════ -->
+<h2 id="resumen"><span class="section-num">1</span> Resumen Ejecutivo</h2>
+
+<p>
+  El presente informe documenta la entrega formal de la plataforma web de cursos profesionales
+  desarrollada para <strong>KikiBrows SpA</strong> por <strong>RAWSEC SOLUTIONS SpA</strong>,
+  en cumplimiento de las obligaciones establecidas en el Contrato de Prestación de Servicios
+  Informáticos suscrito el 17 de abril de 2026 (Cláusula SEGUNDO N°3).
+</p>
+<p>
+  Se contrató el diseño, programación, despliegue y aseguramiento de una plataforma web integral
+  orientada a la venta y gestión de cursos de estética profesional, incluyendo la integración de
+  un sistema de pagos electrónicos. Al momento de la emisión de este informe, la plataforma se
+  encuentra <strong>completamente desarrollada y operativa</strong>, con todas las funcionalidades
+  acordadas implementadas, probadas y disponibles para uso en producción.
+</p>
+<p>
+  Adicionalmente, y a solicitud del cliente, se realizaron durante el desarrollo dos cambios de
+  pasarela de pago respecto a lo especificado originalmente. Dichos cambios fueron absorbidos
+  en su mayoría sin costo adicional, a excepción del último (Banchile Pagos), cuyo cobro de
+  <strong>$300.000</strong> fue acordado expresamente y se encuentra pendiente de pago conforme
+  al contrato.
+</p>
+
+<div class="callout">
+  <p><strong>Base contractual de este informe:</strong> La Cláusula CUARTO del contrato establece
+  que el <em>Pago de Cierre</em> (25%) es exigible «una vez que la plataforma se encuentre en
+  funcionamiento y se haya entregado el informe final». El presente documento constituye dicho
+  informe final, dejando expedita la obligación de pago.</p>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     2. ALCANCE
+══════════════════════════════════════════════════════════ -->
+<h2 id="alcance"><span class="section-num">2</span> Alcance Entregado vs. Propuesta Aprobada</h2>
+
+<p>
+  La siguiente tabla compara las funcionalidades incluidas en la propuesta formal aprobada
+  (noviembre 2025) con el estado de entrega al cierre del proyecto.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:38%">Funcionalidad</th>
+      <th style="width:18%">Propuesto</th>
+      <th style="width:14%">Estado</th>
+      <th>Observación</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Panel de administración completo</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Cursos, módulos, usuarios, transacciones, feedback y consultas en vivo.</td>
+    </tr>
+    <tr>
+      <td>Portal del estudiante</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Registro, acceso a cursos, quizzes, tareas y certificados.</td>
+    </tr>
+    <tr>
+      <td>Base de datos Supabase (usuarios, progreso, calificaciones)</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>11 tablas relacionales con Row Level Security activo.</td>
+    </tr>
+    <tr>
+      <td>Almacenamiento y reproducción de videos</td>
+      <td>Bunny.net</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Por acuerdo con el cliente se utilizó <strong>Supabase Storage</strong> en lugar de Bunny.net, sin diferencia de costo.</td>
+    </tr>
+    <tr>
+      <td>Módulos teóricos, prácticos y bonus profesional</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Estructura modular flexible: texto, video, documento y quiz por clase.</td>
+    </tr>
+    <tr>
+      <td>Sistema de quizzes por clase</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Registro de intentos, calificación y aprobación por umbral.</td>
+    </tr>
+    <tr>
+      <td>Entregas de tareas y corrección por instructor</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Soporte para archivos adjuntos, feedback y calificación.</td>
+    </tr>
+    <tr>
+      <td>Certificación digital automática</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Generación automática al completar el 100% del curso.</td>
+    </tr>
+    <tr>
+      <td>Clase en vivo mensual con agendamiento</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Gestión de slots, reservas y creación automática de reunión Zoom.</td>
+    </tr>
+    <tr>
+      <td>Sistema de pagos automatizados</td>
+      <td>WebPay / Flow / Stripe</td>
+      <td><span class="extra">★ Extra</span></td>
+      <td>Se entregaron <strong>tres pasarelas</strong> (WebPay, GetNet y Banchile). Ver sección 4.3.</td>
+    </tr>
+    <tr>
+      <td>Historial de compras y comprobantes en PDF</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Descarga de comprobante con detalle de transacción.</td>
+    </tr>
+    <tr>
+      <td>Seguridad informática e informe de vulnerabilidades</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Incluido en sección 6 de este documento.</td>
+    </tr>
+    <tr>
+      <td>Política de privacidad y consentimiento</td>
+      <td>Implícito</td>
+      <td><span class="check">✓ Entregado</span></td>
+      <td>Página dedicada con registro de consentimiento por usuario.</td>
+    </tr>
+    <tr>
+      <td>3 meses de soporte técnico inicial</td>
+      <td>Sí</td>
+      <td><span class="check">✓ Incluido</span></td>
+      <td>Vigente conforme a los términos de la propuesta aprobada.</td>
+    </tr>
+    <tr>
+      <td>Manual de capacitación digital</td>
+      <td>Sí</td>
+      <td><span class="pending">⟳ Pendiente</span></td>
+      <td>A coordinar con el cliente para entrega posterior al cierre económico.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     3. ARQUITECTURA
+══════════════════════════════════════════════════════════ -->
+<h2 id="arquitectura"><span class="section-num">3</span> Arquitectura del Sistema</h2>
+
+<h3>Stack tecnológico</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Capa</th><th style="width:30%">Tecnología</th><th>Descripción</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Frontend</td><td>HTML5 / CSS3 / JavaScript ES6</td><td>Interfaz web sin framework, Bootstrap 5.3 para componentes UI.</td></tr>
+    <tr><td>Base de datos</td><td>Supabase (PostgreSQL)</td><td>BD relacional con Row Level Security y funciones RPC personalizadas.</td></tr>
+    <tr><td>Autenticación</td><td>Supabase Auth</td><td>JWT con verificación OTP por email. Sin contraseñas almacenadas en frontend.</td></tr>
+    <tr><td>Almacenamiento</td><td>Supabase Storage</td><td>Videos, imágenes y archivos de tareas. Acceso controlado por RLS.</td></tr>
+    <tr><td>Lógica de servidor</td><td>Supabase Edge Functions</td><td>Procesamiento seguro de pagos y envío de correos (sin exponer claves privadas).</td></tr>
+    <tr><td>Email transaccional</td><td>Resend</td><td>Envío de comprobantes de compra por correo electrónico.</td></tr>
+    <tr><td>Videollamadas</td><td>Zoom API</td><td>Creación automática de reuniones al confirmar una consulta en vivo.</td></tr>
+    <tr><td>Generación de PDF</td><td>pdfmake</td><td>Comprobantes de compra descargables desde el historial del estudiante.</td></tr>
+    <tr><td>Pasarelas de pago</td><td>Banchile / GetNet / Transbank</td><td>Integradas vía Edge Functions. Ver sección 4.3.</td></tr>
+  </tbody>
+</table>
+
+<h3>Diagrama de componentes</h3>
+
+<table>
+  <thead>
+    <tr><th style="width:28%">Componente</th><th style="width:36%">Tecnología base</th><th>Función</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Portal del Estudiante</strong></td>
+      <td>Frontend público</td>
+      <td>Registro, acceso a cursos comprados, reproducción de clases, quizzes, entregas, certificados y agendamiento de consultas.</td>
+    </tr>
+    <tr>
+      <td><strong>Panel de Administración</strong></td>
+      <td>Frontend privado (rol admin)</td>
+      <td>Gestión completa de cursos, usuarios, transacciones y consultas en vivo.</td>
+    </tr>
+    <tr>
+      <td><strong>API / Base de datos</strong></td>
+      <td>Supabase (PostgreSQL + Auth + Storage)</td>
+      <td>Fuente única de verdad: usuarios, progreso, pagos y contenido.</td>
+    </tr>
+    <tr>
+      <td><strong>Motor de pagos</strong></td>
+      <td>Edge Functions (servidor)</td>
+      <td>Initia y verifica sesiones de pago con las pasarelas, actualiza transacciones, envía comprobante por email.</td>
+    </tr>
+    <tr>
+      <td><strong>Servicio de email</strong></td>
+      <td>Resend vía Edge Function</td>
+      <td>Correos transaccionales (comprobante de compra).</td>
+    </tr>
+    <tr>
+      <td><strong>Servicio de videollamadas</strong></td>
+      <td>Zoom API vía Edge Function</td>
+      <td>Creación automática de reuniones Zoom al confirmar una consulta.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     4. FUNCIONALIDADES
+══════════════════════════════════════════════════════════ -->
+<h2 id="funcionalidades"><span class="section-num">4</span> Funcionalidades Entregadas</h2>
+
+<!-- 4.1 Portal Estudiante -->
+<h3 id="portal">4.1 Portal del Estudiante</h3>
+
+<ul>
+  <li><strong>Registro e inicio de sesión con OTP:</strong> verificación por correo electrónico, sin contraseña almacenada en el cliente.</li>
+  <li><strong>Catálogo de cursos con preview:</strong> presentación del contenido antes de la compra, sin necesidad de estar registrado.</li>
+  <li><strong>Reproductor de clases con tracking de progreso:</strong> seguimiento segundo a segundo; el curso recuerda el punto exacto donde quedó la alumna.</li>
+  <li><strong>Quizzes interactivos por clase:</strong> registro de intentos, calificación automática y umbral de aprobación configurable.</li>
+  <li><strong>Envío de tareas con archivos adjuntos:</strong> soporte para múltiples intentos; el instructor puede entregar feedback y calificación desde el panel.</li>
+  <li><strong>Certificación digital automática:</strong> se genera al completar el 100% de las clases y aprobar las evaluaciones del curso.</li>
+  <li><strong>Historial de compras y comprobantes en PDF:</strong> descargable en cualquier momento desde la cuenta de la alumna.</li>
+  <li><strong>Agendamiento de consultas en vivo:</strong> visualización de slots disponibles, reserva y enlace Zoom automático.</li>
+  <li><strong>Recuperación y reseteo de contraseña</strong> mediante enlace por email.</li>
+  <li><strong>Política de privacidad y consentimiento:</strong> aceptación explícita registrada por alumna en base de datos.</li>
+</ul>
+
+<!-- 4.2 Panel Admin -->
+<h3 id="admin">4.2 Panel de Administración</h3>
+
+<ul>
+  <li><strong>Gestión de usuarios:</strong> crear cuentas, bloquear acceso, asignar cursos manualmente y cambiar roles (alumna / administradora).</li>
+  <li><strong>Creación y edición de cursos, módulos y clases:</strong> estructura jerárquica flexible con soporte para texto, video, documento descargable y quiz en una misma clase.</li>
+  <li><strong>Subida de contenido multimedia:</strong> videos, imágenes de portada y documentos directamente desde el navegador.</li>
+  <li><strong>Vista previa de cursos:</strong> revisión antes de publicar para el público.</li>
+  <li><strong>Gestión de transacciones:</strong> listado de pagos con filtros por estado, método de pago y fecha.</li>
+  <li><strong>Calificación de entregas y feedback:</strong> revisión de tareas, asignación de nota y envío de observaciones a la alumna.</li>
+  <li><strong>Gestión de consultas en vivo:</strong> creación de slots de disponibilidad con integración automática a Zoom Meeting.</li>
+  <li><strong>Dashboard general</strong> con acceso rápido a todas las áreas del sistema.</li>
+</ul>
+
+<!-- 4.3 Pagos -->
+<h3 id="pagos">4.3 Sistema de Pagos</h3>
+
+<p>
+  El sistema de pagos fue objeto de <strong>tres iteraciones</strong> durante el proyecto,
+  producto de cambios de pasarela solicitados por el cliente con posterioridad a la aprobación
+  del documento de requisitos. A continuación se detalla el historial completo:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:8%">Etapa</th>
+      <th style="width:26%">Pasarela integrada</th>
+      <th style="width:38%">Origen del cambio</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Transbank WebPay Plus</strong></td>
+      <td>Especificada en el documento de aceptación de requisitos aprobado por el cliente.</td>
+      <td><span class="check">✓ Integrada y funcional</span></td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>GetNet Web Checkout</strong></td>
+      <td>Cambio solicitado verbalmente por el cliente tras la aprobación de requisitos. Absorbido sin costo adicional.</td>
+      <td><span class="check">✓ Integrada y funcional</span></td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Banchile Pagos Web Checkout</strong></td>
+      <td>Cambio solicitado por el cliente. Las partes acordaron expresamente un cobro adicional de <strong>$300.000</strong> por este servicio.</td>
+      <td><span class="pending">⟳ Integrada — pendiente activación en producción</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <p>
+    <strong>Situación de la integración Banchile:</strong> El desarrollo y las pruebas en ambiente
+    sandbox están completamente finalizados. La activación en producción requiere que <strong>el
+    cliente proporcione las credenciales de producción de su cuenta Banchile Empresas</strong>
+    (Client ID y Client Secret de producción), conforme a la obligación establecida en la Cláusula
+    TERCERO N°2 del contrato («Facilitar el acceso a los servicios… y cualquier otra herramienta
+    de terceros requerida para la integración»). Al momento de emitir este informe, dichas
+    credenciales no han sido entregadas.
+  </p>
+  <p style="margin-top:0.6em">
+    El servicio de integración ha sido prestado en su totalidad. El pago acordado de
+    <strong>$300.000</strong> se encuentra pendiente de liquidación, conforme a la Cláusula
+    CUARTO (addendum de sistema de pago electrónico), que establece que el pago se realiza
+    «íntegramente al finalizar el servicio».
+  </p>
+</div>
+
+<h4>Flujo técnico del proceso de pago (pasarela activa: Banchile)</h4>
+<ol>
+  <li>La alumna selecciona un curso y hace clic en «Comprar».</li>
+  <li>El frontend llama a la Edge Function <code>banchile-create-session</code>, que inicia la sesión de pago en la API de Banchile usando las credenciales del servidor.</li>
+  <li>La alumna es redirigida al portal de pago de Banchile.</li>
+  <li>Al completar el pago, Banchile redirige a la plataforma con el resultado.</li>
+  <li>La Edge Function <code>banchile-check-session</code> verifica el estado, actualiza la transacción en la base de datos y desencadena la inscripción al curso.</li>
+  <li>La Edge Function <code>send-receipt-email</code> envía el comprobante por correo electrónico a la alumna vía Resend.</li>
+</ol>
+
+<!-- 4.4 Otras integraciones -->
+<h3 id="integraciones">4.4 Otras Integraciones Técnicas</h3>
+
+<ul>
+  <li><strong>Zoom API:</strong> al confirmar una reserva de consulta en vivo, el sistema crea automáticamente una reunión Zoom y entrega el enlace a la alumna.</li>
+  <li><strong>Resend:</strong> envío de comprobantes de compra por correo electrónico con diseño personalizado.</li>
+  <li><strong>Supabase Edge Functions:</strong> lógica de servidor aislada que garantiza que ninguna clave privada (pasarelas de pago, Zoom, Resend) quede expuesta en el código del lado del cliente.</li>
+  <li><strong>pdfmake:</strong> generación de comprobantes PDF descargables desde el historial de compras del estudiante.</li>
+</ul>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     5. MODELO DE DATOS
+══════════════════════════════════════════════════════════ -->
+<h2 id="datos"><span class="section-num">5</span> Modelo de Datos</h2>
+
+<p>
+  La base de datos está alojada en Supabase (PostgreSQL). Las siguientes tablas conforman
+  el modelo principal de la plataforma:
+</p>
+
+<table>
+  <thead>
+    <tr><th style="width:26%">Tabla</th><th>Descripción funcional</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>profiles</code></td><td>Datos extendidos del usuario: nombre, apellido y registro de consentimiento de política de privacidad.</td></tr>
+    <tr><td><code>cursos</code></td><td>Cursos disponibles en la plataforma: nombre, descripción, portada, precio, estado y duración de acceso.</td></tr>
+    <tr><td><code>modulos</code></td><td>Módulos que componen cada curso, ordenados secuencialmente.</td></tr>
+    <tr><td><code>clases</code></td><td>Clases o lecciones dentro de un módulo. Soporta tipos: video, texto, documento y quiz.</td></tr>
+    <tr><td><code>inscripciones</code></td><td>Acceso de una alumna a un curso específico: estado, fecha de expiración y porcentaje de progreso.</td></tr>
+    <tr><td><code>transacciones</code></td><td>Registro completo de pagos: monto, estado (pagado / pendiente / rechazado), método de pago, código de autorización y folio.</td></tr>
+    <tr><td><code>progreso_clases</code></td><td>Avance de cada alumna por clase: segundo actual, estado de completado y último acceso.</td></tr>
+    <tr><td><code>intentos_quiz</code></td><td>Intentos de una alumna en un quiz: respuestas, calificación y si fue aprobado.</td></tr>
+    <tr><td><code>entregas</code></td><td>Tareas enviadas por alumnas: archivo adjunto, estado de revisión, calificación y feedback del instructor.</td></tr>
+    <tr><td><code>consulta_slots</code></td><td>Disponibilidad de clases en vivo: fecha, cupos máximos, cupos ocupados, estado y meeting de Zoom asociado.</td></tr>
+    <tr><td><code>consultas_reservas</code></td><td>Reservas de consultas en vivo por alumna, con referencia al curso y estado de la reserva.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  Todas las tablas tienen habilitado <strong>Row Level Security (RLS)</strong> en Supabase,
+  garantizando que cada usuario solo puede acceder a sus propios datos, y que las operaciones
+  administrativas requieren el rol correspondiente.
+</p>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     6. SEGURIDAD
+══════════════════════════════════════════════════════════ -->
+<h2 id="seguridad"><span class="section-num">6</span> Seguridad Implementada</h2>
+
+<p>
+  A continuación se detallan las medidas de seguridad implementadas en la plataforma,
+  conforme a lo exigido en la Cláusula SEGUNDO N°2 del contrato y según los estándares
+  de la industria para aplicaciones web.
+</p>
+
+<table>
+  <thead>
+    <tr><th style="width:32%">Medida</th><th>Descripción e implementación</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Autenticación JWT con OTP</strong></td>
+      <td>Las sesiones de usuario son gestionadas por Supabase Auth mediante tokens JWT de corta duración. El inicio de sesión requiere verificación por código OTP enviado al correo, eliminando contraseñas estáticas como vector de ataque.</td>
+    </tr>
+    <tr>
+      <td><strong>Row Level Security (RLS)</strong></td>
+      <td>Todas las tablas de la base de datos tienen políticas RLS activas. Un usuario autenticado solo puede leer y modificar sus propios registros; las operaciones de administrador requieren rol explícito.</td>
+    </tr>
+    <tr>
+      <td><strong>Claves privadas aisladas en servidor</strong></td>
+      <td>Las credenciales de las pasarelas de pago (Banchile, GetNet, Transbank), Zoom y Resend están almacenadas exclusivamente como variables de entorno en las Edge Functions. Nunca se exponen al navegador del cliente.</td>
+    </tr>
+    <tr>
+      <td><strong>Verificación de sesión en rutas protegidas</strong></td>
+      <td>Todas las páginas de estudiante y administrador verifican la validez del token de sesión antes de cargar contenido. Una sesión expirada o inexistente redirige al login.</td>
+    </tr>
+    <tr>
+      <td><strong>Protección contra Open Redirect</strong></td>
+      <td>Se validaron y corrigieron redirecciones abiertas en el flujo de autenticación que podían ser explotadas para phishing. Los parámetros de redirección son validados contra una lista de rutas internas permitidas.</td>
+    </tr>
+    <tr>
+      <td><strong>Protección XSS</strong></td>
+      <td>El contenido dinámico inyectado en el DOM utiliza métodos de text content o sanitización; se eliminaron casos de innerHTML con datos no controlados identificados durante la revisión de seguridad.</td>
+    </tr>
+    <tr>
+      <td><strong>Control de acceso por rol</strong></td>
+      <td>El panel de administración verifica el rol del usuario en la base de datos antes de renderizar cualquier contenido. Un usuario con rol alumna no puede acceder a rutas de administración incluso conociendo la URL.</td>
+    </tr>
+    <tr>
+      <td><strong>Política de privacidad y consentimiento</strong></td>
+      <td>Se implementó una página de política de privacidad con registro de aceptación explícita por usuario en la base de datos, con fecha y hora de consentimiento.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <p>
+    <strong>Nota de confidencialidad:</strong> Conforme a la Cláusula SEXTO del contrato,
+    RAWSEC SOLUTIONS SpA se compromete a no divulgar vulnerabilidades detectadas ni la
+    estructura de la base de datos de KikiBrows SpA a terceros. Este informe es de carácter
+    confidencial y de uso exclusivo entre las partes contratantes.
+  </p>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     7. ESTADO DE ENTREGA
+══════════════════════════════════════════════════════════ -->
+<h2 id="estado"><span class="section-num">7</span> Estado de Entrega y Pendientes</h2>
+
+<table>
+  <thead>
+    <tr><th style="width:48%">Entregable</th><th style="width:52%">Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Plataforma web (portal estudiante + admin)</td><td><span class="check">✓ Operativa</span></td></tr>
+    <tr><td>Base de datos Supabase con RLS y funciones RPC</td><td><span class="check">✓ Operativa</span></td></tr>
+    <tr><td>Integración Transbank WebPay Plus</td><td><span class="check">✓ Integrada y funcional</span></td></tr>
+    <tr><td>Integración GetNet Web Checkout</td><td><span class="check">✓ Integrada y funcional</span></td></tr>
+    <tr><td>Integración Banchile Pagos Web Checkout</td><td><span class="pending">⟳ Desarrollada — activación en producción pendiente de credenciales del cliente</span></td></tr>
+    <tr><td>Certificación digital automática</td><td><span class="check">✓ Operativa</span></td></tr>
+    <tr><td>Agendamiento de consultas en vivo (Zoom)</td><td><span class="check">✓ Operativo</span></td></tr>
+    <tr><td>Email transaccional de comprobantes (Resend)</td><td><span class="check">✓ Operativo</span></td></tr>
+    <tr><td>Informe de seguridad y vulnerabilidades corregidas</td><td><span class="check">✓ Entregado (sección 6)</span></td></tr>
+    <tr><td>Manual de capacitación digital</td><td><span class="pending">⟳ A coordinar tras cierre económico</span></td></tr>
+    <tr><td>3 meses de soporte técnico inicial</td><td><span class="check">✓ Vigente</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Resumen de pagos</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Concepto</th>
+      <th style="width:18%">Monto</th>
+      <th style="width:24%">Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Anticipo de inicio (firma de contrato)</td>
+      <td>$400.000</td>
+      <td><span class="check">✓ Pagado</span></td>
+    </tr>
+    <tr>
+      <td>Pago intermedio (50% desarrollo)</td>
+      <td>$200.000</td>
+      <td><span class="check">✓ Pagado</span></td>
+    </tr>
+    <tr>
+      <td>Pago de cierre (plataforma operativa + informe final)</td>
+      <td>$200.000</td>
+      <td><span class="pending">⟳ Pendiente — exigible con este informe</span></td>
+    </tr>
+    <tr>
+      <td>Servicio adicional: integración sistema de pago (Banchile)</td>
+      <td>$300.000</td>
+      <td><span class="pending">⟳ Pendiente — servicio finalizado</span></td>
+    </tr>
+    <tr style="font-weight:700; background:#f7f7f5">
+      <td>Total pendiente de pago</td>
+      <td>$500.000</td>
+      <td><span class="pending">⟳ Pendiente de liquidación</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <p>
+    <strong>Propiedad intelectual:</strong> Conforme a la Cláusula SÉPTIMO del contrato,
+    la transferencia de la propiedad intelectual y los derechos de dominio sobre el producto
+    final a KikiBrows SpA queda condicionada a la <strong>verificación del pago total</strong>.
+    Mientras existan montos pendientes, RAWSEC SOLUTIONS SpA conserva la titularidad del
+    producto desarrollado.
+  </p>
+</div>
+
+<p>
+  Con la emisión del presente informe, RAWSEC SOLUTIONS SpA da por cumplidas las obligaciones
+  establecidas en la Cláusula SEGUNDO N°3 del contrato. En consecuencia, el <strong>Pago de
+  Cierre de $200.000</strong> queda formalmente exigible, y el <strong>pago de $300.000</strong>
+  por el servicio de integración de sistema de pago electrónico (Banchile) se mantiene pendiente
+  de liquidación conforme al addendum de la Cláusula CUARTO.
+</p>
+
+<p>
+  Se solicita al cliente gestionar el pago del monto total pendiente (<strong>$500.000</strong>)
+  y proporcionar las credenciales de producción de Banchile Empresas para la activación final
+  de la pasarela en el ambiente productivo.
+</p>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     FIRMAS
+══════════════════════════════════════════════════════════ -->
+<div class="signatures">
+  <div class="sig-box">
+    <div class="space"></div>
+    <div class="name">Emilio Jesús Castillo Schmidt</div>
+    <div class="role">Representante legal — RAWSEC SOLUTIONS SpA</div>
+    <div class="role">RUT 21.595.951-1 · RUT empresa 78.282.952-1</div>
+  </div>
+  <div class="sig-box">
+    <div class="space"></div>
+    <div class="name">Penélope Heyer Jofré / Manuela Heyer Jofré</div>
+    <div class="role">Representantes legales — KikiBrows SpA</div>
+    <div class="role">RUT 78.074.586-K</div>
+  </div>
+</div>
+
+
+<!-- Footer -->
+<div class="doc-footer">
+  Informe Final de Entrega – Plataforma KikiBrows · RAWSEC SOLUTIONS SpA · Junio 2026 ·
+  Documento confidencial de uso exclusivo entre las partes contratantes.
+</div>
+
+</body>
+</html>
