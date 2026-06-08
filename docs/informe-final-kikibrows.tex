@@ -512,9 +512,11 @@ producci\'on de Banchile Empresas por parte del cliente, RAWSEC SOLUTIONS SpA
 proceder\'a a:
 
 \begin{enumerate}[leftmargin=1.8em, itemsep=4pt]
-  \item Configurar las credenciales de producci\'on en Supabase
-        (\textbf{Edge Functions} $\rightarrow$ \textbf{Secrets}):
-        \texttt{BANCHILE\_CLIENT\_ID} y \texttt{BANCHILE\_CLIENT\_SECRET}.
+  \item Actualizar las credenciales de producci\'on en Supabase
+        (\textbf{Edge Functions} $\rightarrow$ \textbf{Secrets}) con los
+        valores de producci\'on de la cuenta Banchile Empresas del cliente:
+        \texttt{BANCHILE\_LOGIN}, \texttt{BANCHILE\_SECRET\_KEY} y
+        \texttt{BANCHILE\_BASE\_URL}.
   \item Verificar una transacci\'on de prueba en ambiente de producci\'on.
   \item Realizar el traspaso formal de la plataforma
         (proyecto Supabase y dominio Cloudflare) a KikiBrows SpA.
