@@ -192,14 +192,17 @@ desde ah\'i se accede al cat\'alogo, a la compra de cursos y al inicio de sesi\'
 
 \begin{infobox}
 \textbf{\textcolor{mainblack}{¿C\'omo se entra a cada zona?}}
-Al iniciar sesi\'on en \textbf{login}, el sistema deriva autom\'aticamente
-seg\'un el rol de la cuenta:
-\begin{itemize}[leftmargin=1.6em, itemsep=2pt, topsep=2pt]
-  \item \textbf{Alumna} $\rightarrow$ vuelve a la p\'agina de Inicio, desde donde
-        usa el men\'u superior para entrar a \emph{Mis Cursos} y dem\'as.
-  \item \textbf{Administradora} $\rightarrow$ es llevada directamente al
-        \emph{Panel de Administraci\'on}. Tambi\'en puede entrar desde el
-        men\'u de usuaria (opci\'on <<Panel Admin>>) si ya tiene sesi\'on abierta.
+Existen dos formas de llegar a cada zona privada, ambas determinadas por el
+\textbf{rol} de la cuenta:
+\begin{itemize}[leftmargin=1.6em, itemsep=3pt, topsep=2pt]
+  \item \textbf{Al iniciar sesi\'on} en \emph{login}, el sistema deriva
+        autom\'aticamente: la \textbf{administradora} llega directo a su
+        \emph{Panel de Administraci\'on}, y la \textbf{alumna} vuelve a la
+        p\'agina de Inicio.
+  \item \textbf{Con la sesi\'on ya abierta}, desde el men\'u de usuaria del Inicio
+        se usa la opci\'on \textbf{<<Mi Cuenta>>}, que redirige seg\'un el rol:
+        a la \textbf{alumna} la lleva a su cuenta (\emph{account}) y a la
+        \textbf{administradora} la lleva a su \emph{Panel de Administraci\'on}.
 \end{itemize}
 Las p\'aginas de cada zona est\'an protegidas: si una alumna intenta abrir una
 ruta de administraci\'on, el sistema la devuelve al Inicio; si alguien sin sesi\'on
@@ -251,6 +254,14 @@ intenta abrir una p\'agina privada, se le env\'ia a \emph{login}.
         [Vista previa de curso \textcolor{midgray}{\scriptsize(course-preview.html)}
           [Comprar $\rightarrow$ Pasarela Banchile $\rightarrow$ Confirmaci\'on de Pago
               \textcolor{midgray}{\scriptsize(payment-confirmation.html)}]
+        ]
+        [Men\'u de usuaria \textcolor{midgray}{\scriptsize(visible con sesi\'on iniciada)}
+          [<<Mi Cuenta>> $\rightarrow$ redirige seg\'un el rol:
+            [Alumna $\rightarrow$ Mi Cuenta \textcolor{midgray}{\scriptsize(account.html)}]
+            [Administradora $\rightarrow$ Panel de Administraci\'on \textcolor{midgray}{\scriptsize(adminPanel.html)}]
+          ]
+          [Mis Cursos $\rightarrow$ Portal Alumna \textcolor{midgray}{\scriptsize(cursosAlumn.html)}]
+          [Consultas en Vivo \textcolor{midgray}{\scriptsize(consultasAlumn.html)}]
         ]
       ]
       [Pol\'itica de Privacidad \textcolor{midgray}{\scriptsize(politica-privacidad.html)}]
