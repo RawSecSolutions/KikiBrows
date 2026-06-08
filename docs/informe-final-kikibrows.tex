@@ -504,6 +504,31 @@ El servicio de integraci\'on ha sido prestado en su totalidad. El pago de
 de la Cl\'ausula CUARTO.
 \end{warnbox}
 
+\subsubsection{Activaci\'on en producci\'on}
+
+Una vez regularizado el pago y efectuado el traspaso de credenciales de la
+plataforma, la activaci\'on de Banchile en producci\'on no requiere ning\'un
+cambio de c\'odigo. El proceso completo consta de tres pasos:
+
+\begin{enumerate}[leftmargin=1.8em, itemsep=4pt]
+  \item Ingresar al panel de Supabase del proyecto KikiBrows.
+  \item Ir a \textbf{Edge Functions} $\rightarrow$ \textbf{Secrets} y agregar
+        (o actualizar) las siguientes variables con las credenciales de
+        producci\'on de la cuenta Banchile Empresas:
+        \begin{itemize}[leftmargin=1.6em, itemsep=2pt]
+          \item \texttt{BANCHILE\_CLIENT\_ID}
+          \item \texttt{BANCHILE\_CLIENT\_SECRET}
+        \end{itemize}
+  \item Verificar una transacci\'on de prueba en producci\'on.
+\end{enumerate}
+
+\begin{infobox}
+\textbf{Sin intervenci\'on del prestador:} Esta configuraci\'on puede ser
+realizada directamente por KikiBrows SpA o por cualquier persona con acceso
+administrador al proyecto Supabase. No se requiere participaci\'on de
+RAWSEC SOLUTIONS SpA una vez entregadas las credenciales de la plataforma.
+\end{infobox}
+
 \subsection{Otras Integraciones T\'ecnicas}
 
 \begin{itemize}[leftmargin=1.6em, itemsep=3pt]
