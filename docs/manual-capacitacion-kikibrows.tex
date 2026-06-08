@@ -95,9 +95,8 @@
 \setlist[enumerate,1]{label=\textbf{\arabic*.}, leftmargin=1.8em, itemsep=4pt}
 \setlist[itemize,1]{leftmargin=1.6em, itemsep=3pt}
 
-% Árbol de navegación
-\usepackage{pdflscape}
-\usepackage{tikz}
+% Árbol de navegación (folder tree)
+\usepackage{forest}
 
 \usepackage{hyperref}
 \hypersetup{
@@ -184,125 +183,123 @@ La URL de acceso es la direcci\'on web del sitio de KikiBrows.
 % ══════════════════════════════════════════════════════════
 %  2. ÁRBOL DE NAVEGACIÓN
 % ══════════════════════════════════════════════════════════
-\section{\'Arbol de Navegaci\'on}
+\section{Mapa de Navegaci\'on}
 
-El siguiente diagrama muestra todas las p\'aginas de la plataforma y c\'omo
-se relacionan entre s\'i, organizadas por secci\'on y rol de acceso.
+El siguiente diagrama muestra el flujo real de navegaci\'on de la plataforma:
+qu\'e p\'aginas existen, c\'omo se llega a cada una y qu\'e rol puede acceder.
+El punto de entrada es siempre la p\'agina de \textbf{Inicio} (p\'ublica);
+desde ah\'i se accede al cat\'alogo, a la compra de cursos y al inicio de sesi\'on.
 
-\begin{landscape}
-\thispagestyle{empty}
-\vspace*{3mm}
-\begin{center}
-{\large\bfseries\color{mainblack}\'Arbol de Navegaci\'on --- Plataforma KikiBrows}\\[5pt]
+\begin{infobox}
+\textbf{\textcolor{mainblack}{¿C\'omo se entra a cada zona?}}
+Al iniciar sesi\'on en \textbf{login}, el sistema deriva autom\'aticamente
+seg\'un el rol de la cuenta:
+\begin{itemize}[leftmargin=1.6em, itemsep=2pt, topsep=2pt]
+  \item \textbf{Alumna} $\rightarrow$ vuelve a la p\'agina de Inicio, desde donde
+        usa el men\'u superior para entrar a \emph{Mis Cursos} y dem\'as.
+  \item \textbf{Administradora} $\rightarrow$ es llevada directamente al
+        \emph{Panel de Administraci\'on}. Tambi\'en puede entrar desde el
+        men\'u de usuaria (opci\'on <<Panel Admin>>) si ya tiene sesi\'on abierta.
+\end{itemize}
+Las p\'aginas de cada zona est\'an protegidas: si una alumna intenta abrir una
+ruta de administraci\'on, el sistema la devuelve al Inicio; si alguien sin sesi\'on
+intenta abrir una p\'agina privada, se le env\'ia a \emph{login}.
+\end{infobox}
+
+\newpage
+{\large\bfseries\color{mainblack}Mapa de Navegaci\'on --- Plataforma KikiBrows}
+
+\vspace{4pt}
 {\small\color{midgray}
-  \textcolor{checkgreen!70!black}{\rule{8mm}{3pt}}~P\'ublico\quad
-  \textcolor{blue!50!black}{\rule{8mm}{3pt}}~Portal Alumna\quad
-  \textcolor{gold}{\rule{8mm}{3pt}}~Panel Administradora
-}\\[10pt]
-
-% ── Árbol de navegación con TikZ (coordenadas absolutas en cm) ──────────────
-% Hoja k: y_k = 13.00 - k*0.72  (k = 0..18, total 19 hojas)
-% Secciones en su centroide; raíz en el punto medio global (y=6.52)
-\begin{tikzpicture}[
-  rootnode/.style={
-    draw=navroot, fill=navroot, text=white,
-    rounded corners=4pt, inner sep=5pt,
-    font=\small\bfseries, text width=20mm, align=center, anchor=west
-  },
-  pubsec/.style={
-    draw=checkgreen!80!black, fill=navpublic,
-    rounded corners=3pt, inner sep=5pt,
-    font=\small\bfseries, text=checkgreen!80!black,
-    text width=26mm, align=center, anchor=west
-  },
-  alusec/.style={
-    draw=blue!60!black, fill=navalumna,
-    rounded corners=3pt, inner sep=5pt,
-    font=\small\bfseries, text=blue!60!black,
-    text width=26mm, align=center, anchor=west
-  },
-  admsec/.style={
-    draw=gold!80!black, fill=navadmin,
-    rounded corners=3pt, inner sep=5pt,
-    font=\small\bfseries, text=gold!80!black,
-    text width=26mm, align=center, anchor=west
-  },
-  pleaf/.style={
-    draw=checkgreen!60!black, fill=navpublic!80,
-    rounded corners=2pt, inner sep=3pt,
-    font=\footnotesize, text width=54mm, anchor=west
-  },
-  aleaf/.style={
-    draw=blue!50!black, fill=navalumna!80,
-    rounded corners=2pt, inner sep=3pt,
-    font=\footnotesize, text width=54mm, anchor=west
-  },
-  dleaf/.style={
-    draw=gold!70!black, fill=navadmin!80,
-    rounded corners=2pt, inner sep=3pt,
-    font=\footnotesize, text width=54mm, anchor=west
-  },
-  conn/.style={draw=darkgray, thick},
-  pconn/.style={draw=checkgreen!60!black},
-  aconn/.style={draw=blue!40!black},
-  dconn/.style={draw=gold!60!black},
-]
-
-% ── Nodo raíz ──────────────────────────────────────
-\node[rootnode] (root) at (0, 6.52) {KikiBrows};
-
-% ── Secciones ──────────────────────────────────────
-\node[pubsec] (pub) at (3.2, 11.56) {Acceso\\P\'ublico};
-\node[alusec] (alu) at (3.2,  7.24) {Portal\\Alumna};
-\node[admsec] (adm) at (3.2,  2.20) {Panel\\Admin};
-
-% raíz → secciones
-\draw[conn] (root.east) -- ++(0.6,0) |- (pub.west);
-\draw[conn] (root.east) -- ++(0.6,0) |- (alu.west);
-\draw[conn] (root.east) -- ++(0.6,0) |- (adm.west);
-
-% ── Hojas: Acceso Público (k=0..4) ────────────────
-\node[pleaf] (p1) at (6.8, 13.00) {Inicio \textcolor{midgray}{\scriptsize(Landing Page)}};
-\node[pleaf] (p2) at (6.8, 12.28) {Vista previa de curso};
-\node[pleaf] (p3) at (6.8, 11.56) {Iniciar sesi\'on};
-\node[pleaf] (p4) at (6.8, 10.84) {Registrarse};
-\node[pleaf] (p5) at (6.8, 10.12) {Recuperar contrase\~na};
-
-\draw[pconn] (pub.east) -- ++(0.4,0) |- (p1.west);
-\draw[pconn] (pub.east) -- ++(0.4,0) |- (p2.west);
-\draw[pconn] (pub.east) -- ++(0.4,0) |- (p3.west);
-\draw[pconn] (pub.east) -- ++(0.4,0) |- (p4.west);
-\draw[pconn] (pub.east) -- ++(0.4,0) |- (p5.west);
-
-% ── Hojas: Portal Alumna (k=5..11) ────────────────
-\node[aleaf] (a1) at (6.8, 9.40) {Mis Cursos \textcolor{midgray}{\scriptsize(Dashboard)}};
-\node[aleaf] (a2) at (6.8, 8.68) {Clase / Reproductor};
-\node[aleaf] (a3) at (6.8, 7.96) {Historial de Compras};
-\node[aleaf] (a4) at (6.8, 7.24) {Mis Certificados};
-\node[aleaf] (a5) at (6.8, 6.52) {Consultas en Vivo};
-\node[aleaf] (a6) at (6.8, 5.80) {Mi Cuenta};
-\node[aleaf] (a7) at (6.8, 5.08) {Confirmaci\'on de Pago};
-
-\foreach \n in {a1,a2,a3,a4,a5,a6,a7} {
-  \draw[aconn] (alu.east) -- ++(0.4,0) |- (\n.west);
+  \textcolor{checkgreen!70!black}{\rule{7mm}{3pt}}~Acceso p\'ublico\quad
+  \textcolor{blue!50!black}{\rule{7mm}{3pt}}~Portal Alumna\quad
+  \textcolor{gold}{\rule{7mm}{3pt}}~Panel Administradora
 }
 
-% ── Hojas: Panel Admin (k=12..18) ─────────────────
-\node[dleaf] (d1) at (6.8, 4.36) {Dashboard};
-\node[dleaf] (d2) at (6.8, 3.64) {Gesti\'on de Cursos};
-\node[dleaf] (d3) at (6.8, 2.92) {Gesti\'on de Usuarias};
-\node[dleaf] (d4) at (6.8, 2.20) {Transacciones};
-\node[dleaf] (d5) at (6.8, 1.48) {Consultas en Vivo};
-\node[dleaf] (d6) at (6.8, 0.76) {Revisi\'on y Feedback};
-\node[dleaf] (d7) at (6.8, 0.04) {Mi Perfil};
+\vspace{10pt}
 
-\foreach \n in {d1,d2,d3,d4,d5,d6,d7} {
-  \draw[dconn] (adm.east) -- ++(0.4,0) |- (\n.west);
-}
-
-\end{tikzpicture}
+\begin{center}
+\footnotesize
+\begin{forest}
+  for tree={
+    grow'=0,
+    s sep=3pt,
+    draw,
+    rounded corners=2pt,
+    inner xsep=4pt, inner ysep=3pt,
+    edge={bordergray, line width=0.8pt},
+    anchor=west,
+    child anchor=west,
+    parent anchor=south,
+    calign=first,
+    edge path={
+      \noexpand\path [draw, \forestoption{edge}]
+        (!u.south west) +(8pt,0) |- (.child anchor)\forestoption{edge label};
+    },
+    before typesetting nodes={
+      if n=1{insert before={[,phantom]}}{}
+    },
+    fit=band,
+    before computing xy={l=16pt},
+  }
+  [\textbf{Plataforma KikiBrows}, fill=navroot, text=white, draw=navroot
+    [\textbf{ACCESO P\'UBLICO} \textcolor{checkgreen!60!black}{\scriptsize(sin sesi\'on)},
+        fill=navpublic, draw=checkgreen!70!black,
+        for descendants={fill=navpublic!45, draw=checkgreen!55!black}
+      [Inicio / Landing \textcolor{midgray}{\scriptsize(index.html)}
+        [Cat\'alogo de cursos]
+        [Vista previa de curso \textcolor{midgray}{\scriptsize(course-preview.html)}
+          [Comprar $\rightarrow$ Pasarela Banchile $\rightarrow$ Confirmaci\'on de Pago
+              \textcolor{midgray}{\scriptsize(payment-confirmation.html)}]
+        ]
+      ]
+      [Pol\'itica de Privacidad \textcolor{midgray}{\scriptsize(politica-privacidad.html)}]
+      [Iniciar sesi\'on \textcolor{midgray}{\scriptsize(login.html)}
+        [Registrarse \textcolor{midgray}{\scriptsize(registrate.html)}]
+        [Recuperar contrase\~na \textcolor{midgray}{\scriptsize(recover.html $\rightarrow$ resetPassword.html)}]
+        [Redirecci\'on autom\'atica seg\'un el rol
+          [Alumna $\rightarrow$ Inicio (men\'u de alumna)]
+          [Administradora $\rightarrow$ Panel de Administraci\'on]
+        ]
+      ]
+    ]
+    [\textbf{PORTAL ALUMNA} \textcolor{blue!50!black}{\scriptsize(requiere sesi\'on)},
+        fill=navalumna, draw=blue!50!black,
+        for descendants={fill=navalumna!45, draw=blue!45!black}
+      [Mis Cursos \textcolor{midgray}{\scriptsize(cursosAlumn.html)}
+        [Aula Virtual / Clase \textcolor{midgray}{\scriptsize(claseAlumn.html)}
+          [Contenido: Video {\textperiodcentered} Texto {\textperiodcentered} PDF]
+          [Quiz]
+          [Tarea / Entrega pr\'actica]
+        ]
+      ]
+      [Mi Cuenta \textcolor{midgray}{\scriptsize(account.html)}
+        [Historial de Compras \textcolor{midgray}{\scriptsize(historialCompras.html)}]
+      ]
+      [Mis Certificados \textcolor{midgray}{\scriptsize(historialCertificados.html)}]
+      [Consultas en Vivo \textcolor{midgray}{\scriptsize(consultasAlumn.html)}]
+    ]
+    [\textbf{PANEL ADMINISTRADORA} \textcolor{gold}{\scriptsize(requiere rol admin)},
+        fill=navadmin, draw=gold!80!black,
+        for descendants={fill=navadmin!45, draw=gold!70!black}
+      [Dashboard \textcolor{midgray}{\scriptsize(adminPanel.html)}]
+      [Usuarios \textcolor{midgray}{\scriptsize(usersGest.html)}]
+      [Gesti\'on de Cursos \textcolor{midgray}{\scriptsize(gestionCursos.html)}
+        [Crear / Editar Curso \textcolor{midgray}{\scriptsize(creaCurso.html)}
+          [Gestor de M\'odulos y Clases \textcolor{midgray}{\scriptsize(gestorModulos.html)}
+            [Previsualizar Curso \textcolor{midgray}{\scriptsize(previsualizaCurso.html)}]
+          ]
+        ]
+      ]
+      [Transacciones \textcolor{midgray}{\scriptsize(adminTransa.html)}]
+      [Calendario / Consultas en vivo \textcolor{midgray}{\scriptsize(adminCalendar.html)}]
+      [Revisiones y Feedback \textcolor{midgray}{\scriptsize(revYFeedback.html)}]
+      [Cambiar Contrase\~na \textcolor{midgray}{\scriptsize(adminProfilePassword.html)}]
+      [Volver al Sitio \textcolor{midgray}{\scriptsize($\rightarrow$ index.html)}]
+    ]
+  ]
+\end{forest}
 \end{center}
-\end{landscape}
 
 % ══════════════════════════════════════════════════════════
 %  3. ACCESO AL SISTEMA
