@@ -97,6 +97,7 @@
 
 % Árbol de navegación
 \usepackage{pdflscape}
+\usepackage{tikz}
 
 \usepackage{hyperref}
 \hypersetup{
@@ -190,87 +191,117 @@ se relacionan entre s\'i, organizadas por secci\'on y rol de acceso.
 
 \begin{landscape}
 \thispagestyle{empty}
-\vspace*{4mm}
+\vspace*{3mm}
 \begin{center}
-{\large\bfseries\color{mainblack}\'Arbol de Navegaci\'on --- Plataforma KikiBrows}\\[6pt]
+{\large\bfseries\color{mainblack}\'Arbol de Navegaci\'on --- Plataforma KikiBrows}\\[5pt]
 {\small\color{midgray}
-  \textcolor{checkgreen!70!black}{\rule{8mm}{4pt}}~P\'ublico\quad
-  \textcolor{blue!50!black}{\rule{8mm}{4pt}}~Portal Alumna\quad
-  \textcolor{gold}{\rule{8mm}{4pt}}~Panel Administradora
+  \textcolor{checkgreen!70!black}{\rule{8mm}{3pt}}~P\'ublico\quad
+  \textcolor{blue!50!black}{\rule{8mm}{3pt}}~Portal Alumna\quad
+  \textcolor{gold}{\rule{8mm}{3pt}}~Panel Administradora
+}\\[10pt]
+
+% ── Árbol de navegación con TikZ (coordenadas absolutas en cm) ──────────────
+% Hoja k: y_k = 13.00 - k*0.72  (k = 0..18, total 19 hojas)
+% Secciones en su centroide; raíz en el punto medio global (y=6.52)
+\begin{tikzpicture}[
+  rootnode/.style={
+    draw=navroot, fill=navroot, text=white,
+    rounded corners=4pt, inner sep=5pt,
+    font=\small\bfseries, text width=20mm, align=center, anchor=west
+  },
+  pubsec/.style={
+    draw=checkgreen!80!black, fill=navpublic,
+    rounded corners=3pt, inner sep=5pt,
+    font=\small\bfseries, text=checkgreen!80!black,
+    text width=26mm, align=center, anchor=west
+  },
+  alusec/.style={
+    draw=blue!60!black, fill=navalumna,
+    rounded corners=3pt, inner sep=5pt,
+    font=\small\bfseries, text=blue!60!black,
+    text width=26mm, align=center, anchor=west
+  },
+  admsec/.style={
+    draw=gold!80!black, fill=navadmin,
+    rounded corners=3pt, inner sep=5pt,
+    font=\small\bfseries, text=gold!80!black,
+    text width=26mm, align=center, anchor=west
+  },
+  pleaf/.style={
+    draw=checkgreen!60!black, fill=navpublic!80,
+    rounded corners=2pt, inner sep=3pt,
+    font=\footnotesize, text width=54mm, anchor=west
+  },
+  aleaf/.style={
+    draw=blue!50!black, fill=navalumna!80,
+    rounded corners=2pt, inner sep=3pt,
+    font=\footnotesize, text width=54mm, anchor=west
+  },
+  dleaf/.style={
+    draw=gold!70!black, fill=navadmin!80,
+    rounded corners=2pt, inner sep=3pt,
+    font=\footnotesize, text width=54mm, anchor=west
+  },
+  conn/.style={draw=darkgray, thick},
+  pconn/.style={draw=checkgreen!60!black},
+  aconn/.style={draw=blue!40!black},
+  dconn/.style={draw=gold!60!black},
+]
+
+% ── Nodo raíz ──────────────────────────────────────
+\node[rootnode] (root) at (0, 6.52) {KikiBrows};
+
+% ── Secciones ──────────────────────────────────────
+\node[pubsec] (pub) at (3.2, 11.56) {Acceso\\P\'ublico};
+\node[alusec] (alu) at (3.2,  7.24) {Portal\\Alumna};
+\node[admsec] (adm) at (3.2,  2.20) {Panel\\Admin};
+
+% raíz → secciones
+\draw[conn] (root.east) -- ++(0.6,0) |- (pub.west);
+\draw[conn] (root.east) -- ++(0.6,0) |- (alu.west);
+\draw[conn] (root.east) -- ++(0.6,0) |- (adm.west);
+
+% ── Hojas: Acceso Público (k=0..4) ────────────────
+\node[pleaf] (p1) at (6.8, 13.00) {Inicio \textcolor{midgray}{\scriptsize(Landing Page)}};
+\node[pleaf] (p2) at (6.8, 12.28) {Vista previa de curso};
+\node[pleaf] (p3) at (6.8, 11.56) {Iniciar sesi\'on};
+\node[pleaf] (p4) at (6.8, 10.84) {Registrarse};
+\node[pleaf] (p5) at (6.8, 10.12) {Recuperar contrase\~na};
+
+\draw[pconn] (pub.east) -- ++(0.4,0) |- (p1.west);
+\draw[pconn] (pub.east) -- ++(0.4,0) |- (p2.west);
+\draw[pconn] (pub.east) -- ++(0.4,0) |- (p3.west);
+\draw[pconn] (pub.east) -- ++(0.4,0) |- (p4.west);
+\draw[pconn] (pub.east) -- ++(0.4,0) |- (p5.west);
+
+% ── Hojas: Portal Alumna (k=5..11) ────────────────
+\node[aleaf] (a1) at (6.8, 9.40) {Mis Cursos \textcolor{midgray}{\scriptsize(Dashboard)}};
+\node[aleaf] (a2) at (6.8, 8.68) {Clase / Reproductor};
+\node[aleaf] (a3) at (6.8, 7.96) {Historial de Compras};
+\node[aleaf] (a4) at (6.8, 7.24) {Mis Certificados};
+\node[aleaf] (a5) at (6.8, 6.52) {Consultas en Vivo};
+\node[aleaf] (a6) at (6.8, 5.80) {Mi Cuenta};
+\node[aleaf] (a7) at (6.8, 5.08) {Confirmaci\'on de Pago};
+
+\foreach \n in {a1,a2,a3,a4,a5,a6,a7} {
+  \draw[aconn] (alu.east) -- ++(0.4,0) |- (\n.west);
 }
+
+% ── Hojas: Panel Admin (k=12..18) ─────────────────
+\node[dleaf] (d1) at (6.8, 4.36) {Dashboard};
+\node[dleaf] (d2) at (6.8, 3.64) {Gesti\'on de Cursos};
+\node[dleaf] (d3) at (6.8, 2.92) {Gesti\'on de Usuarias};
+\node[dleaf] (d4) at (6.8, 2.20) {Transacciones};
+\node[dleaf] (d5) at (6.8, 1.48) {Consultas en Vivo};
+\node[dleaf] (d6) at (6.8, 0.76) {Revisi\'on y Feedback};
+\node[dleaf] (d7) at (6.8, 0.04) {Mi Perfil};
+
+\foreach \n in {d1,d2,d3,d4,d5,d6,d7} {
+  \draw[dconn] (adm.east) -- ++(0.4,0) |- (\n.west);
+}
+
+\end{tikzpicture}
 \end{center}
-\vspace{8pt}
-
-\noindent
-\begin{minipage}[t]{62mm}
-  \begin{mdframed}[backgroundcolor=navpublic, linecolor=checkgreen!70!black,
-    linewidth=3pt, topline=false, bottomline=false, rightline=false,
-    innertopmargin=10pt, innerbottommargin=12pt,
-    innerleftmargin=12pt, innerrightmargin=10pt]
-  {\small\bfseries\color{checkgreen!70!black} ACCESO P\'UBLICO}
-  \vspace{6pt}
-
-  \begin{itemize}[leftmargin=1.2em, itemsep=4pt, topsep=2pt]
-    \item[\small\textbullet] Inicio \textcolor{midgray}{\small(Landing Page)}
-    \item[\small\textbullet] Vista previa de curso
-    \item[\small\textbullet] Iniciar sesi\'on
-    \item[\small\textbullet] Registrarse
-    \item[\small\textbullet] Recuperar contrase\~na
-  \end{itemize}
-  \end{mdframed}
-\end{minipage}
-\hspace{5mm}
-\begin{minipage}[t]{83mm}
-  \begin{mdframed}[backgroundcolor=navalumna, linecolor=blue!50!black,
-    linewidth=3pt, topline=false, bottomline=false, rightline=false,
-    innertopmargin=10pt, innerbottommargin=12pt,
-    innerleftmargin=12pt, innerrightmargin=10pt]
-  {\small\bfseries\color{blue!50!black} PORTAL ALUMNA}
-  \vspace{6pt}
-
-  \begin{itemize}[leftmargin=1.2em, itemsep=4pt, topsep=2pt]
-    \item[\small\textbullet] Mis Cursos \textcolor{midgray}{\small(Dashboard)}
-    \item[\small\textbullet] Clase / Reproductor
-    \begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=2pt]
-      \item[\footnotesize\textendash] Video
-      \item[\footnotesize\textendash] Texto / PDF
-      \item[\footnotesize\textendash] Quiz
-      \item[\footnotesize\textendash] Tarea / Pr\'actica
-    \end{itemize}
-    \item[\small\textbullet] Historial de Compras
-    \item[\small\textbullet] Mis Certificados
-    \item[\small\textbullet] Consultas en Vivo
-    \item[\small\textbullet] Mi Cuenta
-    \item[\small\textbullet] Confirmaci\'on de Pago
-  \end{itemize}
-  \end{mdframed}
-\end{minipage}
-\hspace{5mm}
-\begin{minipage}[t]{83mm}
-  \begin{mdframed}[backgroundcolor=navadmin, linecolor=gold!80!black,
-    linewidth=3pt, topline=false, bottomline=false, rightline=false,
-    innertopmargin=10pt, innerbottommargin=12pt,
-    innerleftmargin=12pt, innerrightmargin=10pt]
-  {\small\bfseries\color{gold} PANEL ADMINISTRADORA}
-  \vspace{6pt}
-
-  \begin{itemize}[leftmargin=1.2em, itemsep=4pt, topsep=2pt]
-    \item[\small\textbullet] Dashboard
-    \item[\small\textbullet] Gesti\'on de Cursos
-    \begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=2pt]
-      \item[\footnotesize\textendash] Lista de Cursos
-      \item[\footnotesize\textendash] Crear / Editar Curso
-      \item[\footnotesize\textendash] Gestor de M\'odulos y Clases
-      \item[\footnotesize\textendash] Previsualizar Curso
-    \end{itemize}
-    \item[\small\textbullet] Gesti\'on de Usuarias
-    \item[\small\textbullet] Transacciones
-    \item[\small\textbullet] Consultas en Vivo
-    \item[\small\textbullet] Revisi\'on y Feedback
-    \item[\small\textbullet] Mi Perfil
-  \end{itemize}
-  \end{mdframed}
-\end{minipage}
 \end{landscape}
 
 % ══════════════════════════════════════════════════════════
