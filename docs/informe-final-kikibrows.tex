@@ -237,9 +237,11 @@ Certificaci\'on digital autom\'atica & S\'i & \entregado &
 Clase en vivo mensual con agendamiento & S\'i & \entregado &
   Gesti\'on de slots, reservas y reuni\'on Zoom autom\'atica. \\
 
-Sistema de pagos automatizados & WebPay / Flow / Stripe & \adicional &
-  Se integr\'o \textbf{Banchile Pagos Web Checkout}.
-  Ver secci\'on~\ref{sec:pagos}. \\
+Sistema de pagos automatizados & S\'i (WebPay Plus) & \entregado &
+  La pasarela estaba incluida en el alcance base. Se implement\'o
+  \textbf{WebPay Plus} (propuesto), luego \textbf{GetNet} (solicitud del cliente,
+  sin cobro adicional) y finalmente \textbf{Banchile Pagos} (solicitud del cliente,
+  servicio adicional \$300.000). Ver secci\'on~\ref{sec:pagos}. \\
 
 Historial de compras y comprobantes PDF & S\'i & \entregado &
   Descarga de comprobante con detalle completo de transacci\'on. \\
@@ -459,7 +461,7 @@ aprobaci\'on del documento de requisitos.
 
 2 &
   GetNet Web Checkout &
-  Solicitud verbal del cliente; integrada sin cobro adicional &
+  Solicitud del cliente; integrada sin cobro adicional por decisi\'on voluntaria del prestador &
   Removida del c\'odigo frontend y API keys eliminadas de Supabase.
   Edge functions \texttt{getnet-create-session} y \texttt{getnet-check-session}
   permanecen desplegadas en Supabase pero inactivas (sin credenciales). \\
