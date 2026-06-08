@@ -506,28 +506,19 @@ de la Cl\'ausula CUARTO.
 
 \subsubsection{Activaci\'on en producci\'on}
 
-Una vez regularizado el pago y efectuado el traspaso de credenciales de la
-plataforma, la activaci\'on de Banchile en producci\'on no requiere ning\'un
-cambio de c\'odigo. El proceso completo consta de tres pasos:
+La activaci\'on de Banchile en producci\'on no requiere ning\'un cambio de
+c\'odigo. Una vez recibido el pago del servicio y las credenciales de
+producci\'on de Banchile Empresas por parte del cliente, RAWSEC SOLUTIONS SpA
+proceder\'a a:
 
 \begin{enumerate}[leftmargin=1.8em, itemsep=4pt]
-  \item Ingresar al panel de Supabase del proyecto KikiBrows.
-  \item Ir a \textbf{Edge Functions} $\rightarrow$ \textbf{Secrets} y agregar
-        (o actualizar) las siguientes variables con las credenciales de
-        producci\'on de la cuenta Banchile Empresas:
-        \begin{itemize}[leftmargin=1.6em, itemsep=2pt]
-          \item \texttt{BANCHILE\_CLIENT\_ID}
-          \item \texttt{BANCHILE\_CLIENT\_SECRET}
-        \end{itemize}
-  \item Verificar una transacci\'on de prueba en producci\'on.
+  \item Configurar las credenciales de producci\'on en Supabase
+        (\textbf{Edge Functions} $\rightarrow$ \textbf{Secrets}):
+        \texttt{BANCHILE\_CLIENT\_ID} y \texttt{BANCHILE\_CLIENT\_SECRET}.
+  \item Verificar una transacci\'on de prueba en ambiente de producci\'on.
+  \item Realizar el traspaso formal de la plataforma
+        (proyecto Supabase y dominio Cloudflare) a KikiBrows SpA.
 \end{enumerate}
-
-\begin{infobox}
-\textbf{Sin intervenci\'on del prestador:} Esta configuraci\'on puede ser
-realizada directamente por KikiBrows SpA o por cualquier persona con acceso
-administrador al proyecto Supabase. No se requiere participaci\'on de
-RAWSEC SOLUTIONS SpA una vez entregadas las credenciales de la plataforma.
-\end{infobox}
 
 \subsection{Otras Integraciones T\'ecnicas}
 
