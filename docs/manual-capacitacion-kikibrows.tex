@@ -852,6 +852,144 @@ La alumna dice que no le lleg\'o el comprobante de pago. &
 \end{longtable}
 
 % ══════════════════════════════════════════════════════════
+%  9. MANTENIMIENTO DE LA PLATAFORMA
+% ══════════════════════════════════════════════════════════
+\newpage
+\section{Mantenimiento de la Plataforma}
+
+La plataforma KikiBrows funciona sobre servicios en la nube (Supabase, Cloudflare,
+Resend, Zoom API) que operan de manera aut\'onoma una vez configurados. Sin embargo,
+como toda plataforma en producci\'on, requiere tareas peri\'odicas de revisi\'on y
+mantenci\'on para garantizar su correcto funcionamiento.
+
+Este cap\'itulo distingue entre las tareas que puede realizar la administradora
+directamente desde el panel web, y las tareas que requieren acceso t\'ecnico a
+los servicios de infraestructura.
+
+% ─────────────────────────────────────────────────────────
+\subsection{Tareas mensuales a cargo de la administradora}
+
+Las siguientes actividades no requieren conocimiento t\'ecnico y pueden ejecutarse
+desde el \textbf{Panel de Administraci\'on} de la plataforma:
+
+\subsubsection*{Revisi\'on de transacciones}
+\begin{itemize}
+  \item Verificar en \emph{Transacciones} que los pagos del mes tienen estado
+        \emph{Pagado}. Los pagos en estado \emph{Pendiente} por m\'as de 48\,h
+        pueden indicar un problema con la pasarela.
+  \item Exportar o anotar los montos para control contable mensual.
+\end{itemize}
+
+\subsubsection*{Revisi\'on de avances y certificaciones}
+\begin{itemize}
+  \item Verificar que las alumnas que completaron cursos hayan recibido su certificado.
+        En \emph{Gesti\'on de Usuarias} se muestra el c\'odigo de certificado por fila.
+  \item Revisar en \emph{Revisiones y Feedback} si hay entregas pendientes de calificar.
+\end{itemize}
+
+\subsubsection*{Gesti\'on de consultas en vivo}
+\begin{itemize}
+  \item Publicar los \emph{slots} de consulta del mes siguiente en
+        \emph{Calendario / Consultas} antes del inicio de cada mes.
+  \item Verificar que las reservas agendadas tienen el enlace Zoom correspondiente.
+\end{itemize}
+
+\subsubsection*{Revisi\'on de usuarias}
+\begin{itemize}
+  \item Detectar usuarias inactivas por per\'iodo prolongado (sin inicio de sesi\'on)
+        y decidir si deben ser bloqueadas o contactadas.
+  \item Si se cambia la contrase\~na de acceso al correo institucional o a Zoom,
+        notificar a RAWSEC SOLUTIONS SpA para actualizar las credenciales en el sistema.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────
+\subsection{L\'imites de almacenamiento a monitorear}
+
+La plataforma utiliza el plan gratuito de Supabase Storage. Los l\'imites por tipo
+de archivo son los siguientes:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}L{5cm}C{3.5cm}L{6cm}@{}}
+  \toprule
+  \textbf{Tipo de archivo} & \textbf{L\'imite por archivo} & \textbf{D\'onde aplica} \\
+  \midrule
+  Videos de clases         & 50\,MB & Todas las clases de tipo video \\
+  Documentos PDF           & 20\,MB & Material descargable de clases \\
+  Im\'agenes (portadas)    &  2\,MB & Portadas de cursos y m\'odulos \\
+  Entregas de alumnas      & 50\,MB & Archivos subidos por alumnas en tareas \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warnbox}
+\textbf{Si un archivo supera el l\'imite,} el sistema rechazar\'a la subida con
+un mensaje de error. Comprimir el video o reducir la resoluci\'on antes de volver
+a intentarlo. Si el contenido del curso lo requiere, se puede solicitar a
+RAWSEC SOLUTIONS SpA la migraci\'on a Supabase Pro (almacenamiento ampliado).
+\end{warnbox}
+
+El almacenamiento total del proyecto en el plan gratuito de Supabase es de
+\textbf{500\,MB}. Cuando la plataforma crezca en n\'umero de cursos o alumnas,
+ser\'a necesario migrar al plan pago de Supabase (actualmente \$25\,USD/mes),
+lo que incluye almacenamiento ilimitado, mayor ancho de banda y funcionalidades
+adicionales.
+
+% ─────────────────────────────────────────────────────────
+\subsection{Tareas t\'ecnicas que requieren soporte especializado}
+
+Las siguientes tareas requieren acceso a los servicios de infraestructura
+(Supabase, Cloudflare, Resend, Zoom API) y \textbf{no deben intentarse sin
+conocimiento t\'ecnico}, ya que un error puede dejar la plataforma inoperativa.
+
+\begin{itemize}
+  \item \textbf{Actualizaci\'on de credenciales de pasarela de pago:} cualquier
+        cambio en las claves de Banchile, Resend, o Zoom debe aplicarse en el
+        panel de \emph{Secrets} de Supabase Edge Functions. Un valor incorrecto
+        bloquea los pagos o el env\'io de correos.
+
+  \item \textbf{Limpieza de archivos hu\'erfanos en Storage:} videos o im\'agenes
+        eliminados desde el panel no siempre se borran autom\'aticamente del
+        bucket de Supabase. Peridicamente deben eliminarse los archivos sin
+        referencia activa.
+
+  \item \textbf{Migraci\'on de plan Supabase:} si el proyecto supera los 500\,MB
+        de almacenamiento o los l\'imites de peticiones del plan gratuito, debe
+        actualizarse el plan desde el panel de Supabase con una tarjeta de
+        cr\'edito asociada al proyecto.
+
+  \item \textbf{Renovaci\'on del dominio en Cloudflare:} el dominio de la
+        plataforma tiene vencimiento anual. Su no renovaci\'on hace inaccesible
+        el sitio.
+
+  \item \textbf{Revisi\'on de Edge Functions:} en caso de fallos en el env\'io
+        de correos o procesamiento de pagos, los logs de las funciones
+        (\texttt{send-receipt-email}, \texttt{send-consultation-email},
+        \texttt{banchile-payment-*}) deben revisarse desde la consola de Supabase.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────
+\subsection{Servicio de mantenci\'on con RAWSEC SOLUTIONS SpA}
+
+\begin{infobox}
+\textbf{Opci\'on de mantenci\'on mensual}
+
+KikiBrows SpA puede contratar a \textbf{RAWSEC SOLUTIONS SpA} para que ejecute
+las tareas t\'ecnicas descritas en la secci\'on anterior, incluyendo:
+
+\begin{itemize}
+  \item Monitoreo mensual de almacenamiento y uso de la plataforma.
+  \item Limpieza de archivos hu\'erfanos en Storage.
+  \item Actualizaci\'on de credenciales ante cambios de proveedores.
+  \item Revisi\'on de logs de pagos y funciones de correo.
+  \item Soporte reactivo ante incidentes t\'ecnicos (dentro del mes contratado).
+\end{itemize}
+
+Para cotizar el servicio de mantenci\'on mensual, contactar a:\\
+\textbf{RAWSEC SOLUTIONS SpA} --- \texttt{rawsecsolutions@gmail.com}
+\end{infobox}
+
+% ══════════════════════════════════════════════════════════
 %  FIRMA Y CIERRE
 % ══════════════════════════════════════════════════════════
 \vspace{10mm}
