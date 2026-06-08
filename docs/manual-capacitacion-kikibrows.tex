@@ -95,8 +95,7 @@
 \setlist[enumerate,1]{label=\textbf{\arabic*.}, leftmargin=1.8em, itemsep=4pt}
 \setlist[itemize,1]{leftmargin=1.6em, itemsep=3pt}
 
-% Árbol de navegación con forest
-\usepackage{forest}
+% Árbol de navegación
 \usepackage{pdflscape}
 
 \usepackage{hyperref}
@@ -191,71 +190,87 @@ se relacionan entre s\'i, organizadas por secci\'on y rol de acceso.
 
 \begin{landscape}
 \thispagestyle{empty}
-\vspace*{5mm}
+\vspace*{4mm}
 \begin{center}
-{\large\bfseries\color{mainblack} \'Arbol de Navegaci\'on --- Plataforma KikiBrows}\\[10pt]
+{\large\bfseries\color{mainblack}\'Arbol de Navegaci\'on --- Plataforma KikiBrows}\\[6pt]
 {\small\color{midgray}
-  \textcolor{checkgreen}{\rule{8mm}{4pt}}~P\'ublico\quad
-  \textcolor{blue!60!black}{\rule{8mm}{4pt}}~Portal Alumna\quad
+  \textcolor{checkgreen!70!black}{\rule{8mm}{4pt}}~P\'ublico\quad
+  \textcolor{blue!50!black}{\rule{8mm}{4pt}}~Portal Alumna\quad
   \textcolor{gold}{\rule{8mm}{4pt}}~Panel Administradora
-}\\[18pt]
-
-\forestset{
-  nav/.style={
-    draw, rounded corners=3pt,
-    font=\small, inner sep=5pt,
-    text centered,
-    edge={darkgray, thick},
-    l sep=12mm, s sep=3mm,
-  },
-  public/.style={nav, fill=navpublic, draw=checkgreen!70!black},
-  alumna/.style={nav, fill=navalumna, draw=blue!50!black},
-  admin/.style={nav, fill=navadmin, draw=gold!80!black},
-  root/.style={nav, fill=navroot, text=white, draw=navroot, text width=2.2cm},
-  branch/.style={nav, text width=2.4cm, minimum height=1cm},
-  leaf/.style={nav, text width=2.8cm, font=\footnotesize},
 }
+\end{center}
+\vspace{8pt}
 
-\begin{forest}
-  for tree={grow=east, anchor=west, child anchor=west, parent anchor=east},
-  [KikiBrows, root
-    [Acceso\\P\'ublico, branch, public
-      [Inicio\\ {\footnotesize\color{midgray}(Landing Page)}, leaf, public]
-      [Vista previa\\de curso, leaf, public]
-      [Iniciar sesi\'on, leaf, public]
-      [Registrarse, leaf, public]
-      [Recuperar\\contrase\~na, leaf, public]
-    ]
-    [Portal\\Alumna, branch, alumna
-      [Mis Cursos\\ {\footnotesize\color{midgray}(Dashboard)}, leaf, alumna]
-      [Clase / Reproductor, leaf, alumna,
-        [Video, leaf, alumna]
-        [Texto / PDF, leaf, alumna]
-        [Quiz, leaf, alumna]
-        [Tarea\\ {\footnotesize\color{midgray}(Entrega)}, leaf, alumna]
-      ]
-      [Historial\\de Compras, leaf, alumna]
-      [Mis Certificados, leaf, alumna]
-      [Consultas\\en Vivo, leaf, alumna]
-      [Mi Cuenta, leaf, alumna]
-      [Confirmaci\'on\\de Pago, leaf, alumna]
-    ]
-    [Panel\\Administradora, branch, admin
-      [Dashboard, leaf, admin]
-      [Gesti\'on de Cursos, leaf, admin,
-        [Lista de Cursos, leaf, admin]
-        [Crear / Editar\\Curso, leaf, admin]
-        [Gestor de\\M\'odulos y Clases, leaf, admin]
-        [Previsualizar\\Curso, leaf, admin]
-      ]
-      [Gesti\'on de\\Usuarias, leaf, admin]
-      [Transacciones, leaf, admin]
-      [Consultas en Vivo\\ {\footnotesize\color{midgray}(Admin)}, leaf, admin]
-      [Revisi\'on y\\Feedback, leaf, admin]
-      [Mi Perfil, leaf, admin]
-    ]
-  ]
-\end{forest}
+\begin{center}
+\begin{minipage}[t]{0.28\textwidth}
+  \begin{mdframed}[backgroundcolor=navpublic, linecolor=checkgreen!70!black,
+    linewidth=3pt, topline=false, bottomline=false, rightline=false,
+    innertopmargin=10pt, innerbottommargin=12pt,
+    innerleftmargin=12pt, innerrightmargin=10pt]
+  {\small\bfseries\color{checkgreen!70!black} ACCESO P\'UBLICO}
+  \vspace{6pt}
+
+  \begin{itemize}[leftmargin=1.2em, itemsep=4pt, topsep=2pt]
+    \item[\small\textbullet] Inicio \textcolor{midgray}{\small(Landing Page)}
+    \item[\small\textbullet] Vista previa de curso
+    \item[\small\textbullet] Iniciar sesi\'on
+    \item[\small\textbullet] Registrarse
+    \item[\small\textbullet] Recuperar contrase\~na
+  \end{itemize}
+  \end{mdframed}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.33\textwidth}
+  \begin{mdframed}[backgroundcolor=navalumna, linecolor=blue!50!black,
+    linewidth=3pt, topline=false, bottomline=false, rightline=false,
+    innertopmargin=10pt, innerbottommargin=12pt,
+    innerleftmargin=12pt, innerrightmargin=10pt]
+  {\small\bfseries\color{blue!50!black} PORTAL ALUMNA}
+  \vspace{6pt}
+
+  \begin{itemize}[leftmargin=1.2em, itemsep=4pt, topsep=2pt]
+    \item[\small\textbullet] Mis Cursos \textcolor{midgray}{\small(Dashboard)}
+    \item[\small\textbullet] Clase / Reproductor
+    \begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=2pt]
+      \item[\footnotesize\textendash] Video
+      \item[\footnotesize\textendash] Texto / PDF
+      \item[\footnotesize\textendash] Quiz
+      \item[\footnotesize\textendash] Tarea / Pr\'actica
+    \end{itemize}
+    \item[\small\textbullet] Historial de Compras
+    \item[\small\textbullet] Mis Certificados
+    \item[\small\textbullet] Consultas en Vivo
+    \item[\small\textbullet] Mi Cuenta
+    \item[\small\textbullet] Confirmaci\'on de Pago
+  \end{itemize}
+  \end{mdframed}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.33\textwidth}
+  \begin{mdframed}[backgroundcolor=navadmin, linecolor=gold!80!black,
+    linewidth=3pt, topline=false, bottomline=false, rightline=false,
+    innertopmargin=10pt, innerbottommargin=12pt,
+    innerleftmargin=12pt, innerrightmargin=10pt]
+  {\small\bfseries\color{gold} PANEL ADMINISTRADORA}
+  \vspace{6pt}
+
+  \begin{itemize}[leftmargin=1.2em, itemsep=4pt, topsep=2pt]
+    \item[\small\textbullet] Dashboard
+    \item[\small\textbullet] Gesti\'on de Cursos
+    \begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=2pt]
+      \item[\footnotesize\textendash] Lista de Cursos
+      \item[\footnotesize\textendash] Crear / Editar Curso
+      \item[\footnotesize\textendash] Gestor de M\'odulos y Clases
+      \item[\footnotesize\textendash] Previsualizar Curso
+    \end{itemize}
+    \item[\small\textbullet] Gesti\'on de Usuarias
+    \item[\small\textbullet] Transacciones
+    \item[\small\textbullet] Consultas en Vivo
+    \item[\small\textbullet] Revisi\'on y Feedback
+    \item[\small\textbullet] Mi Perfil
+  \end{itemize}
+  \end{mdframed}
+\end{minipage}
 \end{center}
 \end{landscape}
 
@@ -386,7 +401,7 @@ de cada m\'odulo.
 \endfoot
 
 \textbf{Video} &
-  Sube un archivo de video (MP4, WEBM, MOV, HEVC o MKV; m\'aximo 500\,MB).
+  Sube un archivo de video (MP4, WEBM, MOV, HEVC o MKV; m\'aximo 50\,MB).
   Ingresa nombre, descripci\'on, duraci\'on en minutos.
   El sistema muestra una barra de progreso durante la subida. \\
 
@@ -657,7 +672,7 @@ siguiente clase si est\'a configurado como requisito.
   \item Lee las instrucciones y revisa las im\'agenes o video de referencia
         si los hay.
   \item Haz clic en \textbf{Seleccionar archivo} y elige tu video (MP4, WEBM, MOV;
-        m\'ax.\ 500\,MB) o imagen (PNG, JPG, WEBP; m\'ax.\ 2\,MB).
+        m\'ax.\ 50\,MB) o imagen (PNG, JPG, WEBP; m\'ax.\ 2\,MB).
   \item Opcionalmente agrega un comentario para la instructora.
   \item Haz clic en \textbf{Enviar entrega}. Se mostrar\'a una barra de progreso
         durante la subida.
@@ -786,7 +801,7 @@ Elimin\'e una clase por error. &
 El video tard\'o mucho en subir. &
   Los videos se suben directamente al servidor. El tiempo depende del
   tama\~no del archivo y la velocidad de internet.
-  Los videos de hasta 500\,MB pueden tardar varios minutos. \\
+  Los videos de hasta 50\,MB pueden tardar varios minutos. \\
 
 \textquestiondown D\'onde est\'an los pagos de una alumna espec\'ifica? &
   Ve a \emph{Transacciones} y busca por nombre o correo en el filtro. \\
